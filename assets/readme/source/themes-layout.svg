@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">Dark and light theme comparison</title>
+  <desc id="desc">The dsh-reasoning-effort model and effort popover rendered in DeepSeek Harness dark and light themes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#080B16"/>
+      <stop offset=".5" stop-color="#121735"/>
+      <stop offset="1" stop-color="#EDF4FF"/>
+    </linearGradient>
+    <clipPath id="darkClip"><rect x="34" y="70" width="548" height="308" rx="19"/></clipPath>
+    <clipPath id="lightClip"><rect x="618" y="70" width="548" height="308" rx="19"/></clipPath>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#020512" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1200" height="430" rx="26" fill="url(#bg)"/>
+  <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="750" letter-spacing="1.2">
+    <text x="38" y="44" fill="#AEBBEB">DARK · BLUE / VIOLET / NEAR-BLACK</text>
+    <text x="620" y="44" fill="#36508F">LIGHT · BLUE / WHITE</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="26" y="62" width="564" height="324" rx="25" fill="#0C1020" stroke="#6B7EC8" stroke-opacity=".55"/>
+    <g clip-path="url(#darkClip)"><image href="dsh-dark-popup.png" x="34" y="70" width="548" height="308" preserveAspectRatio="xMidYMid slice"/></g>
+    <rect x="610" y="62" width="564" height="324" rx="25" fill="#F8FAFF" stroke="#AFC2EC"/>
+    <g clip-path="url(#lightClip)"><image href="dsh-light-popup.png" x="618" y="70" width="548" height="308" preserveAspectRatio="xMidYMid slice"/></g>
+  </g>
+</svg>

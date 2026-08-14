@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">dsh-reasoning-effort hero</title>
+  <desc id="desc">A blue violet black project banner showing the reasoning effort slider inside a real DeepSeek Harness interface, with the optional Big Fat Fish runner.</desc>
+  <defs>
+    <linearGradient id="bg" x1="70" y1="20" x2="1120" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#070A14"/>
+      <stop offset="0.48" stop-color="#111333"/>
+      <stop offset="1" stop-color="#080A18"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#5D83FF"/>
+      <stop offset="1" stop-color="#A66BFF"/>
+    </linearGradient>
+    <radialGradient id="glowBlue" cx="0" cy="0" r="1" gradientTransform="translate(850 425) rotate(165) scale(520 270)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#315CFF" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#315CFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowViolet" cx="0" cy="0" r="1" gradientTransform="translate(1020 30) rotate(135) scale(440 320)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#91A5FF" stroke-opacity=".06"/>
+    </pattern>
+    <clipPath id="screenClip">
+      <rect x="492" y="78" width="660" height="372" rx="24"/>
+    </clipPath>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="20" stdDeviation="24" flood-color="#00030C" flood-opacity=".68"/>
+    </filter>
+    <filter id="softGlow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="560" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="560" rx="28" fill="url(#glowBlue)"/>
+  <rect width="1200" height="560" rx="28" fill="url(#glowViolet)"/>
+  <rect width="1200" height="560" rx="28" fill="url(#grid)"/>
+  <rect x="1" y="1" width="1198" height="558" rx="27" fill="none" stroke="#91A5FF" stroke-opacity=".2"/>
+
+  <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <g transform="translate(60 56)">
+      <rect width="210" height="34" rx="17" fill="#11172E" stroke="#7188D8" stroke-opacity=".5"/>
+      <circle cx="18" cy="17" r="5" fill="#7E8FFF"/>
+      <text x="32" y="22" fill="#BFCBFF" font-size="13" font-weight="700" letter-spacing="1.4">DEEPSEEK HARNESS PLUGIN</text>
+    </g>
+
+    <text x="60" y="155" fill="#F7F9FF" font-size="48" font-weight="750" letter-spacing="-1.6">Reasoning,</text>
+    <text x="60" y="209" fill="#F7F9FF" font-size="48" font-weight="750" letter-spacing="-1.6">at your fingertips.</text>
+    <rect x="60" y="230" width="310" height="5" rx="2.5" fill="url(#accent)"/>
+    <text x="60" y="278" fill="#AEBBE1" font-size="21">Model + effort in one DSH-native control.</text>
+
+    <g transform="translate(60 314)" font-size="14" font-weight="700" text-anchor="middle">
+      <rect width="78" height="40" rx="20" fill="#11172A" stroke="#5C6B9D"/>
+      <text x="39" y="25" fill="#94A1C6">OFF</text>
+      <rect x="90" width="82" height="40" rx="20" fill="#202B61" stroke="#6C83E9"/>
+      <text x="131" y="25" fill="#CFD7FF">HIGH</text>
+      <rect x="184" width="82" height="40" rx="20" fill="url(#accent)"/>
+      <text x="225" y="25" fill="#FFFFFF">MAX</text>
+    </g>
+
+    <g transform="translate(60 397)" fill="#CFD7F4" font-size="16">
+      <circle cx="7" cy="-5" r="4" fill="#6F88FF"/>
+      <text x="22" y="0">Direct pointer tracking</text>
+      <circle cx="7" cy="29" r="4" fill="#8E6CFF"/>
+      <text x="22" y="34">Dark + light themes</text>
+      <circle cx="7" cy="63" r="4" fill="#B36EFF"/>
+      <text x="22" y="68">Optional 大肥鱼 runner</text>
+    </g>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="484" y="70" width="676" height="388" rx="30" fill="#101426" stroke="#8EA0FF" stroke-opacity=".38"/>
+    <g clip-path="url(#screenClip)">
+      <image href="dsh-dark-popup.png" x="492" y="78" width="660" height="372" preserveAspectRatio="xMidYMid slice"/>
+      <rect x="492" y="78" width="660" height="372" fill="url(#glowViolet)" opacity=".18"/>
+    </g>
+  </g>
+
+  <g transform="translate(467 412)">
+    <ellipse cx="63" cy="75" rx="70" ry="34" fill="#6B5DFF" opacity=".32" filter="url(#softGlow)"/>
+    <path d="M-20 72H50" stroke="url(#accent)" stroke-width="5" stroke-linecap="round" opacity=".88"/>
+    <path d="M0 58H52" stroke="#6F88FF" stroke-width="2" stroke-linecap="round" opacity=".65"/>
+    <path d="M13 86H47" stroke="#A66BFF" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+    <image href="hero-subject.png" x="24" y="0" width="96" height="132" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+
+  <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="13" fill="#93A4C7">
+    <text x="958" y="501">SESSION-NATIVE</text>
+    <circle cx="1142" cy="496" r="4" fill="#72F1B8"/>
+  </g>
+</svg>

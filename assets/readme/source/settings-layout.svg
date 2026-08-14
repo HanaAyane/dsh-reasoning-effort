@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480" viewBox="0 0 1200 480" role="img" aria-labelledby="title desc">
+  <title id="title">Plugin controls in DeepSeek Harness settings</title>
+  <desc id="desc">A real DeepSeek Harness settings view showing the reasoning effort slider and Big Fat Fish slider switches.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#080B17"/>
+      <stop offset=".58" stop-color="#121737"/>
+      <stop offset="1" stop-color="#33236A"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#5D83FF"/><stop offset="1" stop-color="#A66BFF"/></linearGradient>
+    <clipPath id="screenClip"><rect x="480" y="42" width="674" height="396" rx="24"/></clipPath>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#01030D" flood-opacity=".62"/></filter>
+  </defs>
+  <rect width="1200" height="480" rx="28" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1198" height="478" rx="27" fill="none" stroke="#8297F1" stroke-opacity=".22"/>
+  <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="62" y="95" fill="#AEBBEE" font-size="14" font-weight="750" letter-spacing="1.4">SETTINGS · GENERAL · APPEARANCE</text>
+    <text x="62" y="164" fill="#F7F9FF" font-size="43" font-weight="750" letter-spacing="-1.2">One switch away.</text>
+    <text x="62" y="207" fill="#AEBBE1" font-size="20">Keep the native thumb or let 大肥鱼 run.</text>
+    <g transform="translate(62 260)">
+      <rect width="350" height="58" rx="18" fill="#10162C" stroke="#677BCC" stroke-opacity=".65"/>
+      <circle cx="30" cy="29" r="9" fill="#6F88FF"/>
+      <text x="54" y="26" fill="#F1F4FF" font-size="17" font-weight="700">Reasoning effort slider</text>
+      <text x="54" y="44" fill="#8898C4" font-size="12">Enable the combined model control</text>
+    </g>
+    <g transform="translate(62 331)">
+      <rect width="350" height="58" rx="18" fill="#10162C" stroke="#8969E9" stroke-opacity=".68"/>
+      <circle cx="30" cy="29" r="9" fill="#A16DFF"/>
+      <text x="54" y="26" fill="#F1F4FF" font-size="17" font-weight="700">大肥鱼 slider</text>
+      <text x="54" y="44" fill="#8898C4" font-size="12">Replace only the white thumb</text>
+    </g>
+    <rect x="62" y="418" width="258" height="4" rx="2" fill="url(#accent)"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="470" y="32" width="694" height="416" rx="31" fill="#F8FAFF" stroke="#98AAED" stroke-opacity=".65"/>
+    <g clip-path="url(#screenClip)">
+      <image href="dsh-settings.png" x="450" y="-405" width="730" height="1100" preserveAspectRatio="none"/>
+    </g>
+  </g>
+</svg>
