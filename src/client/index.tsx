@@ -1242,15 +1242,15 @@ function ChibiThumbSetting() {
   return (
     <div className="re-setting-row">
       <div className="re-setting-copy">
-        <div className="re-setting-title">实验：奔跑小人滑块</div>
-        <div className="re-setting-description">用八帧奔跑动画替换白色圆形按钮，拖动时会加速</div>
+        <div className="re-setting-title">大肥鱼滑块</div>
+        <div className="re-setting-description">用大肥鱼替换滑块按钮</div>
       </div>
       <div className="re-setting-control">
         <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
         <button
           type="button"
           role="switch"
-          aria-label="启用奔跑小人滑块"
+          aria-label="启用大肥鱼滑块"
           aria-checked={enabled}
           disabled={!sliderEnabled}
           className={`re-setting-switch${enabled ? ' is-on' : ''}`}

@@ -56,7 +56,7 @@ Open the model control in the composer. The effort slider is shown above the cur
 
 To disable the enhanced control without uninstalling the plugin, open **Settings → General** and turn off **Reasoning effort selector** below Appearance. The preference is stored as one boolean in the browser's `localStorage`.
 
-Experimental builds also expose **Chibi runner thumb** directly below that switch. It is disabled by default; enabling it replaces only the white thumb, while preserving the existing track, radiation effects, snapping behavior, keyboard controls, and model selection flow. The eight frames play in reading order: top row left-to-right, then bottom row left-to-right.
+The settings page also exposes **Big Fat Fish slider** directly below that switch. It is disabled by default; enabling it replaces only the white thumb, while preserving the existing track, radiation effects, snapping behavior, keyboard controls, and model selection flow. The eight frames play in reading order: top row left-to-right, then bottom row left-to-right.
 
 ## How it integrates with DSH
 
