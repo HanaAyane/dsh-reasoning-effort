@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## [0.4.0-experimental.1] - 2026-08-15
+## [0.4.0-experimental.2] - 2026-08-15
 
 ### Added
 
@@ -12,6 +12,7 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- Replace the initial runner frames with the refined transparent run cycle.
 - Increase animation speed from 720 ms to 420 ms while dragging.
 - Keep the character fully visible at both slider endpoints by applying a thumb-only inset.
 - Preserve the original white thumb whenever the experimental option is disabled.

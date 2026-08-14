@@ -228,8 +228,8 @@ const CSS = `
 }
 .re-effort.is-chibi .re-effort-knob {
   left: clamp(10px, var(--re-progress), calc(100% - 10px));
-  width: 47px;
-  height: 54px;
+  width: 40px;
+  height: 55px;
   border: 0;
   border-radius: 8px;
   background-color: transparent;
