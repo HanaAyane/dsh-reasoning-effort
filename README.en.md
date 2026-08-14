@@ -8,9 +8,9 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-![Release](https://img.shields.io/github/v/release/HanaAyane/dsh-reasoning-effort?style=flat-square&color=6f83ff)
-![DSH](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)
-![License](https://img.shields.io/github/license/HanaAyane/dsh-reasoning-effort?style=flat-square&color=536990)
+[![main 0.4.0](https://img.shields.io/badge/main-0.4.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
+[![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
+[![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
 </div>
 
