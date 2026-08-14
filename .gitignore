@@ -1,0 +1,8 @@
+node_modules/
+.client-build/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

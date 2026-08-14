@@ -1,0 +1,6 @@
+# dsh-reasoning-effort bundle patch: mounts the plugin into a profile layer stack.
+# Runtime defaults live at the plugin's config boundary. Users override them in
+# their profile patch row with the same id.
+- insert:
+    - id: reasoning-effort
+      name: 'dsh-reasoning-effort'
