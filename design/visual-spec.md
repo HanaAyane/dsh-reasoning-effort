@@ -30,3 +30,11 @@ Approved on 2026-08-15 for the DeepSeek Harness integration.
 - Follow DSH's actual theme marker: `body[data-ds-dark-theme]`.
 - Prefer DSH `--dsw-*` design tokens for surrounding labels, borders, and focus treatment.
 - Read and write `reasoningEffort` through the current session's model selection (`sessions.models` / `sessions.selectModel`), never through the global provider settings namespace.
+
+## Experimental chibi thumb
+
+- Disabled by default and controlled by a separate switch below the main plugin switch.
+- Replace only the white thumb; keep the approved track, radiation, snapping, and model-selection behavior.
+- Play eight frames in reading order: top row left-to-right, then bottom row left-to-right.
+- Use a 720 ms loop at rest and a 420 ms loop while dragging.
+- Keep the full character visible at both track endpoints and preserve reduced-motion behavior by freezing the animation.

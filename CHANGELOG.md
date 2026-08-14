@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.4.0-experimental.1] - 2026-08-15
+
+### Added
+
+- Optional eight-frame chibi runner thumb, disabled by default.
+- Dedicated persistent switch under General Settings.
+- Transparent, tightly packed sprite assets with top-row then bottom-row playback order.
+
+### Changed
+
+- Increase animation speed from 720 ms to 420 ms while dragging.
+- Keep the character fully visible at both slider endpoints by applying a thumb-only inset.
+- Preserve the original white thumb whenever the experimental option is disabled.
+
 ## [0.3.0] - 2026-08-15
 
 ### Added

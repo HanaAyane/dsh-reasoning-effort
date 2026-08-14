@@ -20,6 +20,7 @@ import type {
   ModelDirectoryResolver,
   ModelDirectoryState,
 } from '@deepseek-ai/dsh-client-ui-model-selection/client'
+import chibiRunnerSprite from '../../assets/chibi-runner-strip.png'
 
 type Effort = 'off' | 'high' | 'max'
 
@@ -36,6 +37,7 @@ const SLOT = 'conversation.input.model'
 const SETTINGS_SLOT = 'settings.general.item'
 const ENABLED_STORAGE_KEY = 'dsh-reasoning-effort.enabled'
 const LEGACY_ENABLED_STORAGE_KEY = '@dsh-external/dsh-reasoning-effort.enabled'
+const CHIBI_THUMB_STORAGE_KEY = 'dsh-reasoning-effort.chibi-thumb'
 export const inject = ['slots', 'modelDirectories']
 
 const LEVELS: ReadonlyArray<{ key: Effort; label: string }> = [
@@ -74,6 +76,37 @@ const enabledStore = {
       }
     }
     enabledListeners.forEach((listener) => listener())
+  },
+}
+
+function readChibiThumbPreference(): boolean {
+  try {
+    return window.localStorage.getItem(CHIBI_THUMB_STORAGE_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+let chibiThumbPreference = readChibiThumbPreference()
+const chibiThumbListeners = new Set<() => void>()
+
+const chibiThumbStore = {
+  getSnapshot: () => chibiThumbPreference,
+  subscribe: (listener: () => void) => {
+    chibiThumbListeners.add(listener)
+    return () => chibiThumbListeners.delete(listener)
+  },
+  set: (enabled: boolean, persist = true) => {
+    if (chibiThumbPreference === enabled) return
+    chibiThumbPreference = enabled
+    if (persist) {
+      try {
+        window.localStorage.setItem(CHIBI_THUMB_STORAGE_KEY, String(enabled))
+      } catch {
+        // The current page still follows the choice when storage is unavailable.
+      }
+    }
+    chibiThumbListeners.forEach((listener) => listener())
   },
 }
 
@@ -189,6 +222,33 @@ const CSS = `
   transform: translate(-50%, -50%);
   transition: left 190ms cubic-bezier(.22,1,.36,1), transform 160ms ease, box-shadow 180ms ease;
   pointer-events: none;
+}
+.re-effort.is-chibi {
+  height: 56px;
+}
+.re-effort.is-chibi .re-effort-knob {
+  left: clamp(10px, var(--re-progress), calc(100% - 10px));
+  width: 47px;
+  height: 54px;
+  border: 0;
+  border-radius: 8px;
+  background-color: transparent;
+  background-image: url("${chibiRunnerSprite}");
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 800% 100%;
+  box-shadow: none !important;
+  filter:
+    drop-shadow(0 1px 1px rgba(0, 0, 0, .28))
+    drop-shadow(0 0 5px rgba(92, 105, 255, .34));
+  animation: re-chibi-run 720ms step-end infinite;
+  transform-origin: 50% 68%;
+}
+.re-effort.is-chibi.is-dragging .re-effort-knob {
+  animation-duration: 420ms;
+  filter:
+    drop-shadow(0 2px 1px rgba(0, 0, 0, .28))
+    drop-shadow(0 0 8px rgba(87, 137, 255, .68));
 }
 .re-effort-input {
   position: absolute;
@@ -412,6 +472,7 @@ const CSS = `
   transition: background 150ms ease;
 }
 .re-setting-switch:hover { filter: brightness(.97); }
+.re-setting-switch:disabled { cursor: not-allowed; opacity: .45; }
 .re-setting-switch:focus-visible {
   outline: 2px solid var(--dsw-static-blue-400, #5d83ff);
   outline-offset: 2px;
@@ -511,12 +572,23 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
   0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(67,124,193,.16), 0 3px 10px rgba(48,101,165,.13); }
   50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.96), inset 0 0 0 1px rgba(31,102,190,.22), 0 0 19px rgba(31,105,201,.24); }
 }
+@keyframes re-chibi-run {
+  0% { background-position: 0 0; }
+  12.5% { background-position: 14.285714% 0; }
+  25% { background-position: 28.571429% 0; }
+  37.5% { background-position: 42.857143% 0; }
+  50% { background-position: 57.142857% 0; }
+  62.5% { background-position: 71.428571% 0; }
+  75% { background-position: 85.714286% 0; }
+  87.5%, 100% { background-position: 100% 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   .re-effort-slider[data-effort="max"] .re-effort-track { animation: none; }
   .re-effort-knob,
   .re-effort-flare,
   body:not([data-ds-dark-theme]) .re-effort-track::before { transition: none; }
   .re-model-menu { animation: none; }
+  .re-effort.is-chibi .re-effort-knob { animation: none; }
 }
 `
 
@@ -668,6 +740,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   const [committing, setCommitting] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
+  const chibiThumb = useSyncExternalStore(chibiThumbStore.subscribe, chibiThumbStore.getSnapshot)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const committedRef = useRef<Effort>('high')
@@ -923,7 +996,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 
   return (
     <div
-      className={`re-effort${dragging ? ' is-dragging' : ''}${busy ? ' is-busy' : ''}${error === null ? '' : ' is-error'}`}
+      className={`re-effort${chibiThumb ? ' is-chibi' : ''}${dragging ? ' is-dragging' : ''}${busy ? ' is-busy' : ''}${error === null ? '' : ' is-error'}`}
       title={title}
     >
       <div className="re-effort-slider" data-effort={effort} style={style}>
@@ -1162,6 +1235,34 @@ function ReasoningEffortSetting() {
   )
 }
 
+function ChibiThumbSetting() {
+  const sliderEnabled = useSyncExternalStore(enabledStore.subscribe, enabledStore.getSnapshot)
+  const enabled = useSyncExternalStore(chibiThumbStore.subscribe, chibiThumbStore.getSnapshot)
+
+  return (
+    <div className="re-setting-row">
+      <div className="re-setting-copy">
+        <div className="re-setting-title">实验：奔跑小人滑块</div>
+        <div className="re-setting-description">用八帧奔跑动画替换白色圆形按钮，拖动时会加速</div>
+      </div>
+      <div className="re-setting-control">
+        <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
+        <button
+          type="button"
+          role="switch"
+          aria-label="启用奔跑小人滑块"
+          aria-checked={enabled}
+          disabled={!sliderEnabled}
+          className={`re-setting-switch${enabled ? ' is-on' : ''}`}
+          onClick={() => chibiThumbStore.set(!enabled)}
+        >
+          <span className="re-setting-switch-knob" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function apply(ctx: ClientContext) {
   const modelDirectories = ctx.get('modelDirectories') as ModelDirectoryResolver | undefined
   if (modelDirectories === undefined) return
@@ -1176,8 +1277,11 @@ export function apply(ctx: ClientContext) {
 
   ctx.effect(() => {
     const syncStorage = (event: StorageEvent) => {
-      if (event.key !== ENABLED_STORAGE_KEY) return
-      enabledStore.set(event.newValue !== 'false', false)
+      if (event.key === ENABLED_STORAGE_KEY) {
+        enabledStore.set(event.newValue !== 'false', false)
+      } else if (event.key === CHIBI_THUMB_STORAGE_KEY) {
+        chibiThumbStore.set(event.newValue === 'true', false)
+      }
     }
     window.addEventListener('storage', syncStorage)
     return () => window.removeEventListener('storage', syncStorage)
@@ -1187,6 +1291,13 @@ export function apply(ctx: ClientContext) {
     ctx.slots.register(
       { name: SETTINGS_SLOT, id: 'reasoning-effort-enabled', order: 15 },
       ReasoningEffortSetting,
+    ),
+  )
+
+  ctx.slots.inject(SETTINGS_SLOT, () =>
+    ctx.slots.register(
+      { name: SETTINGS_SLOT, id: 'reasoning-effort-chibi-thumb', order: 16 },
+      ChibiThumbSetting,
     ),
   )
 

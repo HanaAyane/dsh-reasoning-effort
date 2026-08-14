@@ -21,6 +21,9 @@ await build({
   jsx: 'automatic',
   sourcemap: false,
   legalComments: 'none',
+  loader: {
+    '.png': 'dataurl',
+  },
   external: [
     'react',
     'react/jsx-runtime',

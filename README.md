@@ -12,6 +12,7 @@ A Codex-style model and reasoning-effort selector for [DeepSeek Harness (DSH)](h
 - One combined model + effort control that stays synchronized with DSH's `/model` command.
 - Per-session model selection through DSH's existing model directory and RPC layer.
 - Persistent enable switch under **Settings → General → Appearance**.
+- Optional experimental eight-frame chibi runner that replaces the white thumb and speeds up while dragging.
 - Automatic fallback to DSH's built-in model selector when disabled or uninstalled.
 - No network requests, analytics, credentials, or server-side storage added by the plugin.
 
@@ -54,6 +55,8 @@ The release also includes a SHA-256 checksum file.
 Open the model control in the composer. The effort slider is shown above the current-model row whenever the selected model exposes all three values: `off`, `high`, and `max`. Drag the thumb or click the track, then choose a model from the row below it.
 
 To disable the enhanced control without uninstalling the plugin, open **Settings → General** and turn off **Reasoning effort selector** below Appearance. The preference is stored as one boolean in the browser's `localStorage`.
+
+Experimental builds also expose **Chibi runner thumb** directly below that switch. It is disabled by default; enabling it replaces only the white thumb, while preserving the existing track, radiation effects, snapping behavior, keyboard controls, and model selection flow. The eight frames play in reading order: top row left-to-right, then bottom row left-to-right.
 
 ## How it integrates with DSH
 

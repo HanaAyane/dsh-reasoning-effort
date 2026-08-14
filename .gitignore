@@ -6,3 +6,5 @@ dist/
 Thumbs.db
 .idea/
 .vscode/
+assets/*-chroma.png
+assets/chibi-runner.png
