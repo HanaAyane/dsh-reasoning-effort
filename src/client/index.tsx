@@ -14,7 +14,7 @@ import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
-import type { ModelSelection, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ModelReasoningEffort, ModelSelection, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
 import type {
   ModelDirectory,
   ModelDirectoryResolver,
@@ -22,10 +22,7 @@ import type {
 } from '@deepseek-ai/dsh-client-ui-model-selection/client'
 import chibiRunnerSprite from '../../assets/chibi-runner-strip.png'
 
-type Effort = 'off' | 'high' | 'max'
-
 interface ModelSeatProps {
-  readonly locked: boolean
   readonly available: boolean
   readonly controller: ModelDirectory
   readonly directory: SnapshotStore<ModelDirectoryState>
@@ -39,12 +36,6 @@ const ENABLED_STORAGE_KEY = 'dsh-reasoning-effort.enabled'
 const LEGACY_ENABLED_STORAGE_KEY = '@dsh-external/dsh-reasoning-effort.enabled'
 const CHIBI_THUMB_STORAGE_KEY = 'dsh-reasoning-effort.chibi-thumb'
 export const inject = ['slots', 'modelDirectories']
-
-const LEVELS: ReadonlyArray<{ key: Effort; label: string }> = [
-  { key: 'off', label: 'off' },
-  { key: 'high', label: 'high' },
-  { key: 'max', label: 'max' },
-]
 
 function readEnabledPreference(): boolean {
   try {
@@ -282,10 +273,10 @@ const CSS = `
     0 0 31px rgba(171,53,255,.66),
     0 3px 8px rgba(0,0,0,.32);
 }
-.re-effort-slider[data-effort="max"] .re-effort-track {
+.re-effort-slider.is-peak .re-effort-track {
   animation: re-effort-dark-breathe 1.9s ease-in-out infinite;
 }
-.re-effort-slider[data-effort="max"] .re-effort-knob {
+.re-effort-slider.is-peak .re-effort-knob {
   box-shadow:
     0 0 0 3px rgba(119,99,255,.18),
     0 0 22px rgba(135,78,255,.76),
@@ -521,7 +512,7 @@ body:not([data-ds-dark-theme]) .re-effort-track::before {
   background: linear-gradient(90deg, #fff 0%, #e2f0ff 20%, #a8d0fb 57%, #438fdf 100%);
   transition: width 190ms cubic-bezier(.22,1,.36,1);
 }
-body:not([data-ds-dark-theme]) .re-effort-slider[data-effort="max"] .re-effort-track::before {
+body:not([data-ds-dark-theme]) .re-effort-slider.is-peak .re-effort-track::before {
   background: linear-gradient(90deg, #fff 0%, #d7eaff 18%, #75afea 54%, #0751ad 100%);
 }
 body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-track::before {
@@ -554,10 +545,10 @@ body:not([data-ds-dark-theme]) .re-effort-knob {
     0 0 13px rgba(48,118,207,.3),
     0 3px 8px rgba(39,77,119,.18);
 }
-body:not([data-ds-dark-theme]) .re-effort-slider[data-effort="max"] .re-effort-track {
+body:not([data-ds-dark-theme]) .re-effort-slider.is-peak .re-effort-track {
   animation-name: re-effort-light-breathe;
 }
-body:not([data-ds-dark-theme]) .re-effort-slider[data-effort="max"] .re-effort-knob,
+body:not([data-ds-dark-theme]) .re-effort-slider.is-peak .re-effort-knob,
 body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
   box-shadow:
     0 0 0 3px rgba(36,105,192,.15),
@@ -583,7 +574,7 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
   87.5%, 100% { background-position: 100% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .re-effort-slider[data-effort="max"] .re-effort-track { animation: none; }
+  .re-effort-slider.is-peak .re-effort-track { animation: none; }
   .re-effort-knob,
   .re-effort-flare,
   body:not([data-ds-dark-theme]) .re-effort-track::before { transition: none; }
@@ -592,32 +583,38 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
 }
 `
 
-function normalizeEffort(value: unknown): Effort {
-  return value === 'off' || value === 'max' ? value : 'high'
-}
-
-function effortIndex(effort: Effort): number {
-  return LEVELS.findIndex((level) => level.key === effort)
-}
-
-function clampIndex(value: number): number {
-  return Math.max(0, Math.min(LEVELS.length - 1, Math.round(value)))
-}
-
 function currentModel(state: ModelDirectoryState) {
   if (state.current === null) return undefined
   const group = state.groups.find((candidate) => candidate.id === state.current?.provider)
   return group?.models.find((candidate) => candidate.id === state.current?.model)
 }
 
-function supportsThreeLevels(state: ModelDirectoryState): boolean {
-  const ids = new Set(currentModel(state)?.reasoning?.efforts.map((effort) => effort.id) ?? [])
-  return LEVELS.every((level) => ids.has(level.key))
+function effortLevels(state: ModelDirectoryState): readonly ModelReasoningEffort[] {
+  return currentModel(state)?.reasoning?.efforts ?? []
 }
 
-function effectiveEffort(state: ModelDirectoryState): Effort {
-  const fallback = currentModel(state)?.reasoning?.defaultEffort
-  return normalizeEffort(state.current?.reasoningEffort ?? fallback)
+function supportsSlider(state: ModelDirectoryState): boolean {
+  return effortLevels(state).length >= 2
+}
+
+function effortIndex(levels: readonly ModelReasoningEffort[], effortId: string | undefined): number {
+  if (effortId === undefined) return -1
+  return levels.findIndex((level) => level.id === effortId)
+}
+
+function clampIndex(levels: readonly ModelReasoningEffort[], value: number): number {
+  return Math.max(0, Math.min(levels.length - 1, Math.round(value)))
+}
+
+function effectiveEffort(state: ModelDirectoryState): ModelReasoningEffort | null {
+  const levels = effortLevels(state)
+  const selected = levels.find((level) => level.id === state.current?.reasoningEffort)
+  if (selected !== undefined) return selected
+  return levels.find((level) => level.id === currentModel(state)?.reasoning?.defaultEffort) ?? null
+}
+
+function effortLabel(effort: ModelReasoningEffort | null | undefined): string {
+  return effort === null || effort === undefined ? '' : effort.name || effort.id
 }
 
 interface RadiationState {
@@ -735,17 +732,20 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
     (notify) => directory.store.subscribe(notify),
     () => directory.store.getSnapshot(),
   )
-  const [effort, setEffort] = useState<Effort>('high')
-  const [preview, setPreview] = useState(1)
+  const levels = effortLevels(directoryState)
+  const [effortId, setEffortId] = useState('')
+  const [preview, setPreview] = useState(0)
   const [committing, setCommitting] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const chibiThumb = useSyncExternalStore(chibiThumbStore.subscribe, chibiThumbStore.getSnapshot)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const committedRef = useRef<Effort>('high')
+  const committedRef = useRef('')
   const committingRef = useRef(false)
-  const previewRef = useRef(1)
+  const pendingCommitRef = useRef<number | null>(null)
+  const previewRef = useRef(0)
+  const levelsRef = useRef(levels)
   const draggingRef = useRef(false)
   const pointerActiveRef = useRef(false)
   const activePointerIdRef = useRef<number | null>(null)
@@ -754,17 +754,24 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   const globalPointerCancelRef = useRef<((event: PointerEvent) => void) | null>(null)
   const radiationRef = useRef<RadiationState>({ progress: 0.5, dragging: false })
   const redrawRef = useRef<(() => void) | null>(null)
-  const available = directoryState.current !== null && supportsThreeLevels(directoryState)
+  const available = directoryState.current !== null && supportsSlider(directoryState)
   const busy = committing || directoryState.status === 'selecting'
   const error = localError ?? directoryState.error
 
   useEffect(() => {
+    levelsRef.current = levels
+  }, [levels])
+
+  useEffect(() => {
     if (!available || committingRef.current || draggingRef.current) return
-    const next = effectiveEffort(directoryState)
-    committedRef.current = next
-    previewRef.current = effortIndex(next)
-    setEffort(next)
-    setPreview(effortIndex(next))
+    const currentLevels = effortLevels(directoryState)
+    const next = effectiveEffort(directoryState) ?? currentLevels[0]
+    if (next === undefined) return
+    const index = effortIndex(currentLevels, next.id)
+    committedRef.current = next.id
+    previewRef.current = index
+    setEffortId(next.id)
+    setPreview(index)
     setLocalError(null)
   }, [available, directoryState])
 
@@ -774,7 +781,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 
   useEffect(() => {
     previewRef.current = preview
-    radiationRef.current.progress = preview / (LEVELS.length - 1)
+    radiationRef.current.progress = levelsRef.current.length > 1 ? preview / (levelsRef.current.length - 1) : 0.5
     redrawRef.current?.()
   }, [preview])
 
@@ -839,24 +846,33 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 
   const rollback = useCallback(() => {
     const previous = committedRef.current
-    previewRef.current = effortIndex(previous)
+    const currentLevels = levelsRef.current
+    const index = effortIndex(currentLevels, previous)
+    pendingCommitRef.current = null
     pointerActiveRef.current = false
     activePointerIdRef.current = null
     draggingRef.current = false
-    setEffort(previous)
-    setPreview(effortIndex(previous))
+    previewRef.current = index
+    setEffortId(previous)
+    setPreview(index)
     setDragging(false)
   }, [])
 
   const commit = useCallback(async (raw: number) => {
-    if (committingRef.current) return
+    const currentLevels = levelsRef.current
+    if (currentLevels.length === 0) return
+    const index = clampIndex(currentLevels, raw)
+    const next = currentLevels[index]
+    if (next === undefined) return
+    if (committingRef.current) {
+      pendingCommitRef.current = index
+      return
+    }
     committingRef.current = true
-    const index = clampIndex(raw)
-    const next = LEVELS[index]?.key ?? 'high'
     const previous = committedRef.current
 
     setDragging(false)
-    setEffort(next)
+    setEffortId(next.id)
     previewRef.current = index
     setPreview(index)
     setCommitting(true)
@@ -872,44 +888,54 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
         status: 'ready',
         error: null,
       }
-      if (!supportsThreeLevels(fresh)) throw new Error('当前模型未提供 off / high / max 三档推理强度')
+      const freshLevels = effortLevels(fresh)
+      if (freshLevels.length < 2) throw new Error('当前模型未提供可选择的思考档位')
+      const freshIndex = effortIndex(freshLevels, next.id)
+      if (freshIndex < 0) throw new Error(`当前模型不支持思考档位 ${next.id}`)
 
       await directory.select({
         provider: models.current.provider,
         model: models.current.model,
-        reasoningEffort: next,
+        reasoningEffort: next.id,
       })
 
-      const accepted = normalizeEffort(directory.store.getSnapshot().current?.reasoningEffort)
-      committedRef.current = accepted
-      previewRef.current = effortIndex(accepted)
-      setEffort(accepted)
-      setPreview(effortIndex(accepted))
+      const reported = directory.store.getSnapshot().current?.reasoningEffort
+      const accepted = freshLevels.find((level) => level.id === reported) ?? next
+      committedRef.current = accepted.id
+      previewRef.current = effortIndex(freshLevels, accepted.id)
+      setEffortId(accepted.id)
+      setPreview(effortIndex(freshLevels, accepted.id))
     } catch (cause) {
+      const previousIndex = effortIndex(currentLevels, previous)
       committedRef.current = previous
-      previewRef.current = effortIndex(previous)
-      setEffort(previous)
-      setPreview(effortIndex(previous))
+      previewRef.current = previousIndex
+      setEffortId(previous)
+      setPreview(previousIndex)
       setLocalError(cause instanceof Error ? cause.message : String(cause))
     } finally {
       committingRef.current = false
       setCommitting(false)
+      const pending = pendingCommitRef.current
+      pendingCommitRef.current = null
+      if (pending !== null) void commit(pending)
     }
   }, [directory])
 
   const rawFromPointer = (input: HTMLInputElement, clientX: number) => {
     const bounds = input.getBoundingClientRect()
-    if (bounds.width <= 0) return previewRef.current
+    const count = levels.length
+    if (bounds.width <= 0 || count <= 1) return previewRef.current
     return Math.max(
       0,
-      Math.min(LEVELS.length - 1, (clientX - bounds.left) / bounds.width * (LEVELS.length - 1)),
+      Math.min(count - 1, (clientX - bounds.left) / bounds.width * (count - 1)),
     )
   }
 
   const showPointerPreview = (raw: number) => {
+    const index = clampIndex(levels, raw)
     previewRef.current = raw
     setPreview(raw)
-    setEffort(LEVELS[clampIndex(raw)]?.key ?? 'high')
+    setEffortId(levels[index]?.id ?? committedRef.current)
   }
 
   const beginDragging = (input: HTMLInputElement, pointerId: number, clientX: number) => {
@@ -972,16 +998,17 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   }, [])
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
-    const current = clampIndex(Number(event.currentTarget.value))
+    const count = levels.length
+    const current = clampIndex(levels, Number(event.currentTarget.value))
     let target: number | undefined
     if (event.key === 'ArrowLeft' || event.key === 'ArrowDown' || event.key === 'PageDown') {
       target = Math.max(0, current - 1)
     } else if (event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'PageUp') {
-      target = Math.min(LEVELS.length - 1, current + 1)
+      target = Math.min(count - 1, current + 1)
     } else if (event.key === 'Home') {
       target = 0
     } else if (event.key === 'End') {
-      target = LEVELS.length - 1
+      target = count - 1
     }
     if (target === undefined) return
     event.preventDefault()
@@ -990,16 +1017,21 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 
   if (!available) return null
 
-  const progress = preview / (LEVELS.length - 1) * 100
+  const count = levels.length
+  const activeIndex = clampIndex(levels, preview)
+  const activeLevel = levels[activeIndex] ?? levels[0]
+  const peak = activeIndex === count - 1
+  const progress = count > 1 ? preview / (count - 1) * 100 : 50
   const style = { '--re-progress': `${progress}%` } as CSSProperties
-  const title = error === null ? `推理强度 · ${effort}` : `推理强度设置失败：${error}`
+  const effortText = effortLabel(activeLevel) || effortId
+  const title = error === null ? `推理强度 · ${effortText}` : `推理强度设置失败：${error}`
 
   return (
     <div
       className={`re-effort${chibiThumb ? ' is-chibi' : ''}${dragging ? ' is-dragging' : ''}${busy ? ' is-busy' : ''}${error === null ? '' : ' is-error'}`}
       title={title}
     >
-      <div className="re-effort-slider" data-effort={effort} style={style}>
+      <div className={`re-effort-slider${peak ? ' is-peak' : ''}`} data-effort={effortId} style={style}>
         <div className="re-effort-track" aria-hidden="true" />
         <div className="re-effort-fx" aria-hidden="true">
           <canvas ref={canvasRef} className="re-effort-canvas" />
@@ -1010,12 +1042,12 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
           className="re-effort-input"
           type="range"
           min="0"
-          max="2"
+          max={count - 1}
           step="0.01"
           value={preview}
           disabled={busy}
           aria-label="推理强度"
-          aria-valuetext={effort}
+          aria-valuetext={effortText}
           onChange={(event) => {
             const raw = Number(event.currentTarget.value)
             showPointerPreview(raw)
@@ -1046,7 +1078,6 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 }
 
 function AdvancedModelSelect({
-  locked,
   available,
   controller,
   directory,
@@ -1059,12 +1090,15 @@ function AdvancedModelSelect({
   )
   const [open, setOpen] = useState(false)
   const [modelsOpen, setModelsOpen] = useState(false)
+  const [choiceError, setChoiceError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const choice = currentModel(state)
   const effort = effectiveEffort(state)
+  const effortText = effortLabel(effort)
   const modelLabel = choice?.name ?? state.current?.model ?? '选择模型'
   const busy = state.status === 'loading' || state.status === 'selecting'
+  const displayedError = state.error ?? choiceError
 
   useEffect(() => {
     if (!available) return
@@ -1099,16 +1133,23 @@ function AdvancedModelSelect({
   }
 
   const chooseModel = async (provider: string, model: string, defaultEffort?: string) => {
-    if (state.current?.provider === provider && state.current.model === model) {
+    if (state.current?.provider === provider && state.current?.model === model) {
       setModelsOpen(false)
       return
     }
-    const accepted = await select({
-      provider,
-      model,
-      ...(defaultEffort === undefined ? {} : { reasoningEffort: defaultEffort }),
-    })
-    if (accepted) setModelsOpen(false)
+    setChoiceError(null)
+    try {
+      await select({
+        provider,
+        model,
+        ...(defaultEffort === undefined ? {} : { reasoningEffort: defaultEffort }),
+      })
+    } catch (cause) {
+      setChoiceError(cause instanceof Error ? cause.message : String(cause))
+      return
+    }
+    const current = directory.getSnapshot().current
+    if (current?.provider === provider && current.model === model) setModelsOpen(false)
   }
 
   return (
@@ -1117,22 +1158,23 @@ function AdvancedModelSelect({
         ref={triggerRef}
         type="button"
         className="re-model-trigger"
-        aria-label={`模型 ${modelLabel}，推理强度 ${effort}`}
+        aria-label={`模型 ${modelLabel}${effortText.length === 0 ? '' : `，推理强度 ${effortText}`}`}
         aria-haspopup="menu"
         aria-expanded={open}
-        title={`${modelLabel} · ${effort}`}
-        disabled={locked}
+        title={effortText.length === 0 ? modelLabel : `${modelLabel} · ${effortText}`}
+        disabled={busy}
         onClick={() => {
           if (open) close()
           else {
             setOpen(true)
             setModelsOpen(false)
+            setChoiceError(null)
             load()
           }
         }}
       >
         <span className="re-model-name">{modelLabel}</span>
-        <span className="re-model-effort">{effort}</span>
+        {effortText.length === 0 ? null : <span className="re-model-effort">{effortText}</span>}
         <span className="re-model-chevron" aria-hidden="true" />
       </button>
 
@@ -1177,15 +1219,15 @@ function AdvancedModelSelect({
               {state.status === 'ready' && state.groups.every((group) => group.models.length === 0) ? (
                 <div className="re-model-status">没有可用模型</div>
               ) : null}
-              {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
+              {displayedError === null ? null : <div className="re-model-error">{displayedError}</div>}
             </div>
           ) : (
             <>
               <div className="re-advanced">
-                {supportsThreeLevels(state) ? (
+                {supportsSlider(state) ? (
                   <EffortSlider directory={controller} />
                 ) : (
-                  <div className="re-model-status">当前模型未提供 off / high / max 三档</div>
+                  <div className="re-model-status">当前模型未提供可选择的思考档位</div>
                 )}
               </div>
               <div className="re-menu-separator" />
@@ -1197,10 +1239,10 @@ function AdvancedModelSelect({
                 onClick={() => setModelsOpen(true)}
               >
                 <span className="re-model-row-name">{modelLabel}</span>
-                <span className="re-model-row-effort">{effort}</span>
+                {effortText.length === 0 ? null : <span className="re-model-row-effort">{effortText}</span>}
                 <span className="re-row-chevron" aria-hidden="true">›</span>
               </button>
-              {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
+              {displayedError === null ? null : <div className="re-model-error">{displayedError}</div>}
             </>
           )}
         </div>
@@ -1216,7 +1258,7 @@ function ReasoningEffortSetting() {
     <div className="re-setting-row">
       <div className="re-setting-copy">
         <div className="re-setting-title">推理强度滑块</div>
-        <div className="re-setting-description">在模型菜单中显示三档滑块和动态辐射特效</div>
+        <div className="re-setting-description">在模型菜单中显示多档滑块和动态辐射特效</div>
       </div>
       <div className="re-setting-control">
         <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
@@ -1321,7 +1363,7 @@ export function apply(ctx: ClientContext) {
               controller,
               directory: controller.store,
               load: () => controller.load().then(() => undefined, () => undefined),
-              select: (selection: ModelSelection) => controller.select(selection).then(() => true, () => false),
+              select: (selection: ModelSelection) => controller.select(selection).then(() => true),
             }
           },
         },
