@@ -8,6 +8,7 @@
  * @module dsh-reasoning-effort/client/styles
  */
 import chibiRunnerSprite from '../../assets/chibi-runner-strip.png'
+import chibiRunnerProSprite from '../../assets/chibi-runner-pro-strip.png'
 
 export const CSS = `
 .re-effort {
@@ -148,6 +149,63 @@ export const CSS = `
   filter:
     drop-shadow(0 2px 1px rgba(0, 0, 0, .28))
     drop-shadow(0 0 8px rgba(87, 137, 255, .68));
+}
+/* Adult whale-girl variant: black / charcoal / silver palette. */
+.re-effort.is-adult .re-effort-track {
+  background: linear-gradient(100deg, #020203 0%, #0d0d10 24%, #1d1d22 52%, #36363d 82%, #4a4a52 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .10),
+    inset 0 -1px 0 rgba(0, 0, 0, .85),
+    0 3px 10px rgba(0, 0, 0, .5);
+}
+.re-effort.is-adult .re-effort-track::after {
+  background:
+    radial-gradient(circle at 18% 45%, rgba(255, 255, 255, .07), transparent 24%),
+    linear-gradient(90deg, rgba(0, 0, 0, .45), transparent 42%, rgba(255, 255, 255, .08));
+}
+.re-effort.is-adult .re-effort-flare {
+  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.96) 0 4%, rgba(218,218,222,.8) 11%, rgba(152,152,158,.5) 28%, rgba(82,82,88,.2) 49%, transparent 74%);
+  filter: blur(2px) saturate(.85);
+}
+.re-effort.is-adult .re-effort-flare::before {
+  background: linear-gradient(90deg, transparent, rgba(180,180,184,.4), #f1f1f3, rgba(104,104,110,.6), transparent);
+  box-shadow: 0 0 7px #9a9a9e, 0 0 13px rgba(224,224,228,.6);
+}
+.re-effort.is-adult .re-effort-flare::after {
+  background: linear-gradient(180deg, transparent, rgba(218,218,222,.8), transparent);
+  box-shadow: 0 0 7px #9c9ca0;
+}
+.re-effort.is-adult.is-dragging .re-effort-flare {
+  filter: blur(1.5px) saturate(.9) brightness(1.35);
+  transition: none;
+}
+.re-effort.is-adult.is-dragging .re-effort-knob {
+  box-shadow:
+    0 0 0 3px rgba(232,232,236,.2),
+    0 0 20px rgba(230,230,234,.7),
+    0 0 31px rgba(92,92,96,.5),
+    0 3px 8px rgba(0,0,0,.42);
+}
+.re-effort.is-adult .re-effort-slider[data-top] .re-effort-track {
+  animation: re-effort-adult-dark-breathe 1.9s ease-in-out infinite;
+}
+.re-effort.is-adult .re-effort-slider[data-top] .re-effort-knob {
+  box-shadow:
+    0 0 0 3px rgba(226,226,230,.16),
+    0 0 22px rgba(224,224,228,.62),
+    0 0 34px rgba(88,88,92,.3),
+    0 3px 8px rgba(0,0,0,.36);
+}
+.re-effort.is-adult.is-chibi .re-effort-knob {
+  background-image: url("${chibiRunnerProSprite}");
+  filter:
+    drop-shadow(0 1px 1px rgba(0, 0, 0, .42))
+    drop-shadow(0 0 5px rgba(210, 210, 216, .26));
+}
+.re-effort.is-adult.is-chibi.is-dragging .re-effort-knob {
+  filter:
+    drop-shadow(0 2px 1px rgba(0, 0, 0, .42))
+    drop-shadow(0 0 8px rgba(226, 226, 230, .6));
 }
 .re-effort-input {
   position: absolute;
@@ -453,6 +511,56 @@ body:not([data-ds-dark-theme]) .re-effort-knob {
     0 0 13px rgba(48,118,207,.3),
     0 3px 8px rgba(39,77,119,.18);
 }
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-track {
+  background: #e7e7e9;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),
+    inset 0 0 0 1px rgba(0,0,0,.18),
+    0 3px 10px rgba(0,0,0,.16);
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-track::before {
+  background: linear-gradient(90deg, #fff 0%, #d9d9dc 20%, #96969b 57%, #232327 100%);
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-slider[data-top] .re-effort-track::before {
+  background: linear-gradient(90deg, #fff 0%, #cfcfd3 18%, #75757a 54%, #0a0a0b 100%);
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-track::after {
+  z-index: 1;
+  background: linear-gradient(90deg, rgba(255,255,255,.6), transparent 34%, rgba(0,0,0,.08));
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-canvas {
+  opacity: .9;
+  mix-blend-mode: multiply;
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-flare {
+  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.98) 0 5%, rgba(214,214,218,.88) 13%, rgba(130,130,136,.48) 31%, rgba(56,56,60,.16) 53%, transparent 75%);
+  filter: blur(2px) saturate(.85);
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-flare::before {
+  background: linear-gradient(90deg, transparent, rgba(150,150,154,.34), #fff, rgba(50,50,54,.58), transparent);
+  box-shadow: 0 0 7px rgba(60,60,64,.5), 0 0 13px rgba(140,140,144,.38);
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-flare::after {
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,.94), transparent);
+  box-shadow: 0 0 7px rgba(72,72,76,.44);
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-knob {
+  border-color: rgba(0,0,0,.32);
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,.09),
+    0 0 13px rgba(0,0,0,.3),
+    0 3px 8px rgba(0,0,0,.18);
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-slider[data-top] .re-effort-track {
+  animation-name: re-effort-adult-light-breathe;
+}
+body:not([data-ds-dark-theme]) .re-effort.is-adult .re-effort-slider[data-top] .re-effort-knob,
+body:not([data-ds-dark-theme]) .re-effort.is-adult.is-dragging .re-effort-knob {
+  box-shadow:
+    0 0 0 3px rgba(0,0,0,.15),
+    0 0 20px rgba(0,0,0,.42),
+    0 3px 8px rgba(0,0,0,.2);
+}
 body:not([data-ds-dark-theme]) .re-effort-slider[data-top] .re-effort-track {
   animation-name: re-effort-light-breathe;
 }
@@ -470,6 +578,15 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
 @keyframes re-effort-light-breathe {
   0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(67,124,193,.16), 0 3px 10px rgba(48,101,165,.13); }
   50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.96), inset 0 0 0 1px rgba(31,102,190,.22), 0 0 19px rgba(31,105,201,.24); }
+}
+
+@keyframes re-effort-adult-dark-breathe {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(235,235,238,.12), 0 3px 10px rgba(0,0,0,.5); }
+  50% { box-shadow: inset 0 1px 0 rgba(245,245,247,.2), 0 0 21px rgba(220,220,224,.42); }
+}
+@keyframes re-effort-adult-light-breathe {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.92), inset 0 0 0 1px rgba(0,0,0,.16), 0 3px 10px rgba(0,0,0,.14); }
+  50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.96), inset 0 0 0 1px rgba(0,0,0,.24), 0 0 19px rgba(0,0,0,.28); }
 }
 @keyframes re-chibi-run {
   0% { background-position: 0 0; }

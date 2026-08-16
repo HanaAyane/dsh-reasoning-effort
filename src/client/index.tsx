@@ -147,9 +147,15 @@ function effectiveEffortIndex(levels: readonly EffortLevel[], state: ModelDirect
   return Math.floor((levels.length - 1) / 2)
 }
 
+/** DeepSeek V4 Pro gets the adult whale-girl thumb; Flash keeps the original Q version. */
+function isProModel(modelId: string | undefined): boolean {
+  return modelId !== undefined && modelId.toLowerCase().includes('v4-pro')
+}
+
 interface RadiationState {
   progress: number
   dragging: boolean
+  adult: boolean
 }
 
 function drawRadiation(
@@ -161,8 +167,38 @@ function drawRadiation(
 ): void {
   const origin = state.progress * width
   const isDark = document.body.hasAttribute('data-ds-dark-theme')
+  const adult = state.adult
   const cell = 4
   const speed = state.dragging ? 2.8 : 1
+
+  // Pro variant renders black / silver / gray pulses; the Q version keeps blue.
+  const columnColor = (wave: number, crest: number, nearness: number): [number, number, number] => {
+    if (adult) {
+      const value = isDark
+        ? Math.round(88 + 92 * nearness + 58 * wave)
+        : Math.round(46 + 64 * nearness + 22 * wave)
+      return [value, value, value]
+    }
+    return [
+      isDark ? Math.round(42 + 124 * nearness + 75 * wave) : Math.round(28 + 58 * nearness + 15 * wave),
+      isDark ? Math.round(56 + 58 * nearness + 44 * crest) : Math.round(88 + 72 * nearness + 30 * crest),
+      isDark ? Math.round(175 + 72 * nearness + 8 * wave) : Math.round(182 + 62 * nearness),
+    ]
+  }
+
+  const pixelColor = (wave: number, crest: number, hot: number): [number, number, number] => {
+    if (adult) {
+      const value = isDark
+        ? Math.round(52 + 96 * hot + 50 * wave + 42 * crest)
+        : Math.round(32 + 62 * hot + 20 * wave + 14 * crest)
+      return [value, value, value]
+    }
+    return [
+      isDark ? Math.round(54 + 148 * hot + 42 * wave + 35 * crest) : Math.round(25 + 72 * hot + 12 * wave),
+      isDark ? Math.round(68 + 78 * hot + 46 * crest) : Math.round(98 + 72 * hot + 24 * crest),
+      isDark ? Math.round(186 + 64 * hot) : Math.round(194 + 56 * hot),
+    ]
+  }
 
   context.clearRect(0, 0, width, height)
   if (origin <= 0) return
@@ -192,15 +228,7 @@ function drawRadiation(
 
     if (columnEnergy > 0.012) {
       const nearness = Math.max(0, 1 - distance / Math.max(1, width * 0.78))
-      const red = isDark
-        ? Math.round(42 + 124 * nearness + 75 * wave)
-        : Math.round(28 + 58 * nearness + 15 * wave)
-      const green = isDark
-        ? Math.round(56 + 58 * nearness + 44 * crest)
-        : Math.round(88 + 72 * nearness + 30 * crest)
-      const blue = isDark
-        ? Math.round(175 + 72 * nearness + 8 * wave)
-        : Math.round(182 + 62 * nearness)
+      const [red, green, blue] = columnColor(wave, crest, nearness)
       const alpha = isDark
         ? Math.min(0.88, columnEnergy * 0.72)
         : Math.min(0.62, columnEnergy * 0.54)
@@ -218,15 +246,7 @@ function drawRadiation(
       if (alpha < 0.035) continue
 
       const hot = Math.max(0, 1 - radial / 2.4)
-      const red = isDark
-        ? Math.round(54 + 148 * hot + 42 * wave + 35 * crest)
-        : Math.round(25 + 72 * hot + 12 * wave)
-      const green = isDark
-        ? Math.round(68 + 78 * hot + 46 * crest)
-        : Math.round(98 + 72 * hot + 24 * crest)
-      const blue = isDark
-        ? Math.round(186 + 64 * hot)
-        : Math.round(194 + 56 * hot)
+      const [red, green, blue] = pixelColor(wave, crest, hot)
       context.fillStyle = `rgba(${red}, ${green}, ${blue}, ${isDark ? alpha : alpha * 0.72})`
       context.fillRect(x, y, cell - 1, cell - 1)
     }
@@ -240,24 +260,36 @@ function drawRadiation(
     const length = 4 + (i % 4) * 4 + (state.dragging ? 6 : 0)
     const alpha = 0.28 + (i % 5) * 0.1
     const streak = context.createLinearGradient(particleX, 0, particleX + length, 0)
-    streak.addColorStop(0, isDark ? 'rgba(72,118,255,0)' : 'rgba(24,94,184,0)')
-    streak.addColorStop(0.68, isDark ? `rgba(112,135,255,${alpha})` : `rgba(36,108,202,${alpha * 0.72})`)
-    streak.addColorStop(1, isDark ? `rgba(236,222,255,${Math.min(1, alpha + 0.26)})` : `rgba(103,175,248,${Math.min(0.82, alpha + 0.18)})`)
+    if (adult) {
+      streak.addColorStop(0, isDark ? 'rgba(210,210,214,0)' : 'rgba(100,100,104,0)')
+      streak.addColorStop(0.68, isDark ? `rgba(190,190,196,${alpha})` : `rgba(110,110,116,${alpha * 0.72})`)
+      streak.addColorStop(1, isDark ? `rgba(255,255,255,${Math.min(1, alpha + 0.26)})` : `rgba(52,52,56,${Math.min(0.82, alpha + 0.18)})`)
+    } else {
+      streak.addColorStop(0, isDark ? 'rgba(72,118,255,0)' : 'rgba(24,94,184,0)')
+      streak.addColorStop(0.68, isDark ? `rgba(112,135,255,${alpha})` : `rgba(36,108,202,${alpha * 0.72})`)
+      streak.addColorStop(1, isDark ? `rgba(236,222,255,${Math.min(1, alpha + 0.26)})` : `rgba(103,175,248,${Math.min(0.82, alpha + 0.18)})`)
+    }
     context.fillStyle = streak
     context.fillRect(particleX, particleY, length, i % 3 === 0 ? 2 : 1)
   }
 
   const glow = context.createRadialGradient(origin, height / 2, 0, origin, height / 2, 24)
   glow.addColorStop(0, isDark ? 'rgba(255,255,255,.82)' : 'rgba(255,255,255,.86)')
-  glow.addColorStop(0.14, isDark ? 'rgba(183,190,255,.54)' : 'rgba(162,210,255,.48)')
-  glow.addColorStop(0.44, isDark ? 'rgba(103,74,255,.28)' : 'rgba(37,112,207,.22)')
-  glow.addColorStop(1, isDark ? 'rgba(86,31,210,0)' : 'rgba(25,91,181,0)')
+  if (adult) {
+    glow.addColorStop(0.14, isDark ? 'rgba(214,214,218,.54)' : 'rgba(178,178,182,.48)')
+    glow.addColorStop(0.44, isDark ? 'rgba(126,126,132,.28)' : 'rgba(92,92,96,.22)')
+    glow.addColorStop(1, isDark ? 'rgba(20,20,22,0)' : 'rgba(36,36,38,0)')
+  } else {
+    glow.addColorStop(0.14, isDark ? 'rgba(183,190,255,.54)' : 'rgba(162,210,255,.48)')
+    glow.addColorStop(0.44, isDark ? 'rgba(103,74,255,.28)' : 'rgba(37,112,207,.22)')
+    glow.addColorStop(1, isDark ? 'rgba(86,31,210,0)' : 'rgba(25,91,181,0)')
+  }
   context.fillStyle = glow
   context.fillRect(origin - 26, 0, 52, height)
   context.restore()
 }
 
-function EffortSlider({ directory }: { directory: ModelDirectory }) {
+function EffortSlider({ directory, proThumb }: { directory: ModelDirectory, proThumb: boolean }) {
   const directoryState = useSyncExternalStore(
     (notify) => directory.store.subscribe(notify),
     () => directory.store.getSnapshot(),
@@ -280,7 +312,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   const globalPointerMoveRef = useRef<((event: PointerEvent) => void) | null>(null)
   const globalPointerEndRef = useRef<((event: PointerEvent) => void) | null>(null)
   const globalPointerCancelRef = useRef<((event: PointerEvent) => void) | null>(null)
-  const radiationRef = useRef<RadiationState>({ progress: 0.5, dragging: false })
+  const radiationRef = useRef<RadiationState>({ progress: 0.5, dragging: false, adult: proThumb })
   const redrawRef = useRef<(() => void) | null>(null)
   const available = directoryState.current !== null && levels.length >= 2
   const busy = committing || directoryState.status === 'selecting'
@@ -311,6 +343,11 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
     radiationRef.current.dragging = dragging
     redrawRef.current?.()
   }, [dragging])
+
+  useEffect(() => {
+    radiationRef.current.adult = proThumb
+    redrawRef.current?.()
+  }, [proThumb])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -544,7 +581,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 
   return (
     <div
-      className={`re-effort${chibiThumb ? ' is-chibi' : ''}${dragging ? ' is-dragging' : ''}${busy ? ' is-busy' : ''}${error === null ? '' : ' is-error'}`}
+      className={`re-effort${chibiThumb ? ' is-chibi' : ''}${proThumb ? ' is-adult' : ''}${dragging ? ' is-dragging' : ''}${busy ? ' is-busy' : ''}${error === null ? '' : ' is-error'}`}
       title={title}
     >
       <div
@@ -736,7 +773,7 @@ function AdvancedModelSelect({
             <>
               <div className="re-advanced">
                 {levels.length >= 2 ? (
-                  <EffortSlider directory={controller} />
+                  <EffortSlider directory={controller} proThumb={isProModel(state.current?.model)} />
                 ) : (
                   <div className="re-model-status">当前模型未提供推理强度档位</div>
                 )}
