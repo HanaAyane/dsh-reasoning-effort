@@ -46,7 +46,7 @@ dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
 
-`main` 当前版本为 `0.5.0`，滑块档位随所选模型自动适配。当前最新 Tag 为 `v0.5.0`；如需安装已发布版本，可把命令中的 `#main` 改为 `#v0.5.0`。
+`main` 当前版本为 `0.5.0`，与最新发行 Tag `v0.5.0` 一致。`#main` 始终安装最新代码（之后可能包含未发布改动）；如需固定在当前版本，可把命令中的 `#main` 改为 `#v0.5.0`。
 
 ### 2. 重启 DSH Web Host
 

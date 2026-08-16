@@ -46,7 +46,7 @@ dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
 
-`main` is currently versioned `0.5.0`, with slider levels adapting to the selected model. The latest tag is `v0.5.0`; replace `#main` with `#v0.5.0` if you specifically want the tagged release.
+`main` is currently versioned `0.5.0`, matching the latest release tag `v0.5.0`. `#main` always installs the newest code (which may later include unreleased changes); replace `#main` with `#v0.5.0` to pin this release.
 
 ### 2. Restart the DSH Web Host
 
