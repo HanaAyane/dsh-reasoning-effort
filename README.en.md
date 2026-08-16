@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![main 0.4.0](https://img.shields.io/badge/main-0.4.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
+[![main 0.5.0](https://img.shields.io/badge/main-0.5.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
 [![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -46,7 +46,7 @@ dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
 
-`main` is currently versioned `0.4.0` and includes the Big Fat Fish slider. The latest tag is still `v0.3.0`; replace `#main` with `#v0.3.0` if you specifically want the tagged release.
+`main` is currently versioned `0.5.0`, with slider levels adapting to the selected model. The latest tag is `v0.5.0`; replace `#main` with `#v0.5.0` if you specifically want the tagged release.
 
 ### 2. Restart the DSH Web Host
 

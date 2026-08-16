@@ -1,7 +1,7 @@
 {
   "name": "dsh-reasoning-effort",
-  "version": "0.4.0",
-  "description": "Codex-style DeepSeek Harness model and reasoning selector with off/high/max snapping, DSH-native themes, and left-clipped radiation effects.",
+  "version": "0.5.0",
+  "description": "Codex-style DeepSeek Harness model and reasoning selector with model-advertised effort levels, DSH-native themes, and left-clipped radiation effects.",
   "keywords": [
     "deepseek",
     "deepseek-harness",

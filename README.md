@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![main 0.4.0](https://img.shields.io/badge/main-0.4.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
+[![main 0.5.0](https://img.shields.io/badge/main-0.5.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
 [![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -46,7 +46,7 @@ dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
 
-`main` 当前版本为 `0.4.0`，已经包含大肥鱼滑块。当前最新 Tag 仍为 `v0.3.0`；如需安装已发布版本，可把命令中的 `#main` 改为 `#v0.3.0`。
+`main` 当前版本为 `0.5.0`，滑块档位随所选模型自动适配。当前最新 Tag 为 `v0.5.0`；如需安装已发布版本，可把命令中的 `#main` 改为 `#v0.5.0`。
 
 ### 2. 重启 DSH Web Host
 
