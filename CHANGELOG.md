@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.0] - Unreleased
+
+### Changed
+
+- Derive slider levels from the model's advertised `reasoning.efforts` instead of requiring exactly `off` / `high` / `max`, so any model with two or more levels gets a working slider (e.g. GLM coding models).
+- Show adapter-provided level names (`Low` / `High` / `Xhigh`…); models without levels now read "默认" on the seat instead of a hardcoded middle level.
+- Key the peak-intensity track/knob effects off the topmost level (`data-top`) rather than a hardcoded `max` effort id.
+- Hide the slider when the model exposes fewer than two levels, with the menu explaining that none are provided.
+- Split the stylesheet into `src/client/styles.ts`.
+- Document how to declare `reasoningEfforts` + `compat` for models missing from the pi-ai catalog (README, both languages).
+
 ## [0.4.0] - 2026-08-15
 
 ### Added

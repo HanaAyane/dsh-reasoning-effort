@@ -1,6 +1,8 @@
 node_modules/
 .client-build/
 dist/
+lib/client/styles.js
+lib/client/styles.d.ts
 *.log
 .DS_Store
 Thumbs.db
