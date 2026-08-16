@@ -1,13 +1,25 @@
 /**
- * Host loader entry for the browser implementation exported from `./client`.
+ * Host half: read-only reasoning-effort guidance.
  *
- * This plugin is client-only: the whole capability lives in the composer
- * (rendering the slider and updating the current session through
- * `connection.api.sessions`), so the Host half has no behavior.
- * Keeping this file makes the package a valid Cordis plugin row; the loader
- * resolves the browser half through the `./client` export plus the
- * `dsh.client` block in package.json.
+ * The slider can only offer what the DSH model directory exposes, and the
+ * request path validates every submitted effort against that same directory
+ * (`UNSUPPORTED_REASONING_EFFORT` otherwise). This half therefore never
+ * invents levels and never writes configuration: it diagnoses custom-provider
+ * models the directory under-describes and returns copy-ready
+ * `reasoningEfforts` declarations (exact when the knowledge base knows the
+ * model, a filled template otherwise) for the user to paste into
+ * `settings.yaml`. Built-in catalog models are trusted as-is and never
+ * flagged.
  *
  * @module dsh-reasoning-effort
  */
-export declare function apply(): void;
+import type { Context } from '@deepseek-ai/cordis';
+export declare const name = "dsh-reasoning-effort";
+/**
+ * Hard dependencies: the loader waits for these services before calling
+ * `apply`, so the row never races the boot order of the base bundle rows.
+ * `connection` is deliberately absent — only Web profiles provide it, so the
+ * RPC channel is mounted through `ctx.inject` instead of blocking this row.
+ */
+export declare const inject: string[];
+export declare function apply(ctx: Context): void;

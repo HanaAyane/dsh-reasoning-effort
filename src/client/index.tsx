@@ -22,12 +22,104 @@ import type {
   ModelDirectoryResolver,
   ModelDirectoryState,
 } from '@deepseek-ai/dsh-client-ui-model-selection/client'
-import { CSS } from './styles'
+import { CSS } from './styles.js'
 
 /** One selectable effort exactly as the owning adapter advertised it. */
 interface EffortLevel {
   readonly id: string
   readonly name: string
+}
+
+/** Host RPC result envelope (matches `@deepseek-ai/dsh-host-apiproxy`). */
+type ReRpcResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: { code: string; message: string } }
+
+interface HostRpc {
+  call(channel: string, endpoint: string, payload?: unknown): Promise<unknown>
+}
+
+/** Channel the Host half registers its guidance endpoints on. */
+const ADAPT_CHANNEL = '/dsh-reasoning-effort'
+
+/** One guidance result from the Host half. */
+interface AdaptGuidance {
+  readonly provider: string
+  readonly model: string
+  readonly userDeclared: boolean
+  readonly needsGuide: boolean
+  readonly reason: 'missing' | 'mismatch' | 'none'
+  readonly current: string[]
+  readonly expected: string[]
+  readonly matched: boolean
+  readonly mode: 'replace' | 'insert'
+  readonly note: string | null
+  readonly warning: string | null
+  readonly snippet: string
+  readonly entryLine: string
+  readonly entryPath: string
+  readonly settingsPath: string | null
+}
+
+/** The client-facing guidance service (Client→Host over the Connection RPC). */
+interface AdaptationService {
+  diagnose(provider: string, model: string): Promise<AdaptGuidance | null>
+}
+
+const LEVEL_NAMES: Record<string, string> = {
+  off: '关闭',
+  minimal: '极低',
+  low: '低',
+  medium: '中',
+  high: '高',
+  xhigh: '极高',
+  max: '最大',
+}
+
+function levelName(level: string): string {
+  return LEVEL_NAMES[level] ?? level
+}
+
+function levelsText(levels: readonly string[]): string {
+  return levels.length === 0 ? '无档位' : levels.map((level) => levelName(level)).join(' / ')
+}
+
+/** Wrap the Host RPC channel in typed helpers; null while the Host half is absent. */
+function makeAdaptationService(rpc: HostRpc | undefined): AdaptationService | null {
+  if (rpc === undefined) return null
+  const call = async <T,>(endpoint: string, payload?: unknown): Promise<T | null> => {
+    try {
+      const result = (await rpc.call(ADAPT_CHANNEL, endpoint, payload)) as ReRpcResult<T>
+      return result.ok ? result.value : null
+    } catch {
+      return null
+    }
+  }
+  return {
+    diagnose: (provider, model) => call<AdaptGuidance>('diagnose', { provider, model }),
+  }
+}
+
+/** Copy text to the clipboard, falling back to a transient textarea selection. */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      const ok = document.execCommand('copy')
+      textarea.remove()
+      return ok
+    } catch {
+      return false
+    }
+  }
 }
 
 interface ModelSeatProps {
@@ -37,6 +129,7 @@ interface ModelSeatProps {
   readonly directory: SnapshotStore<ModelDirectoryState>
   readonly load: () => void
   readonly select: (selection: ModelSelection) => Promise<boolean>
+  readonly adapt: AdaptationService | null
 }
 
 const SLOT = 'conversation.input.model'
@@ -44,7 +137,7 @@ const SETTINGS_SLOT = 'settings.general.item'
 const ENABLED_STORAGE_KEY = 'dsh-reasoning-effort.enabled'
 const LEGACY_ENABLED_STORAGE_KEY = '@dsh-external/dsh-reasoning-effort.enabled'
 const CHIBI_THUMB_STORAGE_KEY = 'dsh-reasoning-effort.chibi-thumb'
-export const inject = ['slots', 'modelDirectories']
+export const inject = ['slots', 'modelDirectories', 'connection']
 
 function readEnabledPreference(): boolean {
   try {
@@ -604,6 +697,7 @@ function AdvancedModelSelect({
   directory,
   load,
   select,
+  adapt,
 }: ModelSeatProps) {
   const state = useSyncExternalStore(
     (notify) => directory.subscribe(notify),
@@ -611,6 +705,10 @@ function AdvancedModelSelect({
   )
   const [open, setOpen] = useState(false)
   const [modelsOpen, setModelsOpen] = useState(false)
+  const [guidance, setGuidance] = useState<AdaptGuidance | null>(null)
+  const [guidanceBusy, setGuidanceBusy] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const choice = currentModel(state)
@@ -635,6 +733,32 @@ function AdvancedModelSelect({
     document.addEventListener('mousedown', closeOutside)
     return () => document.removeEventListener('mousedown', closeOutside)
   }, [open])
+
+  const provider = state.current?.provider
+  const modelId = state.current?.model
+
+  useEffect(() => {
+    if (adapt === null || provider === undefined || modelId === undefined) {
+      setGuidance(null)
+      setPanelOpen(false)
+      return
+    }
+    let cancelled = false
+    setGuidanceBusy(true)
+    adapt.diagnose(provider, modelId).then((result) => {
+      if (cancelled) return
+      setGuidance(result)
+      setGuidanceBusy(false)
+      if (result === null || !result.needsGuide) setPanelOpen(false)
+    }, () => {
+      if (cancelled) return
+      setGuidance(null)
+      setGuidanceBusy(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [adapt, provider, modelId])
 
   if (!available) return null
 
@@ -741,6 +865,73 @@ function AdvancedModelSelect({
                   <div className="re-model-status">当前模型未提供推理强度档位</div>
                 )}
               </div>
+              {guidance !== null && guidance.needsGuide ? (
+                <div className="re-adapt">
+                  <div className="re-adapt-copy">
+                    <div className="re-adapt-title">
+                      {guidance.reason === 'missing' ? '当前模型未提供推理强度档位' : '档位声明与知识库不一致'}
+                    </div>
+                    <div className="re-adapt-desc">
+                      {guidance.matched
+                        ? `知识库记录该模型支持 ${levelsText(guidance.expected)}，目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`
+                        : `目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`}
+                    </div>
+                  </div>
+                  {panelOpen ? (
+                    <div className="re-adapt-panel">
+                      <div className="re-adapt-scroll">
+                        {guidance.matched ? (
+                          <div className="re-adapt-panel-line">
+                            <span className="re-adapt-arrow">{levelsText(guidance.current)}</span>
+                            <span aria-hidden="true">→</span>
+                            <span className="re-adapt-arrow">{levelsText(guidance.expected)}</span>
+                          </div>
+                        ) : null}
+                        {guidance.warning === null ? null : (
+                          <div className="re-adapt-warning">{guidance.warning}</div>
+                        )}
+                        <div className="re-adapt-label">要粘贴的内容</div>
+                        <pre className="re-adapt-yaml">{guidance.snippet}</pre>
+                        <div className="re-adapt-steps">
+                          <span>
+                            1. 打开 settings.yaml
+                            {guidance.settingsPath === null ? '' : `（${guidance.settingsPath}）`}，
+                            在 <code>{guidance.entryPath}</code> 列表里找到 <code>{guidance.entryLine}</code>；
+                          </span>
+                          {guidance.mode === 'replace' ? (
+                            <span>
+                              2. 把原有 <code>{guidance.entryLine}</code> 条目整体替换为复制的内容（不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                            </span>
+                          ) : (
+                            <span>
+                              2. 该行末尾回车，粘贴上面复制的内容（缩进与 <code>id</code> 差 2 个空格；不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                            </span>
+                          )}
+                          <span>3. 保存后自动生效；滑块未出现则重启 Web Host 并刷新页面。</span>
+                        </div>
+                      </div>
+                      <div className="re-adapt-actions">
+                        <button
+                          type="button"
+                          className="re-adapt-apply"
+                          onClick={() => {
+                            void copyText(guidance.snippet).then((ok) => setCopied(ok))
+                          }}
+                        >
+                          {copied ? '已复制 ✓' : '复制字段块'}
+                        </button>
+                        <button type="button" className="re-adapt-cancel" onClick={() => setPanelOpen(false)}>
+                          收起
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" className="re-adapt-open" onClick={() => { setCopied(false); setPanelOpen(true) }}>
+                      {guidanceBusy ? '检测中…' : '查看档位声明指引'}
+                    </button>
+                  )}
+                </div>
+              ) : null}
               <div className="re-menu-separator" />
               <button
                 type="button"
@@ -820,6 +1011,9 @@ export function apply(ctx: ClientContext) {
   const modelDirectories = ctx.get('modelDirectories') as ModelDirectoryResolver | undefined
   if (modelDirectories === undefined) return
 
+  const connection = ctx.get('connection') as { rpc?: HostRpc } | undefined
+  const adapt = makeAdaptationService(connection?.rpc)
+
   ctx.effect(() => {
     const style = document.createElement('style')
     style.dataset.plugin = 'dsh-reasoning-effort'
@@ -875,6 +1069,7 @@ export function apply(ctx: ClientContext) {
               directory: controller.store,
               load: () => controller.load().then(() => undefined, () => undefined),
               select: (selection: ModelSelection) => controller.select(selection).then(() => true, () => false),
+              adapt,
             }
           },
         },

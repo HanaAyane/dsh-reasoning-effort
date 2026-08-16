@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![main 0.5.0](https://img.shields.io/badge/main-0.5.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
+[![main 0.6.0](https://img.shields.io/badge/main-0.6.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
 [![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -74,6 +74,36 @@ The slider renders exactly the `reasoning.efforts` the selected model exposes in
 | `max` | Complex debugging, planning, difficult tasks | More reasoning |
 
 DeepSeek models typically expose `off` / `high` / `max`; GLM coding models (e.g. GLM-5.2) expose five levels: `off` / `low` / `medium` / `high` / `xhigh`. The slider submits effort values exposed by the selected model; it does not bypass model or deployment limits. When a model exposes fewer than two levels, or none at all, the menu shows "current model provides no reasoning-effort levels" — see the troubleshooting section below for how to declare them.
+
+## Effort guidance for custom providers
+
+Built-in routes get their levels from the pi-ai catalog and the plugin never touches them. Only models you declare yourself in `llm-pi-ai` receive guidance:
+
+1. Open the model menu. If the current model is your own declaration and the directory exposes no levels (or the declaration disagrees with the knowledge base), a **View declaration guidance** entry appears.
+2. The panel shows the suggested levels (e.g. GLM-5.2 → minimal/low/medium/high) and a copy-ready complete entry YAML — including the `- id:` line, with your existing `name`/`contextWindow`/`maxTokens` preserved — plus the settings.yaml path.
+3. Replace the matching `- id:` entry with the copied content (do not create a second `llm-pi-ai:` root) and save. DSH reloads automatically; if not, restart the Web Host and refresh.
+
+Models the knowledge base does not know get an annotated template to fill from the endpoint's docs. Known-hostile gateways (e.g. Aliyun Bailian `maas/dashscope.aliyuncs.com`, which rejects the `developer` message role) get an explicit warning, because settings.yaml cannot override that behavior.
+
+The built-in knowledge base covers GLM-5.2 (`minimal/low/medium/high`) and Kimi K3 (`low/high/max`). Add more models under the plugin's own settings namespace; user entries win over built-ins:
+
+```yaml
+dsh-reasoning-effort:
+  entries:
+    - id: my-model
+      provider: "*"          # provider route, * wildcard
+      model: "my-model-id"   # model id, * wildcard
+      note: description
+      efforts:               # display level -> wire value the endpoint accepts
+        low: "low"
+        high: "high"
+        max: "max"
+      compat:                # openai-completions routes only
+        thinkingFormat: "openai"
+        supportsReasoningEffort: true
+```
+
+The plugin only provides snippets — it never writes configuration, and catalog-declared level sets (even a single level) are never flagged.
 
 ## Enable the Big Fat Fish slider
 

@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.0] - 2026-08-16
+
+### Added
+
+- Host half with a built-in knowledge base (glm-5.2, kimi-k3) plus user-extensible entries under the `dsh-reasoning-effort` settings namespace.
+- Read-only reasoning-effort guidance: for models the user declares in `llm-pi-ai` settings whose directory levels are missing (or disagree with the knowledge base), the composer menu offers a panel with the suggested levels and a copy-ready complete-entry YAML (including the `- id:` line; existing `name`/`contextWindow`/`maxTokens` are preserved) plus the settings.yaml path and hot-reload notes.
+- Endpoint-level caveats: gateways whose OpenAI-compatible endpoint rejects the `developer` message role (e.g. Aliyun Bailian `maas/dashscope.aliyuncs.com`) get an explicit warning, since settings.yaml cannot override that behavior.
+- Loopback-only Client→Host RPC channel (`/dsh-reasoning-effort`) for `diagnose`.
+
+### Design guarantees
+
+- The plugin never writes settings and never invents levels: built-in catalog data — including deliberately sparse level sets — is trusted as-is and never flagged; users paste declarations themselves and DSH validates them as usual.
+- The Host row declares `settings`/`llm` injections so it never races the base-bundle boot order; the RPC channel mounts only on Web profiles through `ctx.inject(['connection'])`.
+- Malformed user knowledge-base entries are ignored instead of breaking diagnosis; every RPC endpoint answers a structured error instead of leaking exceptions.
+
+### Fixed
+
+- Build pipeline split: `tsc` now only emits the Host half and client type declarations; the browser bundle is produced exclusively by esbuild plus the module-loader wrap, so a bare `tsc` run can no longer overwrite `lib/client/index.js`.
+
 ## [0.5.0] - 2026-08-16
 
 ### Changed
