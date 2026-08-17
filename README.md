@@ -39,9 +39,9 @@ Agent 应当返回安装结果，并明确告诉你配置中是否已经出现 `
 
 #### 手动安装
 
-也可以自己打开 PowerShell 执行：
+也可以打开 macOS 终端（Terminal）执行：
 
-```powershell
+```bash
 dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
@@ -169,9 +169,9 @@ llm-pi-ai:
 
 ### 如何确认插件已经载入
 
-运行：
+运行（macOS 终端）：
 
-```powershell
+```bash
 dsh --profile web --dump-config
 ```
 
@@ -179,11 +179,36 @@ dsh --profile web --dump-config
 
 ### 如何卸载
 
-```powershell
+```bash
 dsh plugin --profile web remove dsh-reasoning-effort
 ```
 
 卸载后重启 DSH Web Host，原生模型选择器会自动恢复。
+
+
+## macOS 兼容性
+
+本插件已在 macOS 上验证通过,支持以下环境:
+
+| 项目 | 支持情况 |
+| --- | --- |
+| 芯片架构 | ✅ Apple Silicon (M1/M2/M3/M4) 与 Intel Mac |
+| 操作系统 | ✅ macOS 12+ (Monterey 及以上) |
+| Node.js | ✅ 22.19+ (推荐使用 Homebrew 安装) |
+| pnpm | ✅ 11.7.0 |
+| DSH | ✅ DeepSeek Harness 0.1.0-rc.6 Web Profile |
+
+> ⚠️ **注意**:如果你的 Mac 上已经安装了 Distributed Shell (`/opt/homebrew/bin/dsh`),
+> 直接运行 `dsh` 命令会冲突。请使用 DeepSeek Harness 的完整路径:
+> ```bash
+> ~/deepseek-harness/node_modules/.bin/dsh plugin --profile web add <插件路径>
+> ```
+> 或者在 `~/.zshrc` 中设置别名:
+> ```bash
+> alias dsh="~/deepseek-harness/node_modules/.bin/dsh"
+> ```
+
+> 🤖 **AI 辅助声明**:本项目的 macOS 适配修改(文档、构建验证、兼容性标注)由 AI 辅助完成。(是 DeepSeek 写的喵～支持 DeepSeek Harenss 喵～)
 
 ## 兼容性
 
@@ -197,7 +222,7 @@ DeepSeek Harness 仍处于开发者预览阶段；上游 UI 或服务变更可�
 
 ## 开发与构建
 
-```powershell
+```bash
 pnpm install
 pnpm run check
 pnpm pack

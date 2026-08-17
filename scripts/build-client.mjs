@@ -1,3 +1,12 @@
+/**
+ * Build script for the DSH client bundle.
+ * 
+ * > 🤖 AI-assisted notice: This project includes modifications reviewed and
+ * >   refined with AI assistance. The macOS compatibility adaptations
+ * >   (documentation, build verification) were AI-assisted.
+ * >   本项目的 macOS 适配修改由 AI 辅助完成。
+ * > （是 DeepSeek 写的喵～支持 DeepSeek Harenss 喵～）
+ */
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
