@@ -15,6 +15,12 @@
  * generator carries it onto those routes and drops it elsewhere.
  *
  * @module dsh-reasoning-effort/knowledge
+ *
+ * > 🤖 AI-assisted notice: This project includes modifications reviewed and
+ * >   refined with AI assistance. The macOS compatibility adaptations
+ * >   (documentation, build verification) were AI-assisted.
+ * >   本项目的 macOS 适配修改由 AI 辅助完成。
+ * > （是 DeepSeek 写的喵～支持 DeepSeek Harenss 喵～）
  */
 /** One selectable level declaration: display level -> wire value. */
 export interface KnowledgeEfforts {
