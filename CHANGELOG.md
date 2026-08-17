@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.1] - 2026-08-17
+
+### Changed
+
+- Enable the Big Fat Fish (chibi runner) slider thumb by default; users who prefer the plain white thumb disable it under Settings → General.
+
 ## [0.6.0] - 2026-08-16
 
 ### Added

@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![main 0.6.0](https://img.shields.io/badge/main-0.6.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
+[![main 0.6.1](https://img.shields.io/badge/main-0.6.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
 [![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -105,13 +105,13 @@ dsh-reasoning-effort:
 
 The plugin only provides snippets — it never writes configuration, and catalog-declared level sets (even a single level) are never flagged.
 
-## Enable the Big Fat Fish slider
+## The Big Fat Fish slider
 
-The first installation uses the plain white thumb. To switch to the eight-frame runner:
+The eight-frame runner is **enabled by default**. To switch back to the plain white thumb:
 
 1. Open **Settings → General**.
 2. Find **Big Fat Fish slider** below Appearance.
-3. Enable it and return to the model control.
+3. Disable it and return to the model control.
 
 <img src="assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="1200">
 

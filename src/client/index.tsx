@@ -174,9 +174,10 @@ const enabledStore = {
 
 function readChibiThumbPreference(): boolean {
   try {
-    return window.localStorage.getItem(CHIBI_THUMB_STORAGE_KEY) === 'true'
+    // Default on: only an explicit "false" disables the chibi thumb.
+    return window.localStorage.getItem(CHIBI_THUMB_STORAGE_KEY) !== 'false'
   } catch {
-    return false
+    return true
   }
 }
 

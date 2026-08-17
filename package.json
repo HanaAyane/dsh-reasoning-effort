@@ -1,6 +1,6 @@
 {
   "name": "dsh-reasoning-effort",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Codex-style DeepSeek Harness model and reasoning selector with model-advertised effort levels, DSH-native themes, left-clipped radiation effects, and copy-ready reasoning-effort declaration guidance for custom-provider models.",
   "keywords": [
     "deepseek",
