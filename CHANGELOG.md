@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.2] - 2026-08-17
+
+### Fixed
+
+- Keep the round knob fully inside the track at both ends (clamped to its half-width), so every visible part stays draggable (#5).
+- Smooth the chibi runner animation by starting the loop from the second sprite frame, removing the stand→run hitch each cycle (#3).
+
 ## [0.6.1] - 2026-08-17
 
 ### Changed

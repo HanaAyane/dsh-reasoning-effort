@@ -108,7 +108,7 @@ export const CSS = `
   position: absolute;
   z-index: 4;
   top: 50%;
-  left: var(--re-progress);
+  left: clamp(14px, var(--re-progress), calc(100% - 14px));
   width: 28px;
   height: 28px;
   border: 1px solid rgba(255,255,255,.94);
@@ -472,14 +472,13 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
   50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.96), inset 0 0 0 1px rgba(31,102,190,.22), 0 0 19px rgba(31,105,201,.24); }
 }
 @keyframes re-chibi-run {
-  0% { background-position: 0 0; }
-  12.5% { background-position: 14.285714% 0; }
-  25% { background-position: 28.571429% 0; }
-  37.5% { background-position: 42.857143% 0; }
-  50% { background-position: 57.142857% 0; }
-  62.5% { background-position: 71.428571% 0; }
-  75% { background-position: 85.714286% 0; }
-  87.5%, 100% { background-position: 100% 0; }
+  0% { background-position: 14.285714% 0; }
+  14.285714% { background-position: 28.571429% 0; }
+  28.571429% { background-position: 42.857143% 0; }
+  42.857143% { background-position: 57.142857% 0; }
+  57.142857% { background-position: 71.428571% 0; }
+  71.428571% { background-position: 85.714286% 0; }
+  85.714286%, 100% { background-position: 100% 0; }
 }
 .re-adapt {
   padding: 10px 14px 12px;
