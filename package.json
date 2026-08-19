@@ -1,7 +1,7 @@
 {
   "name": "dsh-reasoning-effort",
-  "version": "0.4.0",
-  "description": "Codex-style DeepSeek Harness model and reasoning selector with off/high/max snapping, DSH-native themes, and left-clipped radiation effects.",
+  "version": "0.6.2",
+  "description": "Codex-style DeepSeek Harness model and reasoning selector with model-advertised effort levels, DSH-native themes, left-clipped radiation effects, and copy-ready reasoning-effort declaration guidance for custom-provider models.",
   "keywords": [
     "deepseek",
     "deepseek-harness",
@@ -54,9 +54,13 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/build-client.mjs",
+    "build": "pnpm run build:host && pnpm run build:client && pnpm run build:client-types",
+    "build:host": "tsc -p tsconfig.build.json",
+    "build:client": "node scripts/build-client.mjs",
+    "build:client-types": "tsc -p tsconfig.client.json",
     "watch": "tsc -p tsconfig.json --watch",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "watch:client": "node scripts/build-client.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json",
     "prepack": "pnpm run build",
     "check": "pnpm run typecheck && pnpm run build"
   },
@@ -87,6 +91,9 @@
     "@deepseek-ai/dsh-client-ui-settings": "^0.1.0-rc.6",
     "@deepseek-ai/dsh-client-ui-slots": "^0.1.0-rc.6",
     "@deepseek-ai/dsh-api-remotes": "^0.1.0-rc.6"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

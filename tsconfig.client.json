@@ -1,19 +1,19 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "strict": true,
     "declaration": true,
-    "declarationMap": false,
-    "sourceMap": false,
-    "noEmit": true,
+    "emitDeclarationOnly": true,
+    "outDir": "lib/client",
+    "rootDir": "src/client",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"]
+  "include": ["src/client", "src/assets.d.ts"]
 }

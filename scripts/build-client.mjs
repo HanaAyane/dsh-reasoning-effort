@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { build } from 'esbuild'
+import { build, context } from 'esbuild'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
@@ -11,7 +11,30 @@ const output = resolve(root, 'lib', 'client', 'index.js')
 await mkdir(dirname(temporary), { recursive: true })
 await mkdir(dirname(output), { recursive: true })
 
-await build({
+const wrap = (compiled) => `window.__ModuleLoader__.load({
+  id: ${JSON.stringify(packageJson.name)},
+  factory: (require) => {
+    var module = { exports: {} };
+    var exports = module.exports;
+${compiled}
+    return module.exports;
+  },
+});
+`
+
+/** After every esbuild emit, rewrite lib/client/index.js with the loader wrapper. */
+const wrapPlugin = {
+  name: 'wrap-module-loader',
+  setup(buildApi) {
+    buildApi.onEnd(async (result) => {
+      if (result.errors.length > 0) return
+      const compiled = await readFile(temporary, 'utf8')
+      await writeFile(output, wrap(compiled), 'utf8')
+    })
+  },
+}
+
+const common = {
   entryPoints: [resolve(root, 'src', 'client', 'index.tsx')],
   outfile: temporary,
   bundle: true,
@@ -29,18 +52,14 @@ await build({
     'react/jsx-runtime',
     '@deepseek-ai/*',
   ],
-})
+  plugins: [wrapPlugin],
+}
 
-const compiled = await readFile(temporary, 'utf8')
-const wrapped = `window.__ModuleLoader__.load({
-  id: ${JSON.stringify(packageJson.name)},
-  factory: (require) => {
-    var module = { exports: {} };
-    var exports = module.exports;
-${compiled}
-    return module.exports;
-  },
-});
-`
-
-await writeFile(output, wrapped, 'utf8')
+if (process.argv.includes('--watch')) {
+  const ctx = await context(common)
+  await ctx.rebuild()
+  await ctx.watch()
+  console.log('watching src/client → lib/client/index.js (wrapped)')
+} else {
+  await build(common)
+}

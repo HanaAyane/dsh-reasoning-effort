@@ -4,7 +4,9 @@
  * The control deliberately follows DSH's own session model-selection contract:
  * `sessions.models()` supplies the exact current route and its adapter-owned
  * effort metadata; `sessions.selectModel()` submits the complete selection for
- * the next assembled turn.
+ * the next assembled turn. The slider adapts to whatever effort levels the
+ * current model exposes — their count and order are the adapter's, never
+ * assumed here.
  *
  * @module dsh-reasoning-effort/client
  */
@@ -14,20 +16,120 @@ import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
-import type { ModelReasoningEffort, ModelSelection, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ModelSelection, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
 import type {
   ModelDirectory,
   ModelDirectoryResolver,
   ModelDirectoryState,
 } from '@deepseek-ai/dsh-client-ui-model-selection/client'
-import chibiRunnerSprite from '../../assets/chibi-runner-strip.png'
+import { CSS } from './styles.js'
+
+/** One selectable effort exactly as the owning adapter advertised it. */
+interface EffortLevel {
+  readonly id: string
+  readonly name: string
+}
+
+/** Host RPC result envelope (matches `@deepseek-ai/dsh-host-apiproxy`). */
+type ReRpcResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: { code: string; message: string } }
+
+interface HostRpc {
+  call(channel: string, endpoint: string, payload?: unknown): Promise<unknown>
+}
+
+/** Channel the Host half registers its guidance endpoints on. */
+const ADAPT_CHANNEL = '/dsh-reasoning-effort'
+
+/** One guidance result from the Host half. */
+interface AdaptGuidance {
+  readonly provider: string
+  readonly model: string
+  readonly userDeclared: boolean
+  readonly needsGuide: boolean
+  readonly reason: 'missing' | 'mismatch' | 'none'
+  readonly current: string[]
+  readonly expected: string[]
+  readonly matched: boolean
+  readonly mode: 'replace' | 'insert'
+  readonly note: string | null
+  readonly warning: string | null
+  readonly snippet: string
+  readonly entryLine: string
+  readonly entryPath: string
+  readonly settingsPath: string | null
+}
+
+/** The client-facing guidance service (Client→Host over the Connection RPC). */
+interface AdaptationService {
+  diagnose(provider: string, model: string): Promise<AdaptGuidance | null>
+}
+
+const LEVEL_NAMES: Record<string, string> = {
+  off: '关闭',
+  minimal: '极低',
+  low: '低',
+  medium: '中',
+  high: '高',
+  xhigh: '极高',
+  max: '最大',
+}
+
+function levelName(level: string): string {
+  return LEVEL_NAMES[level] ?? level
+}
+
+function levelsText(levels: readonly string[]): string {
+  return levels.length === 0 ? '无档位' : levels.map((level) => levelName(level)).join(' / ')
+}
+
+/** Wrap the Host RPC channel in typed helpers; null while the Host half is absent. */
+function makeAdaptationService(rpc: HostRpc | undefined): AdaptationService | null {
+  if (rpc === undefined) return null
+  const call = async <T,>(endpoint: string, payload?: unknown): Promise<T | null> => {
+    try {
+      const result = (await rpc.call(ADAPT_CHANNEL, endpoint, payload)) as ReRpcResult<T>
+      return result.ok ? result.value : null
+    } catch {
+      return null
+    }
+  }
+  return {
+    diagnose: (provider, model) => call<AdaptGuidance>('diagnose', { provider, model }),
+  }
+}
+
+/** Copy text to the clipboard, falling back to a transient textarea selection. */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      const ok = document.execCommand('copy')
+      textarea.remove()
+      return ok
+    } catch {
+      return false
+    }
+  }
+}
 
 interface ModelSeatProps {
+  readonly locked: boolean
   readonly available: boolean
   readonly controller: ModelDirectory
   readonly directory: SnapshotStore<ModelDirectoryState>
   readonly load: () => void
   readonly select: (selection: ModelSelection) => Promise<boolean>
+  readonly adapt: AdaptationService | null
 }
 
 const SLOT = 'conversation.input.model'
@@ -35,7 +137,7 @@ const SETTINGS_SLOT = 'settings.general.item'
 const ENABLED_STORAGE_KEY = 'dsh-reasoning-effort.enabled'
 const LEGACY_ENABLED_STORAGE_KEY = '@dsh-external/dsh-reasoning-effort.enabled'
 const CHIBI_THUMB_STORAGE_KEY = 'dsh-reasoning-effort.chibi-thumb'
-export const inject = ['slots', 'modelDirectories']
+export const inject = ['slots', 'modelDirectories', 'connection']
 
 function readEnabledPreference(): boolean {
   try {
@@ -72,9 +174,10 @@ const enabledStore = {
 
 function readChibiThumbPreference(): boolean {
   try {
-    return window.localStorage.getItem(CHIBI_THUMB_STORAGE_KEY) === 'true'
+    // Default on: only an explicit "false" disables the chibi thumb.
+    return window.localStorage.getItem(CHIBI_THUMB_STORAGE_KEY) !== 'false'
   } catch {
-    return false
+    return true
   }
 }
 
@@ -101,520 +204,41 @@ const chibiThumbStore = {
   },
 }
 
-const CSS = `
-.re-effort {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-width: 0;
-  height: 32px;
-  color: var(--dsw-alias-label-secondary);
-  user-select: none;
-  box-sizing: border-box;
-}
-.re-effort-slider {
-  --re-progress: 50%;
-  position: relative;
-  width: 100%;
-  height: 30px;
-  flex: 1 1 auto;
-  border-radius: 999px;
-  isolation: isolate;
-  transition: filter 180ms ease;
-}
-.re-effort-track {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  background: linear-gradient(100deg, #03040a 0%, #071126 22%, #101d4c 45%, #302262 70%, #5d35a0 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(189, 199, 255, .15),
-    inset 0 -1px 0 rgba(0, 0, 0, .55),
-    0 3px 10px rgba(12, 17, 55, .34);
-}
-.re-effort-track::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 18% 45%, rgba(82, 130, 255, .12), transparent 24%),
-    linear-gradient(90deg, rgba(0, 0, 0, .28), transparent 42%, rgba(168, 113, 255, .12));
-  pointer-events: none;
-}
-.re-effort-fx {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  pointer-events: none;
-}
-.re-effort-canvas {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 1;
-  image-rendering: pixelated;
-  mix-blend-mode: screen;
-  transition: filter 140ms ease;
-}
-.re-effort-flare {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  left: var(--re-progress);
-  width: 78px;
-  height: 46px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.96) 0 4%, rgba(188,189,255,.8) 11%, rgba(106,87,255,.5) 28%, rgba(105,31,255,.2) 49%, transparent 74%);
-  filter: blur(2px) saturate(1.25);
-  mix-blend-mode: screen;
-  transform: translate(-100%, -50%);
-  transition: left 70ms linear, filter 140ms ease;
-  pointer-events: none;
-}
-.re-effort-flare::before,
-.re-effort-flare::after {
-  content: "";
-  position: absolute;
-  inset: 50% auto auto 100%;
-  border-radius: 999px;
-  transform: translate(-50%, -50%);
-}
-.re-effort-flare::before {
-  width: 52px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(100,160,255,.42), #f1ecff, rgba(193,82,255,.65), transparent);
-  box-shadow: 0 0 7px #9b7cff, 0 0 13px rgba(72,132,255,.64);
-}
-.re-effort-flare::after {
-  width: 1px;
-  height: 20px;
-  background: linear-gradient(180deg, transparent, rgba(196,190,255,.84), transparent);
-  box-shadow: 0 0 7px #9c7cff;
-}
-.re-effort-knob {
-  position: absolute;
-  z-index: 4;
-  top: 50%;
-  left: var(--re-progress);
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgba(255,255,255,.94);
-  border-radius: 50%;
-  background: #fff;
-  box-shadow:
-    0 0 0 2px rgba(92,105,255,.12),
-    0 0 14px rgba(121,82,255,.48),
-    0 2px 7px rgba(0,0,0,.3);
-  transform: translate(-50%, -50%);
-  transition: left 190ms cubic-bezier(.22,1,.36,1), transform 160ms ease, box-shadow 180ms ease;
-  pointer-events: none;
-}
-.re-effort.is-chibi {
-  height: 56px;
-}
-.re-effort.is-chibi .re-effort-knob {
-  left: clamp(10px, var(--re-progress), calc(100% - 10px));
-  width: 40px;
-  height: 55px;
-  border: 0;
-  border-radius: 8px;
-  background-color: transparent;
-  background-image: url("${chibiRunnerSprite}");
-  background-repeat: no-repeat;
-  background-position: 0 0;
-  background-size: 800% 100%;
-  box-shadow: none !important;
-  filter:
-    drop-shadow(0 1px 1px rgba(0, 0, 0, .28))
-    drop-shadow(0 0 5px rgba(92, 105, 255, .34));
-  animation: re-chibi-run 720ms step-end infinite;
-  transform-origin: 50% 68%;
-}
-.re-effort.is-chibi.is-dragging .re-effort-knob {
-  animation-duration: 420ms;
-  filter:
-    drop-shadow(0 2px 1px rgba(0, 0, 0, .28))
-    drop-shadow(0 0 8px rgba(87, 137, 255, .68));
-}
-.re-effort-input {
-  position: absolute;
-  z-index: 5;
-  inset: -5px 0;
-  width: 100%;
-  height: calc(100% + 10px);
-  margin: 0;
-  opacity: 0;
-  cursor: grab;
-  touch-action: none;
-}
-.re-effort-input:active { cursor: grabbing; }
-.re-effort-input:focus-visible + .re-effort-knob {
-  outline: 2px solid var(--dsw-static-blue-400);
-  outline-offset: 2px;
-}
-.re-effort.is-dragging .re-effort-canvas {
-  filter: saturate(1.45) brightness(1.28) contrast(1.06);
-}
-.re-effort.is-dragging .re-effort-flare {
-  filter: blur(1.5px) saturate(1.6) brightness(1.42);
-  transition: none;
-}
-.re-effort.is-dragging .re-effort-knob {
-  transform: translate(-50%, -50%) scale(1.07);
-  transition: none;
-  box-shadow:
-    0 0 0 3px rgba(113,115,255,.25),
-    0 0 20px rgba(74,145,255,.86),
-    0 0 31px rgba(171,53,255,.66),
-    0 3px 8px rgba(0,0,0,.32);
-}
-.re-effort-slider.is-peak .re-effort-track {
-  animation: re-effort-dark-breathe 1.9s ease-in-out infinite;
-}
-.re-effort-slider.is-peak .re-effort-knob {
-  box-shadow:
-    0 0 0 3px rgba(119,99,255,.18),
-    0 0 22px rgba(135,78,255,.76),
-    0 0 34px rgba(53,121,255,.34),
-    0 3px 8px rgba(0,0,0,.3);
-}
-.re-effort.is-error .re-effort-slider {
-  outline: 1px solid var(--dsw-alias-state-error-secondary);
-  outline-offset: 2px;
-}
-.re-effort.is-busy { opacity: .72; }
-.re-effort-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-.re-model-root {
-  position: relative;
-  display: inline-flex;
-  min-width: 0;
-}
-.re-model-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-  max-width: 230px;
-  height: 28px;
-  padding: 0 8px 0 10px;
-  border: 0;
-  border-radius: 9px;
-  color: var(--dsw-alias-label-primary, #15171b);
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-  transition: background 140ms ease;
-}
-.re-model-trigger:hover,
-.re-model-trigger[aria-expanded="true"] {
-  background: var(--dsw-alias-fill-tertiary, rgba(120,125,140,.1));
-}
-.re-model-trigger:disabled { cursor: not-allowed; opacity: .5; }
-.re-model-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  line-height: 1;
-}
-.re-model-effort {
-  flex: 0 0 auto;
-  color: var(--dsw-static-deepseek-500, #4d70ff);
-  font-size: 12px;
-  line-height: 1;
-}
-.re-model-chevron {
-  flex: 0 0 auto;
-  width: 7px;
-  height: 7px;
-  margin: -3px 1px 0 3px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  opacity: .55;
-  transform: rotate(45deg);
-  transition: transform 150ms ease, margin 150ms ease;
-}
-.re-model-trigger[aria-expanded="true"] .re-model-chevron {
-  margin-top: 3px;
-  transform: rotate(225deg);
-}
-.re-model-menu {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 8px);
-  z-index: 1200;
-  width: min(312px, calc(100vw - 32px));
-  overflow: hidden;
-  border: 1px solid var(--dsw-alias-stroke-secondary, rgba(121,126,145,.2));
-  border-radius: 16px;
-  color: var(--dsw-alias-label-primary, #15171b);
-  background: var(--dsw-alias-bg-elevated, #fff);
-  box-shadow: 0 14px 42px rgba(18, 24, 42, .18), 0 3px 10px rgba(18, 24, 42, .08);
-  animation: re-menu-in 150ms cubic-bezier(.22,1,.36,1);
-}
-.re-advanced {
-  padding: 14px;
-}
-.re-menu-separator {
-  height: 1px;
-  background: var(--dsw-alias-stroke-secondary, rgba(121,126,145,.16));
-}
-.re-model-row,
-.re-model-option,
-.re-model-back {
-  width: 100%;
-  border: 0;
-  color: inherit;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-}
-.re-model-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 8px;
-  min-height: 45px;
-  padding: 0 14px;
-  text-align: left;
-}
-.re-model-row:hover,
-.re-model-option:hover,
-.re-model-back:hover { background: var(--dsw-alias-fill-tertiary, rgba(120,125,140,.09)); }
-.re-model-row-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
-.re-model-row-effort { color: var(--dsw-static-deepseek-500, #4d70ff); font-size: 12px; }
-.re-row-chevron { font-size: 20px; line-height: 1; opacity: .42; }
-.re-model-pane { max-height: min(390px, 60vh); overflow-y: auto; padding: 7px; }
-.re-model-back {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 8px;
-  border-radius: 8px;
-  text-align: left;
-  color: var(--dsw-alias-label-secondary, #686c75);
-  font-size: 12px;
-}
-.re-model-group-title { padding: 10px 9px 5px; color: var(--dsw-alias-label-tertiary, #9296a0); font-size: 11px; }
-.re-model-option {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 20px;
-  align-items: center;
-  gap: 8px;
-  min-height: 38px;
-  padding: 7px 9px;
-  border-radius: 9px;
-  text-align: left;
-}
-.re-model-option-copy { min-width: 0; }
-.re-model-option-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-.re-model-option-desc { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dsw-alias-label-tertiary, #9296a0); font-size: 10px; }
-.re-model-check { color: var(--dsw-static-deepseek-500, #4d70ff); font-size: 15px; text-align: center; }
-.re-model-status { padding: 14px; color: var(--dsw-alias-label-tertiary, #9296a0); font-size: 12px; text-align: center; }
-.re-model-error { margin: 8px; padding: 8px 10px; border-radius: 8px; color: var(--dsw-alias-state-error-primary, #c83e4d); background: var(--dsw-alias-state-error-tertiary, rgba(220,55,70,.08)); font-size: 11px; }
-.re-setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--dsw-alias-border-l2, rgba(121,126,145,.18));
-}
-.re-setting-copy { min-width: 0; }
-.re-setting-title {
-  color: var(--dsw-alias-label-primary, #15171b);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 22px;
-}
-.re-setting-description {
-  margin-top: 3px;
-  color: var(--dsw-alias-label-tertiary, #9296a0);
-  font-size: 12px;
-  line-height: 18px;
-}
-.re-setting-control { display: inline-flex; align-items: center; gap: 10px; flex: none; }
-.re-setting-state { color: var(--dsw-alias-label-secondary, #686c75); font-size: 13px; }
-.re-setting-switch {
-  position: relative;
-  width: 38px;
-  height: 22px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: var(--dsw-alias-fill-quaternary, #c7cbd3);
-  cursor: pointer;
-  transition: background 150ms ease;
-}
-.re-setting-switch:hover { filter: brightness(.97); }
-.re-setting-switch:disabled { cursor: not-allowed; opacity: .45; }
-.re-setting-switch:focus-visible {
-  outline: 2px solid var(--dsw-static-blue-400, #5d83ff);
-  outline-offset: 2px;
-}
-.re-setting-switch.is-on { background: var(--dsw-alias-state-business-primary, #4f73ff); }
-.re-setting-switch-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,.2);
-  transition: transform 170ms cubic-bezier(.22,1,.36,1);
-}
-.re-setting-switch.is-on .re-setting-switch-knob { transform: translateX(16px); }
-body[data-ds-dark-theme] .re-model-menu {
-  border-color: rgba(136, 145, 180, .2);
-  color: var(--dsw-alias-label-primary, #f2f4f8);
-  background: var(--dsw-alias-bg-elevated, #202126);
-  box-shadow: 0 18px 46px rgba(0,0,0,.48), 0 3px 12px rgba(0,0,0,.32);
-}
-body[data-ds-dark-theme] .re-model-trigger { color: var(--dsw-alias-label-primary, #f2f4f8); }
-@keyframes re-menu-in {
-  from { opacity: 0; transform: translateY(5px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-body:not([data-ds-dark-theme]) .re-effort-slider {
-  filter: none;
-}
-body:not([data-ds-dark-theme]) .re-effort-track {
-  background: var(--dsw-static-blue-75, #e5f0ff);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
-    inset 0 0 0 1px rgba(80,133,194,.14),
-    0 3px 10px rgba(48,101,165,.13);
-}
-body:not([data-ds-dark-theme]) .re-effort-track::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  inset: 0 auto 0 0;
-  width: var(--re-progress);
-  border-radius: inherit;
-  background: linear-gradient(90deg, #fff 0%, #e2f0ff 20%, #a8d0fb 57%, #438fdf 100%);
-  transition: width 190ms cubic-bezier(.22,1,.36,1);
-}
-body:not([data-ds-dark-theme]) .re-effort-slider.is-peak .re-effort-track::before {
-  background: linear-gradient(90deg, #fff 0%, #d7eaff 18%, #75afea 54%, #0751ad 100%);
-}
-body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-track::before {
-  transition: none;
-}
-body:not([data-ds-dark-theme]) .re-effort-track::after {
-  z-index: 1;
-  background: linear-gradient(90deg, rgba(255,255,255,.48), transparent 34%, rgba(23,101,201,.07));
-}
-body:not([data-ds-dark-theme]) .re-effort-canvas {
-  opacity: .78;
-  mix-blend-mode: multiply;
-}
-body:not([data-ds-dark-theme]) .re-effort-flare {
-  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.98) 0 5%, rgba(204,231,255,.88) 13%, rgba(91,162,241,.48) 31%, rgba(37,111,207,.16) 53%, transparent 75%);
-  filter: blur(2px) saturate(1.12);
-}
-body:not([data-ds-dark-theme]) .re-effort-flare::before {
-  background: linear-gradient(90deg, transparent, rgba(116,177,244,.34), #fff, rgba(66,139,225,.58), transparent);
-  box-shadow: 0 0 7px rgba(58,133,222,.5), 0 0 13px rgba(104,176,255,.38);
-}
-body:not([data-ds-dark-theme]) .re-effort-flare::after {
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,.94), transparent);
-  box-shadow: 0 0 7px rgba(64,137,224,.44);
-}
-body:not([data-ds-dark-theme]) .re-effort-knob {
-  border-color: rgba(126,160,197,.32);
-  box-shadow:
-    0 0 0 2px rgba(58,124,207,.09),
-    0 0 13px rgba(48,118,207,.3),
-    0 3px 8px rgba(39,77,119,.18);
-}
-body:not([data-ds-dark-theme]) .re-effort-slider.is-peak .re-effort-track {
-  animation-name: re-effort-light-breathe;
-}
-body:not([data-ds-dark-theme]) .re-effort-slider.is-peak .re-effort-knob,
-body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
-  box-shadow:
-    0 0 0 3px rgba(36,105,192,.15),
-    0 0 20px rgba(25,100,201,.45),
-    0 3px 8px rgba(39,77,119,.18);
-}
-@keyframes re-effort-dark-breathe {
-  0%, 100% { box-shadow: inset 0 1px 0 rgba(196,204,255,.16), 0 3px 10px rgba(18,25,72,.4); }
-  50% { box-shadow: inset 0 1px 0 rgba(220,214,255,.24), 0 0 21px rgba(111,66,255,.5); }
-}
-@keyframes re-effort-light-breathe {
-  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(67,124,193,.16), 0 3px 10px rgba(48,101,165,.13); }
-  50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.96), inset 0 0 0 1px rgba(31,102,190,.22), 0 0 19px rgba(31,105,201,.24); }
-}
-@keyframes re-chibi-run {
-  0% { background-position: 0 0; }
-  12.5% { background-position: 14.285714% 0; }
-  25% { background-position: 28.571429% 0; }
-  37.5% { background-position: 42.857143% 0; }
-  50% { background-position: 57.142857% 0; }
-  62.5% { background-position: 71.428571% 0; }
-  75% { background-position: 85.714286% 0; }
-  87.5%, 100% { background-position: 100% 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .re-effort-slider.is-peak .re-effort-track { animation: none; }
-  .re-effort-knob,
-  .re-effort-flare,
-  body:not([data-ds-dark-theme]) .re-effort-track::before { transition: none; }
-  .re-model-menu { animation: none; }
-  .re-effort.is-chibi .re-effort-knob { animation: none; }
-}
-`
-
 function currentModel(state: ModelDirectoryState) {
   if (state.current === null) return undefined
   const group = state.groups.find((candidate) => candidate.id === state.current?.provider)
   return group?.models.find((candidate) => candidate.id === state.current?.model)
 }
 
-function effortLevels(state: ModelDirectoryState): readonly ModelReasoningEffort[] {
-  return currentModel(state)?.reasoning?.efforts ?? []
+/**
+ * Effort levels the current model advertises, in adapter order. A model needs
+ * at least two before a slider says anything a plain label would not, so
+ * fewer-than-two collapses to none.
+ */
+function sliderLevels(state: ModelDirectoryState): readonly EffortLevel[] {
+  const efforts = currentModel(state)?.reasoning?.efforts
+  return efforts !== undefined && efforts.length >= 2 ? efforts : []
 }
 
-function supportsSlider(state: ModelDirectoryState): boolean {
-  return effortLevels(state).length >= 2
+function effortIndex(levels: readonly EffortLevel[], id: string | undefined): number {
+  return levels.findIndex((level) => level.id === id)
 }
 
-function effortIndex(levels: readonly ModelReasoningEffort[], effortId: string | undefined): number {
-  if (effortId === undefined) return -1
-  return levels.findIndex((level) => level.id === effortId)
+function clampIndex(value: number, count: number): number {
+  return Math.max(0, Math.min(count - 1, Math.round(value)))
 }
 
-function clampIndex(levels: readonly ModelReasoningEffort[], value: number): number {
-  return Math.max(0, Math.min(levels.length - 1, Math.round(value)))
-}
-
-function effectiveEffort(state: ModelDirectoryState): ModelReasoningEffort | null {
-  const levels = effortLevels(state)
-  const selected = levels.find((level) => level.id === state.current?.reasoningEffort)
-  if (selected !== undefined) return selected
-  return levels.find((level) => level.id === currentModel(state)?.reasoning?.defaultEffort) ?? null
-}
-
-function effortLabel(effort: ModelReasoningEffort | null | undefined): string {
-  return effort === null || effort === undefined ? '' : effort.name || effort.id
+/**
+ * Level index the slider should rest at: the session's current effort when the
+ * model still offers it, else the adapter default, else the middle level.
+ */
+function effectiveEffortIndex(levels: readonly EffortLevel[], state: ModelDirectoryState): number {
+  const reasoning = currentModel(state)?.reasoning
+  const current = effortIndex(levels, state.current?.reasoningEffort)
+  if (current >= 0) return current
+  const fallback = effortIndex(levels, reasoning?.defaultEffort)
+  if (fallback >= 0) return fallback
+  return Math.floor((levels.length - 1) / 2)
 }
 
 interface RadiationState {
@@ -732,8 +356,8 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
     (notify) => directory.store.subscribe(notify),
     () => directory.store.getSnapshot(),
   )
-  const levels = effortLevels(directoryState)
-  const [effortId, setEffortId] = useState('')
+  const levels = sliderLevels(directoryState)
+  const [effort, setEffort] = useState('')
   const [preview, setPreview] = useState(0)
   const [committing, setCommitting] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -743,9 +367,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const committedRef = useRef('')
   const committingRef = useRef(false)
-  const pendingCommitRef = useRef<number | null>(null)
   const previewRef = useRef(0)
-  const levelsRef = useRef(levels)
   const draggingRef = useRef(false)
   const pointerActiveRef = useRef(false)
   const activePointerIdRef = useRef<number | null>(null)
@@ -754,26 +376,20 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   const globalPointerCancelRef = useRef<((event: PointerEvent) => void) | null>(null)
   const radiationRef = useRef<RadiationState>({ progress: 0.5, dragging: false })
   const redrawRef = useRef<(() => void) | null>(null)
-  const available = directoryState.current !== null && supportsSlider(directoryState)
+  const available = directoryState.current !== null && levels.length >= 2
   const busy = committing || directoryState.status === 'selecting'
   const error = localError ?? directoryState.error
 
   useEffect(() => {
-    levelsRef.current = levels
-  }, [levels])
-
-  useEffect(() => {
     if (!available || committingRef.current || draggingRef.current) return
-    const currentLevels = effortLevels(directoryState)
-    const next = effectiveEffort(directoryState) ?? currentLevels[0]
-    if (next === undefined) return
-    const index = effortIndex(currentLevels, next.id)
-    committedRef.current = next.id
+    const index = effectiveEffortIndex(levels, directoryState)
+    const next = levels[index]?.id ?? ''
+    committedRef.current = next
     previewRef.current = index
-    setEffortId(next.id)
+    setEffort(next)
     setPreview(index)
     setLocalError(null)
-  }, [available, directoryState])
+  }, [available, levels, directoryState])
 
   useEffect(() => {
     directory.load().catch(() => undefined)
@@ -781,9 +397,9 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 
   useEffect(() => {
     previewRef.current = preview
-    radiationRef.current.progress = levelsRef.current.length > 1 ? preview / (levelsRef.current.length - 1) : 0.5
+    radiationRef.current.progress = levels.length >= 2 ? preview / (levels.length - 1) : 0.5
     redrawRef.current?.()
-  }, [preview])
+  }, [preview, levels.length])
 
   useEffect(() => {
     radiationRef.current.dragging = dragging
@@ -846,37 +462,33 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 
   const rollback = useCallback(() => {
     const previous = committedRef.current
-    const currentLevels = levelsRef.current
-    const index = effortIndex(currentLevels, previous)
-    pendingCommitRef.current = null
+    previewRef.current = Math.max(0, effortIndex(levels, previous))
     pointerActiveRef.current = false
     activePointerIdRef.current = null
     draggingRef.current = false
-    previewRef.current = index
-    setEffortId(previous)
-    setPreview(index)
+    setEffort(previous)
+    setPreview(Math.max(0, effortIndex(levels, previous)))
     setDragging(false)
-  }, [])
+  }, [levels])
 
   const commit = useCallback(async (raw: number) => {
-    const currentLevels = levelsRef.current
-    if (currentLevels.length === 0) return
-    const index = clampIndex(currentLevels, raw)
-    const next = currentLevels[index]
-    if (next === undefined) return
-    if (committingRef.current) {
-      pendingCommitRef.current = index
-      return
-    }
+    if (committingRef.current) return
     committingRef.current = true
     const previous = committedRef.current
 
     setDragging(false)
-    setEffortId(next.id)
-    previewRef.current = index
-    setPreview(index)
     setCommitting(true)
     setLocalError(null)
+
+    // Optimistic snap from the rendered levels keeps the thumb responsive
+    // while the directory round-trip revalidates against fresh data below.
+    const optimisticIndex = clampIndex(raw, levels.length)
+    const optimistic = levels[optimisticIndex]?.id
+    if (optimistic !== undefined) {
+      previewRef.current = optimisticIndex
+      setPreview(optimisticIndex)
+      setEffort(optimistic)
+    }
 
     try {
       const models = await directory.load()
@@ -888,54 +500,55 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
         status: 'ready',
         error: null,
       }
-      const freshLevels = effortLevels(fresh)
-      if (freshLevels.length < 2) throw new Error('当前模型未提供可选择的思考档位')
-      const freshIndex = effortIndex(freshLevels, next.id)
-      if (freshIndex < 0) throw new Error(`当前模型不支持思考档位 ${next.id}`)
+      const freshLevels = sliderLevels(fresh)
+      const index = clampIndex(raw, freshLevels.length)
+      const next = freshLevels[index]?.id
+      if (next === undefined) throw new Error('当前模型未提供推理强度档位')
+
+      previewRef.current = index
+      setPreview(index)
+      setEffort(next)
 
       await directory.select({
         provider: models.current.provider,
         model: models.current.model,
-        reasoningEffort: next.id,
+        reasoningEffort: next,
       })
 
-      const reported = directory.store.getSnapshot().current?.reasoningEffort
-      const accepted = freshLevels.find((level) => level.id === reported) ?? next
-      committedRef.current = accepted.id
-      previewRef.current = effortIndex(freshLevels, accepted.id)
-      setEffortId(accepted.id)
-      setPreview(effortIndex(freshLevels, accepted.id))
+      const snapshot = directory.store.getSnapshot()
+      const accepted = effortIndex(freshLevels, snapshot.current?.reasoningEffort)
+      const settled = accepted >= 0 ? accepted : index
+      const settledId = freshLevels[settled]?.id ?? next
+      committedRef.current = settledId
+      previewRef.current = settled
+      setEffort(settledId)
+      setPreview(settled)
     } catch (cause) {
-      const previousIndex = effortIndex(currentLevels, previous)
+      const restore = Math.max(0, effortIndex(levels, previous))
       committedRef.current = previous
-      previewRef.current = previousIndex
-      setEffortId(previous)
-      setPreview(previousIndex)
+      previewRef.current = restore
+      setEffort(previous)
+      setPreview(restore)
       setLocalError(cause instanceof Error ? cause.message : String(cause))
     } finally {
       committingRef.current = false
       setCommitting(false)
-      const pending = pendingCommitRef.current
-      pendingCommitRef.current = null
-      if (pending !== null) void commit(pending)
     }
-  }, [directory])
+  }, [directory, levels])
 
   const rawFromPointer = (input: HTMLInputElement, clientX: number) => {
     const bounds = input.getBoundingClientRect()
-    const count = levels.length
-    if (bounds.width <= 0 || count <= 1) return previewRef.current
+    if (bounds.width <= 0 || levels.length < 2) return previewRef.current
     return Math.max(
       0,
-      Math.min(count - 1, (clientX - bounds.left) / bounds.width * (count - 1)),
+      Math.min(levels.length - 1, (clientX - bounds.left) / bounds.width * (levels.length - 1)),
     )
   }
 
   const showPointerPreview = (raw: number) => {
-    const index = clampIndex(levels, raw)
     previewRef.current = raw
     setPreview(raw)
-    setEffortId(levels[index]?.id ?? committedRef.current)
+    setEffort(levels[clampIndex(raw, levels.length)]?.id ?? '')
   }
 
   const beginDragging = (input: HTMLInputElement, pointerId: number, clientX: number) => {
@@ -998,17 +611,16 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   }, [])
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
-    const count = levels.length
-    const current = clampIndex(levels, Number(event.currentTarget.value))
+    const current = clampIndex(Number(event.currentTarget.value), levels.length)
     let target: number | undefined
     if (event.key === 'ArrowLeft' || event.key === 'ArrowDown' || event.key === 'PageDown') {
       target = Math.max(0, current - 1)
     } else if (event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'PageUp') {
-      target = Math.min(count - 1, current + 1)
+      target = Math.min(levels.length - 1, current + 1)
     } else if (event.key === 'Home') {
       target = 0
     } else if (event.key === 'End') {
-      target = count - 1
+      target = levels.length - 1
     }
     if (target === undefined) return
     event.preventDefault()
@@ -1018,20 +630,22 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   if (!available) return null
 
   const count = levels.length
-  const activeIndex = clampIndex(levels, preview)
-  const activeLevel = levels[activeIndex] ?? levels[0]
-  const peak = activeIndex === count - 1
-  const progress = count > 1 ? preview / (count - 1) * 100 : 50
+  const effortName = levels[effortIndex(levels, effort)]?.name ?? effort
+  const isTop = effortIndex(levels, effort) === count - 1
+  const progress = preview / (count - 1) * 100
   const style = { '--re-progress': `${progress}%` } as CSSProperties
-  const effortText = effortLabel(activeLevel) || effortId
-  const title = error === null ? `推理强度 · ${effortText}` : `推理强度设置失败：${error}`
+  const title = error === null ? `推理强度 · ${effortName}` : `推理强度设置失败：${error}`
 
   return (
     <div
       className={`re-effort${chibiThumb ? ' is-chibi' : ''}${dragging ? ' is-dragging' : ''}${busy ? ' is-busy' : ''}${error === null ? '' : ' is-error'}`}
       title={title}
     >
-      <div className={`re-effort-slider${peak ? ' is-peak' : ''}`} data-effort={effortId} style={style}>
+      <div
+        className="re-effort-slider"
+        data-top={isTop ? 'true' : undefined}
+        style={style}
+      >
         <div className="re-effort-track" aria-hidden="true" />
         <div className="re-effort-fx" aria-hidden="true">
           <canvas ref={canvasRef} className="re-effort-canvas" />
@@ -1047,7 +661,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
           value={preview}
           disabled={busy}
           aria-label="推理强度"
-          aria-valuetext={effortText}
+          aria-valuetext={effortName}
           onChange={(event) => {
             const raw = Number(event.currentTarget.value)
             showPointerPreview(raw)
@@ -1078,11 +692,13 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
 }
 
 function AdvancedModelSelect({
+  locked,
   available,
   controller,
   directory,
   load,
   select,
+  adapt,
 }: ModelSeatProps) {
   const state = useSyncExternalStore(
     (notify) => directory.subscribe(notify),
@@ -1090,15 +706,17 @@ function AdvancedModelSelect({
   )
   const [open, setOpen] = useState(false)
   const [modelsOpen, setModelsOpen] = useState(false)
-  const [choiceError, setChoiceError] = useState<string | null>(null)
+  const [guidance, setGuidance] = useState<AdaptGuidance | null>(null)
+  const [guidanceBusy, setGuidanceBusy] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const choice = currentModel(state)
-  const effort = effectiveEffort(state)
-  const effortText = effortLabel(effort)
+  const levels = sliderLevels(state)
+  const effortName = levels[effectiveEffortIndex(levels, state)]?.name ?? '默认'
   const modelLabel = choice?.name ?? state.current?.model ?? '选择模型'
   const busy = state.status === 'loading' || state.status === 'selecting'
-  const displayedError = state.error ?? choiceError
 
   useEffect(() => {
     if (!available) return
@@ -1117,6 +735,32 @@ function AdvancedModelSelect({
     return () => document.removeEventListener('mousedown', closeOutside)
   }, [open])
 
+  const provider = state.current?.provider
+  const modelId = state.current?.model
+
+  useEffect(() => {
+    if (adapt === null || provider === undefined || modelId === undefined) {
+      setGuidance(null)
+      setPanelOpen(false)
+      return
+    }
+    let cancelled = false
+    setGuidanceBusy(true)
+    adapt.diagnose(provider, modelId).then((result) => {
+      if (cancelled) return
+      setGuidance(result)
+      setGuidanceBusy(false)
+      if (result === null || !result.needsGuide) setPanelOpen(false)
+    }, () => {
+      if (cancelled) return
+      setGuidance(null)
+      setGuidanceBusy(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [adapt, provider, modelId])
+
   if (!available) return null
 
   const close = (restoreFocus = false) => {
@@ -1133,23 +777,16 @@ function AdvancedModelSelect({
   }
 
   const chooseModel = async (provider: string, model: string, defaultEffort?: string) => {
-    if (state.current?.provider === provider && state.current?.model === model) {
+    if (state.current?.provider === provider && state.current.model === model) {
       setModelsOpen(false)
       return
     }
-    setChoiceError(null)
-    try {
-      await select({
-        provider,
-        model,
-        ...(defaultEffort === undefined ? {} : { reasoningEffort: defaultEffort }),
-      })
-    } catch (cause) {
-      setChoiceError(cause instanceof Error ? cause.message : String(cause))
-      return
-    }
-    const current = directory.getSnapshot().current
-    if (current?.provider === provider && current.model === model) setModelsOpen(false)
+    const accepted = await select({
+      provider,
+      model,
+      ...(defaultEffort === undefined ? {} : { reasoningEffort: defaultEffort }),
+    })
+    if (accepted) setModelsOpen(false)
   }
 
   return (
@@ -1158,23 +795,22 @@ function AdvancedModelSelect({
         ref={triggerRef}
         type="button"
         className="re-model-trigger"
-        aria-label={`模型 ${modelLabel}${effortText.length === 0 ? '' : `，推理强度 ${effortText}`}`}
+        aria-label={`模型 ${modelLabel}，推理强度 ${effortName}`}
         aria-haspopup="menu"
         aria-expanded={open}
-        title={effortText.length === 0 ? modelLabel : `${modelLabel} · ${effortText}`}
-        disabled={busy}
+        title={`${modelLabel} · ${effortName}`}
+        disabled={locked}
         onClick={() => {
           if (open) close()
           else {
             setOpen(true)
             setModelsOpen(false)
-            setChoiceError(null)
             load()
           }
         }}
       >
         <span className="re-model-name">{modelLabel}</span>
-        {effortText.length === 0 ? null : <span className="re-model-effort">{effortText}</span>}
+        <span className="re-model-effort">{effortName}</span>
         <span className="re-model-chevron" aria-hidden="true" />
       </button>
 
@@ -1219,17 +855,84 @@ function AdvancedModelSelect({
               {state.status === 'ready' && state.groups.every((group) => group.models.length === 0) ? (
                 <div className="re-model-status">没有可用模型</div>
               ) : null}
-              {displayedError === null ? null : <div className="re-model-error">{displayedError}</div>}
+              {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
             </div>
           ) : (
             <>
               <div className="re-advanced">
-                {supportsSlider(state) ? (
+                {levels.length >= 2 ? (
                   <EffortSlider directory={controller} />
                 ) : (
-                  <div className="re-model-status">当前模型未提供可选择的思考档位</div>
+                  <div className="re-model-status">当前模型未提供推理强度档位</div>
                 )}
               </div>
+              {guidance !== null && guidance.needsGuide ? (
+                <div className="re-adapt">
+                  <div className="re-adapt-copy">
+                    <div className="re-adapt-title">
+                      {guidance.reason === 'missing' ? '当前模型未提供推理强度档位' : '档位声明与知识库不一致'}
+                    </div>
+                    <div className="re-adapt-desc">
+                      {guidance.matched
+                        ? `知识库记录该模型支持 ${levelsText(guidance.expected)}，目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`
+                        : `目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`}
+                    </div>
+                  </div>
+                  {panelOpen ? (
+                    <div className="re-adapt-panel">
+                      <div className="re-adapt-scroll">
+                        {guidance.matched ? (
+                          <div className="re-adapt-panel-line">
+                            <span className="re-adapt-arrow">{levelsText(guidance.current)}</span>
+                            <span aria-hidden="true">→</span>
+                            <span className="re-adapt-arrow">{levelsText(guidance.expected)}</span>
+                          </div>
+                        ) : null}
+                        {guidance.warning === null ? null : (
+                          <div className="re-adapt-warning">{guidance.warning}</div>
+                        )}
+                        <div className="re-adapt-label">要粘贴的内容</div>
+                        <pre className="re-adapt-yaml">{guidance.snippet}</pre>
+                        <div className="re-adapt-steps">
+                          <span>
+                            1. 打开 settings.yaml
+                            {guidance.settingsPath === null ? '' : `（${guidance.settingsPath}）`}，
+                            在 <code>{guidance.entryPath}</code> 列表里找到 <code>{guidance.entryLine}</code>；
+                          </span>
+                          {guidance.mode === 'replace' ? (
+                            <span>
+                              2. 把原有 <code>{guidance.entryLine}</code> 条目整体替换为复制的内容（不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                            </span>
+                          ) : (
+                            <span>
+                              2. 该行末尾回车，粘贴上面复制的内容（缩进与 <code>id</code> 差 2 个空格；不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                            </span>
+                          )}
+                          <span>3. 保存后自动生效；滑块未出现则重启 Web Host 并刷新页面。</span>
+                        </div>
+                      </div>
+                      <div className="re-adapt-actions">
+                        <button
+                          type="button"
+                          className="re-adapt-apply"
+                          onClick={() => {
+                            void copyText(guidance.snippet).then((ok) => setCopied(ok))
+                          }}
+                        >
+                          {copied ? '已复制 ✓' : '复制字段块'}
+                        </button>
+                        <button type="button" className="re-adapt-cancel" onClick={() => setPanelOpen(false)}>
+                          收起
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" className="re-adapt-open" onClick={() => { setCopied(false); setPanelOpen(true) }}>
+                      {guidanceBusy ? '检测中…' : '查看档位声明指引'}
+                    </button>
+                  )}
+                </div>
+              ) : null}
               <div className="re-menu-separator" />
               <button
                 type="button"
@@ -1239,10 +942,10 @@ function AdvancedModelSelect({
                 onClick={() => setModelsOpen(true)}
               >
                 <span className="re-model-row-name">{modelLabel}</span>
-                {effortText.length === 0 ? null : <span className="re-model-row-effort">{effortText}</span>}
+                <span className="re-model-row-effort">{effortName}</span>
                 <span className="re-row-chevron" aria-hidden="true">›</span>
               </button>
-              {displayedError === null ? null : <div className="re-model-error">{displayedError}</div>}
+              {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
             </>
           )}
         </div>
@@ -1258,7 +961,7 @@ function ReasoningEffortSetting() {
     <div className="re-setting-row">
       <div className="re-setting-copy">
         <div className="re-setting-title">推理强度滑块</div>
-        <div className="re-setting-description">在模型菜单中显示多档滑块和动态辐射特效</div>
+        <div className="re-setting-description">在模型菜单中显示推理强度滑块和动态辐射特效，档位随当前模型自动适配</div>
       </div>
       <div className="re-setting-control">
         <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
@@ -1308,6 +1011,9 @@ function ChibiThumbSetting() {
 export function apply(ctx: ClientContext) {
   const modelDirectories = ctx.get('modelDirectories') as ModelDirectoryResolver | undefined
   if (modelDirectories === undefined) return
+
+  const connection = ctx.get('connection') as { rpc?: HostRpc } | undefined
+  const adapt = makeAdaptationService(connection?.rpc)
 
   ctx.effect(() => {
     const style = document.createElement('style')
@@ -1363,7 +1069,8 @@ export function apply(ctx: ClientContext) {
               controller,
               directory: controller.store,
               load: () => controller.load().then(() => undefined, () => undefined),
-              select: (selection: ModelSelection) => controller.select(selection).then(() => true),
+              select: (selection: ModelSelection) => controller.select(selection).then(() => true, () => false),
+              adapt,
             }
           },
         },
