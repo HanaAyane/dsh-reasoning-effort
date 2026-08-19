@@ -4,205 +4,114 @@
 
 # dsh-reasoning-effort
 
-**A Codex-style model and reasoning-effort control, built directly into DeepSeek Harness.**
+**A Codex-style model and reasoning-effort control with 8 dedicated chibi runner animation themes, built directly into DeepSeek Harness.**
 
-[中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
+[中文说明](README.md) · [GitHub Repository](https://github.com/xihucuyudaichi/dsh-reasoning-effort) · [Original Upstream Project](https://github.com/HanaAyane/dsh-reasoning-effort) · [Report an issue](https://github.com/xihucuyudaichi/dsh-reasoning-effort/issues)
 
-[![main 0.6.2](https://img.shields.io/badge/main-0.6.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
+[![main](https://img.shields.io/badge/branch-main-6f83ff?style=flat-square)](https://github.com/xihucuyudaichi/dsh-reasoning-effort/tree/main)
 [![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
 </div>
 
-On first launch, the plugin adds a combined model control below the DSH composer. Open it to find the reasoning-effort slider, whose levels adapt to whatever the selected model exposes, above the familiar model picker. The plugin is enabled by default and stays synchronized with DSH's `/model` command.
+---
 
-## First use in three steps
+## 🌟 Upstream Attribution & Acknowledgment
 
-### 1. Install the plugin
+This project is an extended, feature-rich enhancement based on the original work by [HanaAyane/dsh-reasoning-effort](https://github.com/HanaAyane/dsh-reasoning-effort).
 
-#### Ask an agent to install it (recommended)
+Building on the original author's elegant Cordis architecture, reasoning-effort slider, custom provider guidance, and quota monitoring integration, this repository adds:
+1. **8 Dedicated Chibi Runner Sprite Themes**: High-precision 2D connected-component valley segmentation ensuring 100% clean, ghosting-free, centered 8-frame running sprite sheets.
+2. **Dynamic Dual-Mode Themes & Canvas Radiation FX**: Custom dark/light track gradients, column energy wavebands, hotspots, and streak particle trails tailored for each model family.
+3. **Model-First Brand Detection (`detectModelTheme`)**: Prioritizes Model ID & Display Name over Provider identifiers, ensuring seamless theme detection across third-party aggregators (OpenRouter, OneAPI, Bedrock, etc.) and local models.
 
-If your current agent can run terminal commands, send it this complete prompt:
+---
+
+## 🎭 8 Dedicated Model Family Themes
+
+The slider automatically adapts its chibi runner sprite, track theme, and radiation wavebands to the currently selected model in real time:
+
+| Family | Theme Key | Chibi Runner Character | Dark Mode Track | Light Mode Track | Particle & Glow FX |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **DeepSeek** | `deepseek` | Blue Maid (Classic Fish) | Classic Tech Blue (`#03040a` → `#5d35a0`) | Sky Ice Blue + Tech Blue fill | Blue energy wave & meteor trails |
+| **OpenAI / GPT** | `openai` | White Dragon Girl | Codex Neon Purple (`#090412` → `#6b21a8`) | Lilac Violet + Neon Purple fill | Violet starburst particles |
+| **Claude** | `claude` | Orange Flower Girl | Anthropic Terracotta (`#120803` → `#c2410c`) | Warm Apricot + Terracotta fill | Terracotta gold aura |
+| **Gemini** | `gemini` | Star Catgirl | Google 4-Color Spectrum (`#120902` → `#84184c`) | Lilac Violet + Quad Star fill | 5-color stardust particles |
+| **Kimi** | `kimi` | Silver Lunar Maid | Midnight Deep Blue (`#090c1e` → `#4359b8`) | Crystal Blue + Starlight fill | Midnight blue beam + Golden stars |
+| **GLM / ZCode** | `glm` | Black-Haired Eyepatch Maid | Obsidian Jet Black (`#05070c` → `#223f66`) | Ice White + Obsidian Cyan fill | Cyber cyan beam + Silver stardust |
+| **Qwen / Tongyi** | `qwen` | Azure Long Hair Girl | Ethereal Azure Blue (`#0c1538` → `#5f9ef8`) | Morning Sky Blue + Gold fill | Azure energy wave + Golden starlight |
+| **MiniMax / Hailuo** | `minimax` | Coral Orange Beret Girl | Vibrant Sunset Coral (`#24090b` → `#ff6f43`) | Warm Peach Pink + Coral fill | Sunset coral streak + Rose glow |
+
+---
+
+## 🚀 Installation
+
+### Option 1: Ask an Agent to Install (Recommended)
+
+Send this instruction to any DSH Agent:
 
 ```text
 Install dsh-reasoning-effort for the DeepSeek Harness web profile.
 
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
+dsh plugin --profile web add github:xihucuyudaichi/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 
 Confirm that dsh-reasoning-effort appears in the output, then report the result.
-Do not stop or restart my running DSH process. Remind me to restart the DSH Web Host manually after installation.
+Remind me to restart the DSH Web Host manually after installation.
 ```
 
-The agent should report whether `dsh-reasoning-effort` appeared in the resolved configuration.
-
-#### Install manually
-
-Open PowerShell and run:
+### Option 2: Manual Installation
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
+dsh plugin --profile web add github:xihucuyudaichi/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
 
-`main` is currently versioned `0.5.0`, matching the latest release tag `v0.5.0`. `#main` always installs the newest code (which may later include unreleased changes); replace `#main` with `#v0.5.0` to pin this release.
+### Option 3: Offline / Local Linking (Zero-Build Ready)
 
-### 2. Restart the DSH Web Host
+All 8 runner sprites are pre-compiled and embedded as Base64 DataURLs in `lib/client/index.js`.
 
-The plugin loads when the Web Host starts. After installation, stop the current host, start it again, and refresh the DSH page.
+1. Extract the plugin folder to `~/.dsh/plugins/dsh-reasoning-effort`;
+2. Add the reference in `~/.dsh/profiles/web/package.json`:
+   ```json
+   {
+     "name": "dsh-profile-web",
+     "private": true,
+     "dependencies": {
+       "dsh-reasoning-effort": "link:C:\\Users\\<YourUser>\\.dsh\\plugins\\dsh-reasoning-effort"
+     },
+     "dsh": {
+       "profile": {
+         "bundles": [
+           "@deepseek-ai/dsh-base",
+           "@deepseek-ai/dsh-web-app",
+           "dsh-reasoning-effort"
+         ]
+       }
+     }
+   }
+   ```
+3. Restart `dsh web` and refresh your browser!
 
-### 3. Open the model control
+---
 
-1. Create or open a session.
-2. Click the model-and-effort button below the composer.
-3. Drag the thumb or click the track; release to snap to the nearest level.
-4. Click the model row below the slider to enter DSH's native model list.
-
-Your result should look like this:
-
-<img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="1200">
-
-## Where the levels come from
-
-The slider renders exactly the `reasoning.efforts` the selected model exposes in the DSH model directory — count, names, and order are the model's, and the plugin adapts automatically. A common three-level combination:
-
-| Level | Good for | Tendency |
-| --- | --- | --- |
-| `off` | Simple questions, rewriting, quick actions | Faster |
-| `high` | Everyday coding, analysis, multi-step work | Balanced |
-| `max` | Complex debugging, planning, difficult tasks | More reasoning |
-
-DeepSeek models typically expose `off` / `high` / `max`; GLM coding models (e.g. GLM-5.2) expose five levels: `off` / `low` / `medium` / `high` / `xhigh`. The slider submits effort values exposed by the selected model; it does not bypass model or deployment limits. When a model exposes fewer than two levels, or none at all, the menu shows "current model provides no reasoning-effort levels" — see the troubleshooting section below for how to declare them.
-
-## Effort guidance for custom providers
-
-Built-in routes get their levels from the pi-ai catalog and the plugin never touches them. Only models you declare yourself in `llm-pi-ai` receive guidance:
-
-1. Open the model menu. If the current model is your own declaration and the directory exposes no levels (or the declaration disagrees with the knowledge base), a **View declaration guidance** entry appears.
-2. The panel shows the suggested levels (e.g. GLM-5.2 → minimal/low/medium/high) and a copy-ready complete entry YAML — including the `- id:` line, with your existing `name`/`contextWindow`/`maxTokens` preserved — plus the settings.yaml path.
-3. Replace the matching `- id:` entry with the copied content (do not create a second `llm-pi-ai:` root) and save. DSH reloads automatically; if not, restart the Web Host and refresh.
-
-Models the knowledge base does not know get an annotated template to fill from the endpoint's docs. Known-hostile gateways (e.g. Aliyun Bailian `maas/dashscope.aliyuncs.com`, which rejects the `developer` message role) get an explicit warning, because settings.yaml cannot override that behavior.
-
-The built-in knowledge base covers GLM-5.2 (`minimal/low/medium/high`) and Kimi K3 (`low/high/max`). Add more models under the plugin's own settings namespace; user entries win over built-ins:
-
-```yaml
-dsh-reasoning-effort:
-  entries:
-    - id: my-model
-      provider: "*"          # provider route, * wildcard
-      model: "my-model-id"   # model id, * wildcard
-      note: description
-      efforts:               # display level -> wire value the endpoint accepts
-        low: "low"
-        high: "high"
-        max: "max"
-      compat:                # openai-completions routes only
-        thinkingFormat: "openai"
-        supportsReasoningEffort: true
-```
-
-The plugin only provides snippets — it never writes configuration, and catalog-declared level sets (even a single level) are never flagged.
-
-## The Big Fat Fish slider
-
-The eight-frame runner is **enabled by default**. To switch back to the plain white thumb:
-
-1. Open **Settings → General**.
-2. Find **Big Fat Fish slider** below Appearance.
-3. Disable it and return to the model control.
-
-<img src="assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="1200">
-
-The runner changes only the thumb artwork. Snapping, keyboard control, radiation effects, and model selection remain unchanged. It animates faster while dragging and freezes on a stable frame when reduced motion is enabled.
-
-The **Reasoning effort selector** switch on the same page disables the complete enhancement without uninstalling it. DSH's built-in model selector returns immediately. Both preferences stay in the current browser.
-
-## What the plugin adds
-
-- **Direct pointer tracking** — the thumb follows the pointer continuously and snaps only on release.
-- **Native dark and light themes** — blue-violet-black in dark mode and progressively stronger blues on white in light mode.
-- **Left-only motion effects** — waves, shock pulses, pixel radiation, particles, and trails remain behind the thumb.
-- **Shared DSH session state** — the slider and `/model` command use the same session model directory.
-- **Automatic rollback** — a failed update restores the last confirmed selection.
-- **No extra network behavior** — no plugin telemetry, credential handling, or server-side storage.
-
-## Troubleshooting
-
-### The slider does not appear
-
-Check that:
-
-1. You restarted the DSH Web Host after installation.
-2. **Settings → General → Reasoning effort selector** is enabled.
-3. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.
-
-### A model declares no effort levels (e.g. GLM-5.3)
-
-Models missing from pi-ai's built-in catalog carry no reasoning levels at all, and the menu shows "current model provides no reasoning-effort levels". Declare them in `~/.dsh/settings.yaml` — for GLM-5.3 on a zai coding route:
-
-```yaml
-llm-pi-ai:
-  providers:
-    zai-coding-cn:
-      models:
-        - id: glm-5.3
-          name: GLM-5.3
-          contextWindow: 1000000
-          maxTokens: 131072
-          reasoningEfforts:   # key = level shown on the slider, value = reasoning_effort sent to the API
-            low: "low"
-            high: "high"
-            xhigh: "max"
-          compat:             # the zai route's detection does not send reasoning_effort by default
-            thinkingFormat: "zai"
-            supportsReasoningEffort: true
-```
-
-Notes:
-
-- Level names come from the DSH level vocabulary (`off` / `minimal` / `low` / `medium` / `high` / `xhigh`); values are the `reasoning_effort` spellings the endpoint accepts. Leaving `off` undeclared makes it unselectable, which suits models that cannot turn thinking off.
-- Models already in the pi-ai catalog (e.g. GLM-5.2) inherit their levels automatically — no configuration needed.
-- Once upstream catalogs include the model, the hand-written declaration can be removed; explicit entries always win over the catalog.
-- Submitted levels are validated and dispatched by the host; the plugin never bypasses model or deployment limits.
-
-### Confirm that the plugin loaded
-
-```powershell
-dsh --profile web --dump-config
-```
-
-The output should contain `name: dsh-reasoning-effort`.
-
-### Uninstall
-
-```powershell
-dsh plugin --profile web remove dsh-reasoning-effort
-```
-
-Restart the DSH Web Host afterward. The native model selector will return automatically.
-
-## Compatibility
-
-| Component | Target |
-| --- | --- |
-| DeepSeek Harness packages | `0.1.0-rc.6` |
-| Node.js | `22.19+` |
-| React | `18.x` |
-
-DeepSeek Harness is a developer preview. Upstream UI or service changes may require a matching plugin update.
-
-## Development
+## 🛠️ Development & Building
 
 ```powershell
 pnpm install
+pnpm run build
 pnpm run check
-pnpm pack
 ```
 
-`pnpm run check` validates TypeScript and rebuilds both the host entry and browser module. See [design/visual-spec.md](design/visual-spec.md) for the complete interaction contract and [SECURITY.md](SECURITY.md) for vulnerability reporting.
+- **Theme Development Guide**: See [THEME_GUIDE.md](THEME_GUIDE.md).
+- **Context & Handover**: See [CONTEXT_HANDOVER.md](CONTEXT_HANDOVER.md).
 
-## License
+---
 
-[MIT](LICENSE) © HanaAyane
+## 📄 License
+
+[MIT License](LICENSE)
+
+- **Maintainer**: xihucuyudaichi
+- **Upstream Project**: [HanaAyane/dsh-reasoning-effort](https://github.com/HanaAyane/dsh-reasoning-effort)
