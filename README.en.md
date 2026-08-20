@@ -31,6 +31,10 @@ Building on the original author's elegant Cordis architecture, reasoning-effort 
 
 The slider automatically adapts its chibi runner sprite, track theme, and radiation wavebands to the currently selected model in real time:
 
+<div align="center">
+  <img src="assets/readme/all-themes.jpg" alt="Reasoning Slider & Chibi Runner Themes Preview" width="560">
+</div>
+
 | Family | Theme Key | Chibi Runner Character | Dark Mode Track | Light Mode Track | Particle & Glow FX |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **DeepSeek** | `deepseek` | Blue Maid (Classic Fish) | Classic Tech Blue (`#03040a` → `#5d35a0`) | Sky Ice Blue + Tech Blue fill | Blue energy wave & meteor trails |
