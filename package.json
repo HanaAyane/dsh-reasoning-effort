@@ -14,14 +14,14 @@
     "ui",
     "cordis"
   ],
-  "author": "HanaAyane",
+  "author": "xihucuyudaichi (Upstream: HanaAyane)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HanaAyane/dsh-reasoning-effort.git"
+    "url": "git+https://github.com/xihucuyudaichi/dsh-reasoning-effort.git"
   },
-  "homepage": "https://github.com/HanaAyane/dsh-reasoning-effort#readme",
+  "homepage": "https://github.com/xihucuyudaichi/dsh-reasoning-effort#readme",
   "bugs": {
-    "url": "https://github.com/HanaAyane/dsh-reasoning-effort/issues"
+    "url": "https://github.com/xihucuyudaichi/dsh-reasoning-effort/issues"
   },
   "engines": {
     "node": ">=22.19"
@@ -45,12 +45,15 @@
   "files": [
     "lib",
     "src",
-    "assets/chibi-runner-strip.png",
+    "assets",
+    "scripts",
     "design",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
     "CHANGELOG.md",
+    "CONTEXT_HANDOVER.md",
+    "THEME_GUIDE.md",
     "LICENSE"
   ],
   "scripts": {
