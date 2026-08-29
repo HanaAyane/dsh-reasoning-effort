@@ -896,7 +896,7 @@ function AdvancedModelSelect({
                         <div className="re-adapt-steps">
                           <span>
                             1. Open settings.yaml
-                            {guidance.settingsPath === null ? '' : `（${guidance.settingsPath}）`}，
+                            {guidance.settingsPath === null ? '' : ` (${guidance.settingsPath})`},
                             find <code>{guidance.entryLine}</code> in the <code>{guidance.entryPath}</code> list;
                           </span>
                           {guidance.mode === 'replace' ? (
