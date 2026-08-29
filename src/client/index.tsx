@@ -67,13 +67,13 @@ interface AdaptationService {
 }
 
 const LEVEL_NAMES: Record<string, string> = {
-  off: '关闭',
-  minimal: '极低',
-  low: '低',
-  medium: '中',
-  high: '高',
-  xhigh: '极高',
-  max: '最大',
+  off: 'Off',
+  minimal: 'Minimal',
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  xhigh: 'Very High',
+  max: 'Max',
 }
 
 function levelName(level: string): string {
@@ -81,7 +81,7 @@ function levelName(level: string): string {
 }
 
 function levelsText(levels: readonly string[]): string {
-  return levels.length === 0 ? '无档位' : levels.map((level) => levelName(level)).join(' / ')
+  return levels.length === 0 ? 'No levels' : levels.map((level) => levelName(level)).join(' / ')
 }
 
 /** Wrap the Host RPC channel in typed helpers; null while the Host half is absent. */
@@ -503,7 +503,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
       const freshLevels = sliderLevels(fresh)
       const index = clampIndex(raw, freshLevels.length)
       const next = freshLevels[index]?.id
-      if (next === undefined) throw new Error('当前模型未提供推理强度档位')
+      if (next === undefined) throw new Error('The current model does not provide reasoning-effort levels')
 
       previewRef.current = index
       setPreview(index)
@@ -634,7 +634,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   const isTop = effortIndex(levels, effort) === count - 1
   const progress = preview / (count - 1) * 100
   const style = { '--re-progress': `${progress}%` } as CSSProperties
-  const title = error === null ? `推理强度 · ${effortName}` : `推理强度设置失败：${error}`
+  const title = error === null ? `Reasoning effort · ${effortName}` : `Failed to set reasoning effort: ${error}`
 
   return (
     <div
@@ -660,7 +660,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
           step="0.01"
           value={preview}
           disabled={busy}
-          aria-label="推理强度"
+          aria-label="Reasoning effort"
           aria-valuetext={effortName}
           onChange={(event) => {
             const raw = Number(event.currentTarget.value)
@@ -714,8 +714,8 @@ function AdvancedModelSelect({
   const triggerRef = useRef<HTMLButtonElement>(null)
   const choice = currentModel(state)
   const levels = sliderLevels(state)
-  const effortName = levels[effectiveEffortIndex(levels, state)]?.name ?? '默认'
-  const modelLabel = choice?.name ?? state.current?.model ?? '选择模型'
+  const effortName = levels[effectiveEffortIndex(levels, state)]?.name ?? 'Default'
+  const modelLabel = choice?.name ?? state.current?.model ?? 'Select model'
   const busy = state.status === 'loading' || state.status === 'selecting'
 
   useEffect(() => {
@@ -795,7 +795,7 @@ function AdvancedModelSelect({
         ref={triggerRef}
         type="button"
         className="re-model-trigger"
-        aria-label={`模型 ${modelLabel}，推理强度 ${effortName}`}
+        aria-label={`Model ${modelLabel}, reasoning effort ${effortName}`}
         aria-haspopup="menu"
         aria-expanded={open}
         title={`${modelLabel} · ${effortName}`}
@@ -815,15 +815,15 @@ function AdvancedModelSelect({
       </button>
 
       {open ? (
-        <div className="re-model-menu" role="menu" aria-label="模型与推理强度" aria-busy={busy}>
+        <div className="re-model-menu" role="menu" aria-label="Model and reasoning effort" aria-busy={busy}>
           {modelsOpen ? (
             <div className="re-model-pane">
               <button type="button" className="re-model-back" onClick={() => setModelsOpen(false)}>
                 <span aria-hidden="true">‹</span>
-                <span>选择模型</span>
+                <span>Select model</span>
               </button>
               {state.status === 'loading' && state.groups.length === 0 ? (
-                <div className="re-model-status">正在加载模型…</div>
+                <div className="re-model-status">Loading models…</div>
               ) : null}
               {state.groups.map((group) => (
                 <section key={group.id}>
@@ -853,7 +853,7 @@ function AdvancedModelSelect({
                 </section>
               ))}
               {state.status === 'ready' && state.groups.every((group) => group.models.length === 0) ? (
-                <div className="re-model-status">没有可用模型</div>
+                <div className="re-model-status">No models available</div>
               ) : null}
               {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
             </div>
@@ -863,19 +863,19 @@ function AdvancedModelSelect({
                 {levels.length >= 2 ? (
                   <EffortSlider directory={controller} />
                 ) : (
-                  <div className="re-model-status">当前模型未提供推理强度档位</div>
+                  <div className="re-model-status">The current model does not provide reasoning-effort levels</div>
                 )}
               </div>
               {guidance !== null && guidance.needsGuide ? (
                 <div className="re-adapt">
                   <div className="re-adapt-copy">
                     <div className="re-adapt-title">
-                      {guidance.reason === 'missing' ? '当前模型未提供推理强度档位' : '档位声明与知识库不一致'}
+                      {guidance.reason === 'missing' ? 'The current model does not provide reasoning-effort levels' : 'Level declaration does not match the knowledge base'}
                     </div>
                     <div className="re-adapt-desc">
                       {guidance.matched
-                        ? `知识库记录该模型支持 ${levelsText(guidance.expected)}，目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`
-                        : `目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`}
+                        ? `The knowledge base records this model as supporting ${levelsText(guidance.expected)}, but the directory currently shows ${levelsText(guidance.current)}. ${guidance.note ?? ''}`
+                        : `The directory currently shows ${levelsText(guidance.current)}. ${guidance.note ?? ''}`}
                     </div>
                   </div>
                   {panelOpen ? (
@@ -891,24 +891,24 @@ function AdvancedModelSelect({
                         {guidance.warning === null ? null : (
                           <div className="re-adapt-warning">{guidance.warning}</div>
                         )}
-                        <div className="re-adapt-label">要粘贴的内容</div>
+                        <div className="re-adapt-label">Content to paste</div>
                         <pre className="re-adapt-yaml">{guidance.snippet}</pre>
                         <div className="re-adapt-steps">
                           <span>
-                            1. 打开 settings.yaml
+                            1. Open settings.yaml
                             {guidance.settingsPath === null ? '' : `（${guidance.settingsPath}）`}，
-                            在 <code>{guidance.entryPath}</code> 列表里找到 <code>{guidance.entryLine}</code>；
+                            find <code>{guidance.entryLine}</code> in the <code>{guidance.entryPath}</code> list;
                           </span>
                           {guidance.mode === 'replace' ? (
                             <span>
-                              2. 把原有 <code>{guidance.entryLine}</code> 条目整体替换为复制的内容（不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                              2. Replace the existing <code>{guidance.entryLine}</code> entry with the copied content (do not create a second <code>llm-pi-ai:</code> root);
                             </span>
                           ) : (
                             <span>
-                              2. 该行末尾回车，粘贴上面复制的内容（缩进与 <code>id</code> 差 2 个空格；不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                              2. Press Enter at the end of that line and paste the copied content (indent 2 spaces relative to <code>id</code>; do not create a second <code>llm-pi-ai:</code> root);
                             </span>
                           )}
-                          <span>3. 保存后自动生效；滑块未出现则重启 Web Host 并刷新页面。</span>
+                          <span>3. Takes effect automatically after saving; if the slider does not appear, restart the Web Host and refresh the page.</span>
                         </div>
                       </div>
                       <div className="re-adapt-actions">
@@ -919,16 +919,16 @@ function AdvancedModelSelect({
                             void copyText(guidance.snippet).then((ok) => setCopied(ok))
                           }}
                         >
-                          {copied ? '已复制 ✓' : '复制字段块'}
+                          {copied ? 'Copied ✓' : 'Copy field block'}
                         </button>
                         <button type="button" className="re-adapt-cancel" onClick={() => setPanelOpen(false)}>
-                          收起
+                          Collapse
                         </button>
                       </div>
                     </div>
                   ) : (
                     <button type="button" className="re-adapt-open" onClick={() => { setCopied(false); setPanelOpen(true) }}>
-                      {guidanceBusy ? '检测中…' : '查看档位声明指引'}
+                      {guidanceBusy ? 'Checking…' : 'View level declaration guidance'}
                     </button>
                   )}
                 </div>
@@ -960,15 +960,15 @@ function ReasoningEffortSetting() {
   return (
     <div className="re-setting-row">
       <div className="re-setting-copy">
-        <div className="re-setting-title">推理强度滑块</div>
-        <div className="re-setting-description">在模型菜单中显示推理强度滑块和动态辐射特效，档位随当前模型自动适配</div>
+        <div className="re-setting-title">Reasoning effort slider</div>
+        <div className="re-setting-description">Show the reasoning-effort slider and dynamic radiation effect in the model menu; levels adapt to the current model automatically</div>
       </div>
       <div className="re-setting-control">
-        <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
+        <span className="re-setting-state">{enabled ? 'Enabled' : 'Disabled'}</span>
         <button
           type="button"
           role="switch"
-          aria-label="启用推理强度滑块"
+          aria-label="Enable reasoning effort slider"
           aria-checked={enabled}
           className={`re-setting-switch${enabled ? ' is-on' : ''}`}
           onClick={() => enabledStore.set(!enabled)}
@@ -987,15 +987,15 @@ function ChibiThumbSetting() {
   return (
     <div className="re-setting-row">
       <div className="re-setting-copy">
-        <div className="re-setting-title">大肥鱼滑块</div>
-        <div className="re-setting-description">用大肥鱼替换滑块按钮</div>
+        <div className="re-setting-title">Big Fat Fish slider</div>
+        <div className="re-setting-description">Replace the slider thumb with the Big Fat Fish</div>
       </div>
       <div className="re-setting-control">
-        <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
+        <span className="re-setting-state">{enabled ? 'Enabled' : 'Disabled'}</span>
         <button
           type="button"
           role="switch"
-          aria-label="启用大肥鱼滑块"
+          aria-label="Enable Big Fat Fish slider"
           aria-checked={enabled}
           disabled={!sliderEnabled}
           className={`re-setting-switch${enabled ? ' is-on' : ''}`}

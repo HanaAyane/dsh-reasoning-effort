@@ -169,9 +169,9 @@ function fieldBlock(entry: KnowledgeEntry): string {
 function templateSnippet(): string {
   return [
     '          reasoningEfforts:',
-    '            low: "low"        # 键 = DSH 档位体系（off/minimal/low/medium/high/xhigh/max）',
-    '            high: "high"      # 值 = 端点实际接受的取值，请按端点文档填写',
-    '          # 仅 OpenAI 兼容端点需要；端点不识别 reasoning_effort 时删除整块：',
+    '            low: "low"        # key = DSH level system (off/minimal/low/medium/high/xhigh/max)',
+    '            high: "high"      # value = the value the endpoint actually accepts; fill in per the endpoint docs',
+    '          # Only needed for OpenAI-compatible endpoints; remove the whole block if the endpoint does not recognize reasoning_effort:',
     '          compat:',
     '            thinkingFormat: "openai"',
     '            supportsReasoningEffort: true',
@@ -263,7 +263,7 @@ export function apply(ctx: Context): void {
         : undefined
       const baseURL = isRecord(route) && typeof route.baseURL === 'string' ? route.baseURL : ''
       if (baseURL.includes('maas.aliyuncs.com') || baseURL.includes('dashscope.aliyuncs.com')) {
-        return '该端点是阿里云百炼的 OpenAI 兼容模式：DSH 会以 developer 角色发送系统提示，百炼会拒绝并返回 400（invalid_parameter_error），且 settings.yaml 目前无法覆盖该行为。建议改用内置 zai 路由（目录已自带 GLM-5.2 档位）或向 DSH 上游反馈支持 supportsDeveloperRole 配置。'
+        return 'This endpoint is the Aliyun Bailian OpenAI-compatible mode: DSH sends the system prompt with the developer role, which Bailian rejects with a 400 (invalid_parameter_error), and settings.yaml cannot currently override this behavior. Consider using the built-in zai route (the catalog already ships GLM-5.2 levels) or asking DSH upstream to support a supportsDeveloperRole config.'
       }
       return null
     } catch {
@@ -295,7 +295,7 @@ export function apply(ctx: Context): void {
       : templateSnippet()
 
     // Replace mode: the snippet is the COMPLETE replacement entry (existing
-    // scalar fields + declared levels), so "整行替换" cannot drop user data.
+    // scalar fields + declared levels), so "replace the whole line" cannot drop user data.
     // Insert mode: the entry carries fields this plugin cannot round-trip,
     // so only the field block is offered, to paste under the existing line.
     const head = entryHead(userEntry, model)
@@ -303,7 +303,7 @@ export function apply(ctx: Context): void {
     const snippet = head.complete ? `${head.lines.join('\n')}\n${block}` : block
 
     const note = entry === undefined
-      ? '知识库未收录该模型，请按端点文档填写档位取值。'
+      ? 'This model is not in the knowledge base; fill in the level values per the endpoint documentation.'
       : entry.note
 
     const warning = endpointWarning(provider)
