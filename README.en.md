@@ -16,6 +16,8 @@
 
 On first launch, the plugin adds a combined model control below the DSH composer. Open it to find the reasoning-effort slider, whose levels adapt to whatever the selected model exposes, above the familiar model picker. The plugin is enabled by default and stays synchronized with DSH's `/model` command.
 
+The runtime UI ships in Simplified Chinese and English and follows the DSH language selected under **Settings → General** immediately. The model menu, settings rows, accessibility labels, knowledge-base notes, warnings, and copy-ready YAML comments switch together without a page reload.
+
 ## First use in three steps
 
 ### 1. Install the plugin

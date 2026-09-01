@@ -14,14 +14,23 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ModelSelection, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
 import type {
   ModelDirectory,
   ModelDirectoryResolver,
   ModelDirectoryState,
 } from '@deepseek-ai/dsh-client-ui-model-selection/client'
+import {
+  en,
+  NS,
+  zh,
+  type ReasoningEffortLocaleKey,
+  type ReasoningEffortTranslate,
+} from './locales.js'
 import { CSS } from './styles.js'
 
 /** One selectable effort exactly as the owning adapter advertised it. */
@@ -53,9 +62,11 @@ interface AdaptGuidance {
   readonly expected: string[]
   readonly matched: boolean
   readonly mode: 'replace' | 'insert'
+  readonly noteKey: 'glm52' | 'kimiK3' | null
   readonly note: string | null
-  readonly warning: string | null
-  readonly snippet: string
+  readonly warning: 'aliyunDeveloperRole' | null
+  readonly entryHead: string | null
+  readonly fieldBlock: string | null
   readonly entryLine: string
   readonly entryPath: string
   readonly settingsPath: string | null
@@ -66,22 +77,52 @@ interface AdaptationService {
   diagnose(provider: string, model: string): Promise<AdaptGuidance | null>
 }
 
-const LEVEL_NAMES: Record<string, string> = {
-  off: '关闭',
-  minimal: '极低',
-  low: '低',
-  medium: '中',
-  high: '高',
-  xhigh: '极高',
-  max: '最大',
+const LEVEL_NAME_KEYS: Record<string, ReasoningEffortLocaleKey> = {
+  off: 'level.off',
+  minimal: 'level.minimal',
+  low: 'level.low',
+  medium: 'level.medium',
+  high: 'level.high',
+  xhigh: 'level.xhigh',
+  max: 'level.max',
 }
 
-function levelName(level: string): string {
-  return LEVEL_NAMES[level] ?? level
+function levelName(level: string, t: ReasoningEffortTranslate): string {
+  const key = LEVEL_NAME_KEYS[level]
+  return key === undefined ? level : t(key)
 }
 
-function levelsText(levels: readonly string[]): string {
-  return levels.length === 0 ? '无档位' : levels.map((level) => levelName(level)).join(' / ')
+function levelsText(levels: readonly string[], t: ReasoningEffortTranslate): string {
+  return levels.length === 0 ? t('level.none') : levels.map((level) => levelName(level, t)).join(' / ')
+}
+
+/** Localized field-block template for a model the knowledge base does not know. */
+function templateSnippet(t: ReasoningEffortTranslate): string {
+  return [
+    '          reasoningEfforts:',
+    `            low: "low"        # ${t('yaml.keyComment')}`,
+    `            high: "high"      # ${t('yaml.valueComment')}`,
+    `          # ${t('yaml.compatComment')}`,
+    '          compat:',
+    '            thinkingFormat: "openai"',
+    '            supportsReasoningEffort: true',
+  ].join('\n')
+}
+
+function guidanceNote(guidance: AdaptGuidance, t: ReasoningEffortTranslate): string {
+  if (guidance.note !== null) return guidance.note
+  if (guidance.noteKey === 'glm52') return t('knowledge.glm52')
+  if (guidance.noteKey === 'kimiK3') return t('knowledge.kimiK3')
+  return t('knowledge.unknown')
+}
+
+function guidanceWarning(guidance: AdaptGuidance, t: ReasoningEffortTranslate): string | null {
+  return guidance.warning === 'aliyunDeveloperRole' ? t('warning.aliyunDeveloperRole') : null
+}
+
+function guidanceSnippet(guidance: AdaptGuidance, t: ReasoningEffortTranslate): string {
+  const block = guidance.fieldBlock ?? templateSnippet(t)
+  return guidance.entryHead === null ? block : `${guidance.entryHead}\n${block}`
 }
 
 /** Wrap the Host RPC channel in typed helpers; null while the Host half is absent. */
@@ -122,7 +163,7 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-interface ModelSeatProps {
+interface ModelSeatInjectedProps {
   readonly locked: boolean
   readonly available: boolean
   readonly controller: ModelDirectory
@@ -132,12 +173,14 @@ interface ModelSeatProps {
   readonly adapt: AdaptationService | null
 }
 
+type ModelSeatProps = ModelSeatInjectedProps & PropsLocale<typeof NS>
+
 const SLOT = 'conversation.input.model'
 const SETTINGS_SLOT = 'settings.general.item'
 const ENABLED_STORAGE_KEY = 'dsh-reasoning-effort.enabled'
 const LEGACY_ENABLED_STORAGE_KEY = '@dsh-external/dsh-reasoning-effort.enabled'
 const CHIBI_THUMB_STORAGE_KEY = 'dsh-reasoning-effort.chibi-thumb'
-export const inject = ['slots', 'modelDirectories', 'connection']
+export const inject = ['slots', 'modelDirectories', 'connection', 'locale']
 
 function readEnabledPreference(): boolean {
   try {
@@ -351,7 +394,7 @@ function drawRadiation(
   context.restore()
 }
 
-function EffortSlider({ directory }: { directory: ModelDirectory }) {
+function EffortSlider({ directory, t }: { directory: ModelDirectory; t: ReasoningEffortTranslate }) {
   const directoryState = useSyncExternalStore(
     (notify) => directory.store.subscribe(notify),
     () => directory.store.getSnapshot(),
@@ -503,7 +546,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
       const freshLevels = sliderLevels(fresh)
       const index = clampIndex(raw, freshLevels.length)
       const next = freshLevels[index]?.id
-      if (next === undefined) throw new Error('当前模型未提供推理强度档位')
+      if (next === undefined) throw new Error(t('effort.unavailable'))
 
       previewRef.current = index
       setPreview(index)
@@ -634,7 +677,9 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
   const isTop = effortIndex(levels, effort) === count - 1
   const progress = preview / (count - 1) * 100
   const style = { '--re-progress': `${progress}%` } as CSSProperties
-  const title = error === null ? `推理强度 · ${effortName}` : `推理强度设置失败：${error}`
+  const title = error === null
+    ? t('effort.title', { effort: effortName })
+    : t('effort.failed', { error })
 
   return (
     <div
@@ -660,7 +705,7 @@ function EffortSlider({ directory }: { directory: ModelDirectory }) {
           step="0.01"
           value={preview}
           disabled={busy}
-          aria-label="推理强度"
+          aria-label={t('effort.label')}
           aria-valuetext={effortName}
           onChange={(event) => {
             const raw = Number(event.currentTarget.value)
@@ -699,6 +744,7 @@ function AdvancedModelSelect({
   load,
   select,
   adapt,
+  t,
 }: ModelSeatProps) {
   const state = useSyncExternalStore(
     (notify) => directory.subscribe(notify),
@@ -714,9 +760,12 @@ function AdvancedModelSelect({
   const triggerRef = useRef<HTMLButtonElement>(null)
   const choice = currentModel(state)
   const levels = sliderLevels(state)
-  const effortName = levels[effectiveEffortIndex(levels, state)]?.name ?? '默认'
-  const modelLabel = choice?.name ?? state.current?.model ?? '选择模型'
+  const effortName = levels[effectiveEffortIndex(levels, state)]?.name ?? t('model.defaultEffort')
+  const modelLabel = choice?.name ?? state.current?.model ?? t('model.select')
   const busy = state.status === 'loading' || state.status === 'selecting'
+  const localizedNote = guidance === null ? '' : guidanceNote(guidance, t)
+  const localizedWarning = guidance === null ? null : guidanceWarning(guidance, t)
+  const localizedSnippet = guidance === null ? '' : guidanceSnippet(guidance, t)
 
   useEffect(() => {
     if (!available) return
@@ -795,7 +844,7 @@ function AdvancedModelSelect({
         ref={triggerRef}
         type="button"
         className="re-model-trigger"
-        aria-label={`模型 ${modelLabel}，推理强度 ${effortName}`}
+        aria-label={t('model.aria', { model: modelLabel, effort: effortName })}
         aria-haspopup="menu"
         aria-expanded={open}
         title={`${modelLabel} · ${effortName}`}
@@ -815,15 +864,15 @@ function AdvancedModelSelect({
       </button>
 
       {open ? (
-        <div className="re-model-menu" role="menu" aria-label="模型与推理强度" aria-busy={busy}>
+        <div className="re-model-menu" role="menu" aria-label={t('model.menuAria')} aria-busy={busy}>
           {modelsOpen ? (
             <div className="re-model-pane">
               <button type="button" className="re-model-back" onClick={() => setModelsOpen(false)}>
                 <span aria-hidden="true">‹</span>
-                <span>选择模型</span>
+                <span>{t('model.select')}</span>
               </button>
               {state.status === 'loading' && state.groups.length === 0 ? (
-                <div className="re-model-status">正在加载模型…</div>
+                <div className="re-model-status">{t('model.loading')}</div>
               ) : null}
               {state.groups.map((group) => (
                 <section key={group.id}>
@@ -853,7 +902,7 @@ function AdvancedModelSelect({
                 </section>
               ))}
               {state.status === 'ready' && state.groups.every((group) => group.models.length === 0) ? (
-                <div className="re-model-status">没有可用模型</div>
+                <div className="re-model-status">{t('model.none')}</div>
               ) : null}
               {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
             </div>
@@ -861,21 +910,28 @@ function AdvancedModelSelect({
             <>
               <div className="re-advanced">
                 {levels.length >= 2 ? (
-                  <EffortSlider directory={controller} />
+                  <EffortSlider directory={controller} t={t} />
                 ) : (
-                  <div className="re-model-status">当前模型未提供推理强度档位</div>
+                  <div className="re-model-status">{t('effort.unavailable')}</div>
                 )}
               </div>
               {guidance !== null && guidance.needsGuide ? (
                 <div className="re-adapt">
                   <div className="re-adapt-copy">
                     <div className="re-adapt-title">
-                      {guidance.reason === 'missing' ? '当前模型未提供推理强度档位' : '档位声明与知识库不一致'}
+                      {guidance.reason === 'missing' ? t('effort.unavailable') : t('guidance.mismatch')}
                     </div>
                     <div className="re-adapt-desc">
                       {guidance.matched
-                        ? `知识库记录该模型支持 ${levelsText(guidance.expected)}，目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`
-                        : `目录当前为 ${levelsText(guidance.current)}。${guidance.note ?? ''}`}
+                        ? t('guidance.matched', {
+                            expected: levelsText(guidance.expected, t),
+                            current: levelsText(guidance.current, t),
+                            note: localizedNote,
+                          })
+                        : t('guidance.unmatched', {
+                            current: levelsText(guidance.current, t),
+                            note: localizedNote,
+                          })}
                     </div>
                   </div>
                   {panelOpen ? (
@@ -883,32 +939,35 @@ function AdvancedModelSelect({
                       <div className="re-adapt-scroll">
                         {guidance.matched ? (
                           <div className="re-adapt-panel-line">
-                            <span className="re-adapt-arrow">{levelsText(guidance.current)}</span>
+                            <span className="re-adapt-arrow">{levelsText(guidance.current, t)}</span>
                             <span aria-hidden="true">→</span>
-                            <span className="re-adapt-arrow">{levelsText(guidance.expected)}</span>
+                            <span className="re-adapt-arrow">{levelsText(guidance.expected, t)}</span>
                           </div>
                         ) : null}
-                        {guidance.warning === null ? null : (
-                          <div className="re-adapt-warning">{guidance.warning}</div>
+                        {localizedWarning === null ? null : (
+                          <div className="re-adapt-warning">{localizedWarning}</div>
                         )}
-                        <div className="re-adapt-label">要粘贴的内容</div>
-                        <pre className="re-adapt-yaml">{guidance.snippet}</pre>
+                        <div className="re-adapt-label">{t('guidance.paste')}</div>
+                        <pre className="re-adapt-yaml">{localizedSnippet}</pre>
                         <div className="re-adapt-steps">
                           <span>
-                            1. 打开 settings.yaml
-                            {guidance.settingsPath === null ? '' : `（${guidance.settingsPath}）`}，
-                            在 <code>{guidance.entryPath}</code> 列表里找到 <code>{guidance.entryLine}</code>；
+                            {t('guidance.step1.open')}<code>settings.yaml</code>
+                            {guidance.settingsPath === null ? '' : t('guidance.step1.path', { path: guidance.settingsPath })}
+                            {t('guidance.step1.find')}<code>{guidance.entryPath}</code>
+                            {t('guidance.step1.list')}<code>{guidance.entryLine}</code>{t('guidance.step1.end')}
                           </span>
                           {guidance.mode === 'replace' ? (
                             <span>
-                              2. 把原有 <code>{guidance.entryLine}</code> 条目整体替换为复制的内容（不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                              {t('guidance.step2.replacePrefix')}<code>{guidance.entryLine}</code>
+                              {t('guidance.step2.replaceSuffix')}
                             </span>
                           ) : (
                             <span>
-                              2. 该行末尾回车，粘贴上面复制的内容（缩进与 <code>id</code> 差 2 个空格；不要复制出第二个 <code>llm-pi-ai:</code> 根）；
+                              {t('guidance.step2.insertPrefix')}<code>id</code>
+                              {t('guidance.step2.insertSuffix')}
                             </span>
                           )}
-                          <span>3. 保存后自动生效；滑块未出现则重启 Web Host 并刷新页面。</span>
+                          <span>{t('guidance.step3')}</span>
                         </div>
                       </div>
                       <div className="re-adapt-actions">
@@ -916,19 +975,19 @@ function AdvancedModelSelect({
                           type="button"
                           className="re-adapt-apply"
                           onClick={() => {
-                            void copyText(guidance.snippet).then((ok) => setCopied(ok))
+                            void copyText(localizedSnippet).then((ok) => setCopied(ok))
                           }}
                         >
-                          {copied ? '已复制 ✓' : '复制字段块'}
+                          {copied ? t('guidance.copied') : t('guidance.copy')}
                         </button>
                         <button type="button" className="re-adapt-cancel" onClick={() => setPanelOpen(false)}>
-                          收起
+                          {t('guidance.collapse')}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <button type="button" className="re-adapt-open" onClick={() => { setCopied(false); setPanelOpen(true) }}>
-                      {guidanceBusy ? '检测中…' : '查看档位声明指引'}
+                      {guidanceBusy ? t('guidance.checking') : t('guidance.open')}
                     </button>
                   )}
                 </div>
@@ -954,21 +1013,21 @@ function AdvancedModelSelect({
   )
 }
 
-function ReasoningEffortSetting() {
+function ReasoningEffortSetting({ t }: PropsLocale<typeof NS>) {
   const enabled = useSyncExternalStore(enabledStore.subscribe, enabledStore.getSnapshot)
 
   return (
     <div className="re-setting-row">
       <div className="re-setting-copy">
-        <div className="re-setting-title">推理强度滑块</div>
-        <div className="re-setting-description">在模型菜单中显示推理强度滑块和动态辐射特效，档位随当前模型自动适配</div>
+        <div className="re-setting-title">{t('settings.effort.title')}</div>
+        <div className="re-setting-description">{t('settings.effort.description')}</div>
       </div>
       <div className="re-setting-control">
-        <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
+        <span className="re-setting-state">{enabled ? t('settings.enabled') : t('settings.disabled')}</span>
         <button
           type="button"
           role="switch"
-          aria-label="启用推理强度滑块"
+          aria-label={t('settings.effort.aria')}
           aria-checked={enabled}
           className={`re-setting-switch${enabled ? ' is-on' : ''}`}
           onClick={() => enabledStore.set(!enabled)}
@@ -980,22 +1039,22 @@ function ReasoningEffortSetting() {
   )
 }
 
-function ChibiThumbSetting() {
+function ChibiThumbSetting({ t }: PropsLocale<typeof NS>) {
   const sliderEnabled = useSyncExternalStore(enabledStore.subscribe, enabledStore.getSnapshot)
   const enabled = useSyncExternalStore(chibiThumbStore.subscribe, chibiThumbStore.getSnapshot)
 
   return (
     <div className="re-setting-row">
       <div className="re-setting-copy">
-        <div className="re-setting-title">大肥鱼滑块</div>
-        <div className="re-setting-description">用大肥鱼替换滑块按钮</div>
+        <div className="re-setting-title">{t('settings.chibi.title')}</div>
+        <div className="re-setting-description">{t('settings.chibi.description')}</div>
       </div>
       <div className="re-setting-control">
-        <span className="re-setting-state">{enabled ? '启用' : '停用'}</span>
+        <span className="re-setting-state">{enabled ? t('settings.enabled') : t('settings.disabled')}</span>
         <button
           type="button"
           role="switch"
-          aria-label="启用大肥鱼滑块"
+          aria-label={t('settings.chibi.aria')}
           aria-checked={enabled}
           disabled={!sliderEnabled}
           className={`re-setting-switch${enabled ? ' is-on' : ''}`}
@@ -1014,6 +1073,8 @@ export function apply(ctx: ClientContext) {
 
   const connection = ctx.get('connection') as { rpc?: HostRpc } | undefined
   const adapt = makeAdaptationService(connection?.rpc)
+
+  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'reasoning-effort: dictionaries')
 
   ctx.effect(() => {
     const style = document.createElement('style')
@@ -1037,14 +1098,14 @@ export function apply(ctx: ClientContext) {
 
   ctx.slots.inject(SETTINGS_SLOT, () =>
     ctx.slots.register(
-      { name: SETTINGS_SLOT, id: 'reasoning-effort-enabled', order: 15 },
+      { name: SETTINGS_SLOT, id: 'reasoning-effort-enabled', order: 15, locale: NS },
       ReasoningEffortSetting,
     ),
   )
 
   ctx.slots.inject(SETTINGS_SLOT, () =>
     ctx.slots.register(
-      { name: SETTINGS_SLOT, id: 'reasoning-effort-chibi-thumb', order: 16 },
+      { name: SETTINGS_SLOT, id: 'reasoning-effort-chibi-thumb', order: 16, locale: NS },
       ChibiThumbSetting,
     ),
   )
@@ -1062,6 +1123,7 @@ export function apply(ctx: ClientContext) {
         {
           name: SLOT,
           priority: -100,
+          locale: NS,
           inject: (sessionId: SessionId) => {
             const controller = modelDirectories.directoryFor(sessionId)
             return {

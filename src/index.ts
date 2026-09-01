@@ -96,13 +96,18 @@ interface Guidance {
   expected: string[]
   /** Whether a knowledge-base entry matched. */
   matched: boolean
-  /** `replace` — snippet is the whole entry to swap in; `insert` — field block to paste under the existing line. */
+  /** `replace` includes an entry head; `insert` contributes only the field block. */
   mode: 'replace' | 'insert'
+  /** Built-in note key localized by the browser half. */
+  noteKey: KnowledgeEntry['noteKey'] | null
+  /** User-authored note shown verbatim; null for built-ins and unknown models. */
   note: string | null
-  /** Endpoint-level caveat when the route targets a known-hostile gateway. */
-  warning: string | null
-  /** Copy-ready field block to insert under the model's entry. */
-  snippet: string
+  /** Stable endpoint caveat code localized by the browser half. */
+  warning: 'aliyunDeveloperRole' | null
+  /** Existing entry head for replace mode; null for insert mode. */
+  entryHead: string | null
+  /** Locale-neutral exact declaration; null selects the localized generic template. */
+  fieldBlock: string | null
   /** The existing entry line to find in settings.yaml, e.g. `- id: glm-5.2`. */
   entryLine: string
   /** Where that entry lives, e.g. `llm-pi-ai.providers.aliyun.models`. */
@@ -163,19 +168,6 @@ function fieldBlock(entry: KnowledgeEntry): string {
     }
   }
   return lines.join('\n')
-}
-
-/** Field-block template for a model the knowledge base does not know. */
-function templateSnippet(): string {
-  return [
-    '          reasoningEfforts:',
-    '            low: "low"        # 键 = DSH 档位体系（off/minimal/low/medium/high/xhigh/max）',
-    '            high: "high"      # 值 = 端点实际接受的取值，请按端点文档填写',
-    '          # 仅 OpenAI 兼容端点需要；端点不识别 reasoning_effort 时删除整块：',
-    '          compat:',
-    '            thinkingFormat: "openai"',
-    '            supportsReasoningEffort: true',
-  ].join('\n')
 }
 
 /** Scalar fields a `models` entry may carry that this plugin round-trips. */
@@ -255,7 +247,7 @@ export function apply(ctx: Context): void {
    * `invalid_parameter_error`. The guidance must warn instead of pretending
    * the declaration alone makes the route usable.
    */
-  function endpointWarning(provider: string): string | null {
+  function endpointWarning(provider: string): Guidance['warning'] {
     try {
       const section = settingsService.get(LLM_NS)
       const route = isRecord(section) && isRecord((section as JsonObject).providers)
@@ -263,7 +255,7 @@ export function apply(ctx: Context): void {
         : undefined
       const baseURL = isRecord(route) && typeof route.baseURL === 'string' ? route.baseURL : ''
       if (baseURL.includes('maas.aliyuncs.com') || baseURL.includes('dashscope.aliyuncs.com')) {
-        return '该端点是阿里云百炼的 OpenAI 兼容模式：DSH 会以 developer 角色发送系统提示，百炼会拒绝并返回 400（invalid_parameter_error），且 settings.yaml 目前无法覆盖该行为。建议改用内置 zai 路由（目录已自带 GLM-5.2 档位）或向 DSH 上游反馈支持 supportsDeveloperRole 配置。'
+        return 'aliyunDeveloperRole'
       }
       return null
     } catch {
@@ -290,21 +282,17 @@ export function apply(ctx: Context): void {
     // catalog's data — including deliberately sparse level sets — is trusted.
     const needsGuide = declared && reason !== 'none'
 
-    const block = entry !== undefined
-      ? fieldBlock(entry)
-      : templateSnippet()
+    const block = entry === undefined ? null : fieldBlock(entry)
 
-    // Replace mode: the snippet is the COMPLETE replacement entry (existing
-    // scalar fields + declared levels), so "整行替换" cannot drop user data.
+    // Replace mode carries the complete entry head and declared levels, so the
+    // whole-entry replacement cannot drop user data.
     // Insert mode: the entry carries fields this plugin cannot round-trip,
     // so only the field block is offered, to paste under the existing line.
     const head = entryHead(userEntry, model)
     const mode: Guidance['mode'] = head.complete ? 'replace' : 'insert'
-    const snippet = head.complete ? `${head.lines.join('\n')}\n${block}` : block
-
-    const note = entry === undefined
-      ? '知识库未收录该模型，请按端点文档填写档位取值。'
-      : entry.note
+    const builtIn = entry !== undefined && BUILTIN_ENTRIES.includes(entry)
+    const noteKey = builtIn ? entry.noteKey ?? null : null
+    const note = entry !== undefined && !builtIn ? entry.note ?? null : null
 
     const warning = endpointWarning(provider)
 
@@ -318,9 +306,11 @@ export function apply(ctx: Context): void {
       expected,
       matched: entry !== undefined,
       mode,
+      noteKey,
       note,
       warning,
-      snippet,
+      entryHead: head.complete ? head.lines.join('\n') : null,
+      fieldBlock: block,
       entryLine,
       entryPath: `${LLM_NS}.providers.${provider}.models`,
       settingsPath: path ?? null,

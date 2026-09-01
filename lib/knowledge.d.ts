@@ -28,8 +28,10 @@ export interface KnowledgeEntry {
     readonly provider: string;
     /** Model id pattern; `*` matches any run of characters. */
     readonly model: string;
-    /** Human-readable provenance note shown in the guidance panel. */
-    readonly note: string;
+    /** User-authored provenance note shown verbatim; built-ins use `noteKey`. */
+    readonly note?: string;
+    /** Stable built-in note key localized by the browser half. */
+    readonly noteKey?: 'glm52' | 'kimiK3';
     /** Declared levels: display level -> endpoint wire value (`null` pins unsupported). */
     readonly efforts: KnowledgeEfforts;
     /** Wire compat hints; carried only onto `openai-completions` routes. */

@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Follow DSH's active locale with complete Simplified Chinese and English runtime dictionaries for the model control, settings rows, accessibility labels, guidance notes, warnings, and generated YAML comments.
+
+### Changed
+
+- Return locale-neutral guidance codes and configuration fields from the Host half so language switches update visible guidance immediately without another RPC request.
+
 ## [0.6.2] - 2026-08-17
 
 ### Fixed
