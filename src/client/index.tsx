@@ -9,6 +9,12 @@
  * assumed here.
  *
  * @module dsh-reasoning-effort/client
+ * 
+ * > 🤖 AI-assisted notice: This project includes modifications reviewed and
+ * >   refined with AI assistance. The macOS compatibility adaptations
+ * >   (documentation, build verification) were AI-assisted.
+ * >   本项目的 macOS 适配修改由 AI 辅助完成。
+ * > （是 DeepSeek 写的喵～支持 DeepSeek Harenss 喵～）
  */
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react'

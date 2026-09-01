@@ -41,9 +41,9 @@ The agent should report whether `dsh-reasoning-effort` appeared in the resolved 
 
 #### Install manually
 
-Open PowerShell and run:
+Open macOS Terminal and run:
 
-```powershell
+```bash
 dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
@@ -171,7 +171,7 @@ Notes:
 
 ### Confirm that the plugin loaded
 
-```powershell
+```bash
 dsh --profile web --dump-config
 ```
 
@@ -179,11 +179,36 @@ The output should contain `name: dsh-reasoning-effort`.
 
 ### Uninstall
 
-```powershell
+```bash
 dsh plugin --profile web remove dsh-reasoning-effort
 ```
 
 Restart the DSH Web Host afterward. The native model selector will return automatically.
+
+
+## macOS Compatibility
+
+This plugin has been verified on macOS and supports:
+
+| Item | Support |
+| --- | --- |
+| Chip Architecture | ✅ Apple Silicon (M1/M2/M3/M4) and Intel Mac |
+| macOS Version | ✅ macOS 12+ (Monterey and later) |
+| Node.js | ✅ 22.19+ (recommend installing via Homebrew) |
+| pnpm | ✅ 11.7.0 |
+| DSH | ✅ DeepSeek Harness 0.1.0-rc.6 Web Profile |
+
+> ⚠️ **Note**: If your Mac has Distributed Shell installed (`/opt/homebrew/bin/dsh`),
+> running `dsh` directly will conflict. Use the full path to DeepSeek Harness's dsh:
+> ```bash
+> ~/deepseek-harness/node_modules/.bin/dsh plugin --profile web add <plugin-path>
+> ```
+> Or set an alias in `~/.zshrc`:
+> ```bash
+> alias dsh="~/deepseek-harness/node_modules/.bin/dsh"
+> ```
+
+> 🤖 **AI-assisted notice**: The macOS compatibility adaptations (documentation, build verification, compatibility notes) in this project were AI-assisted. (Written by DeepSeek meow~ Supports DeepSeek Harenss meow~)
 
 ## Compatibility
 
@@ -197,7 +222,7 @@ DeepSeek Harness is a developer preview. Upstream UI or service changes may requ
 
 ## Development
 
-```powershell
+```bash
 pnpm install
 pnpm run check
 pnpm pack
