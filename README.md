@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![main 0.6.2](https://img.shields.io/badge/main-0.6.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
+[![main 0.7.0](https://img.shields.io/badge/main-0.7.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
 [![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -48,7 +48,7 @@ dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
 dsh --profile web --dump-config
 ```
 
-`main` 当前版本为 `0.6.2`，与最新发行 Tag `v0.6.2` 一致。`#main` 始终安装最新代码（之后可能包含未发布改动）；如需固定在当前版本，可把命令中的 `#main` 改为 `#v0.6.2`。
+`main` 当前版本为 `0.7.0`，与最新发行 Tag `v0.7.0` 一致。`#main` 始终安装最新代码（之后可能包含未发布改动）；如需固定在当前版本，可把命令中的 `#main` 改为 `#v0.7.0`。
 
 ### 2. 重启 DSH Web Host
 

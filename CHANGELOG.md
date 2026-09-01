@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-01
+
 ### Added
 
 - Follow DSH's active locale with complete Simplified Chinese and English runtime dictionaries for the model control, settings rows, accessibility labels, guidance notes, warnings, and generated YAML comments.
