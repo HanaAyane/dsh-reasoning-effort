@@ -8,7 +8,7 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
-- Declare `remote` and `remote.session` client injections so resolving the model directory on DSH `0.1.2-rc.1` no longer crashes the plugin's model slot and falls back to the built-in selector (#14). Thanks to @Kalospacer for the diagnosis and reference fix.
+- Declare `remote` and `remote.session` client injections so resolving the model directory on DSH `0.1.2-rc.1` no longer crashes the plugin's model slot and falls back to the built-in selector (#14). Thanks to @Kalospacer for the diagnosis, and to @FengZhiHen1 for the independent minimal fix and real-browser verification in #15 (not merged; this release ships the equivalent injection declarations).
 
 ## [0.7.0] - 2026-09-01
 
