@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/readme/hero.webp" alt="dsh-reasoning-effort 为 DeepSeek Harness 提供 Codex 风格的模型与推理强度滑块" width="1200">
+<img src="assets/readme/hero.webp" alt="dsh-reasoning-effort 为 DeepSeek Harness 提供 Codex 风格的模型与推理强度滑块" width="100%">
 
 # dsh-reasoning-effort
 
@@ -8,74 +8,76 @@
 
 [English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![main 0.7.1](https://img.shields.io/badge/main-0.7.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
-[![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
+[![v0.7.1](https://img.shields.io/badge/release-0.7.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1)
+[![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
 </div>
 
-第一次打开插件时，你会在 DSH 输入框下方看到新的模型入口。点击后，弹层上方是推理强度滑块，档位随当前模型自动适配，下方仍然是熟悉的模型选择入口。插件默认启用，并与 DSH 的 `/model` 命令保持同步。
+在 DSH 输入框下方切换模型、拖动推理强度，并让八帧“大肥鱼”随拖动加速。档位来自当前模型，选择结果与 `/model` 命令保持同步。
 
-插件运行时界面提供简体中文和英文，并跟随 **设置 → 通用设置** 中的 DSH 语言即时切换。模型菜单、设置项、无障碍标签、知识库说明、警告和可复制 YAML 注释会统一切换，无需刷新页面。
+- **跟随模型档位**：自动适配档数、名称和顺序，提交失败时回滚。
+- **贴合 DSH 界面**：支持深浅主题，简体中文与英文跟随 DSH 语言即时切换。
+- **可选动态外观**：默认启用大肥鱼，支持普通按钮及系统“减少动态效果”设置。
+- **自定义模型指引**：提供可复制的配置片段，由你确认并保存。
 
-## 第一次使用：三步完成
+<img src="assets/readme/themes.webp" alt="推理强度选择器在 DeepSeek Harness 深色和浅色主题中的真实效果" width="100%">
 
-### 1. 安装插件
+[安装与更新](#安装与更新) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
 
-#### 让 Agent 安装（推荐）
+## 版本支持政策
 
-如果当前 Agent 可以执行终端命令，把下面这段话完整发送给它：
+本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
 
-```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort 插件。
+建议使用发行说明中注明的 RC 版本。如需继续使用 alpha，请自行进行临时适配。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
 
-只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
-dsh --profile web --dump-config
+| 项目 | 当前说明 |
+| --- | --- |
+| 插件发行版 | [v0.7.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1) |
+| 本次修复目标 | DSH `0.1.2-rc.1`，Web Profile |
+| 验证范围 | 类型检查、国际化检查和构建通过；浏览器实测待完成 |
+| alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
 
-确认输出中出现 dsh-reasoning-effort 后告诉我安装结果。
-不要替我关闭或重启正在运行的 DSH；安装完成后提醒我手动重启 DSH Web Host。
-```
+## 安装与更新
 
-Agent 应当返回安装结果，并明确告诉你配置中是否已经出现 `dsh-reasoning-effort`。
+### 1. 安装固定发行版
 
-#### 手动安装
-
-也可以自己打开 PowerShell 执行：
+在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
 dsh --profile web --dump-config
 ```
 
-`main` 当前版本为 `0.7.1`，与最新发行 Tag `v0.7.1` 一致。`#main` 始终安装最新代码（之后可能包含未发布改动）；如需固定在当前版本，可把命令中的 `#main` 改为 `#v0.7.1`。
+确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.7.1` 换成 `#main`，但主分支可能包含未发布改动。
 
-### 2. 重启 DSH Web Host
+<details>
+<summary>让 Agent 帮你安装：复制这段提示词</summary>
 
-插件在 Web Host 启动时载入。安装命令完成后，请结束当前 Host 并重新启动，再刷新 DSH 页面。
+```text
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.7.1。
+只执行下面两条命令，不要修改其他 Profile：
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
+dsh --profile web --dump-config
+确认配置中出现 dsh-reasoning-effort 后告诉我结果。
+不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
+```
 
-### 3. 打开模型入口
+</details>
 
-1. 新建或打开一个会话。
-2. 点击输入框下方显示“模型 + 当前强度”的按钮。
-3. 拖动滑块或点击轨道，释放后会吸附到最近的档位。
-4. 点击滑块下方的模型行，可以继续进入 DSH 原生模型列表。
+### 2. 重启并刷新
 
-完成后，你看到的效果应当与下面一致：
+插件在 Web Host 启动时载入。安装完成后，手动重启 DSH Web Host，再刷新页面。
 
-<img src="assets/readme/themes.webp" alt="推理强度选择器在 DeepSeek Harness 深色和浅色主题中的真实效果" width="1200">
+### 3. 选择模型与强度
+
+打开一个会话，点击输入框下方的模型入口。拖动滑块或点击轨道，释放后吸附到最近的有效档位；点击下方模型行可展开模型列表。
 
 ## 档位从哪里来
 
-滑块显示的档位完全来自当前模型在 DSH 模型目录中公开的 `reasoning.efforts`——档数、名称与顺序都由模型决定，插件自动适配。以常见的三档组合为例：
+滑块读取当前模型在 DSH 模型目录中公开的 `reasoning.efforts`。档数、名称和顺序由模型与路由决定，并非固定三档，也不保证不同端点提供相同档位。
 
-| 档位 | 适合场景 | 体验倾向 |
-| --- | --- | --- |
-| `off` | 简单问答、改写、快速操作 | 更快 |
-| `high` | 日常编程、分析和多步骤任务 | 速度与推理平衡 |
-| `max` | 复杂调试、规划和高难度任务 | 更充分的推理 |
-
-DeepSeek 系模型通常公开 `off` / `high` / `max`；GLM coding 系模型（如 GLM-5.2）公开 `off` / `low` / `medium` / `high` / `xhigh` 五档。滑块只是提交当前模型公开的 effort 值，不会绕过模型或部署本身的能力限制。模型公开的档位少于两档、或没有声明任何档位时，菜单会显示"当前模型未提供推理强度档位"。
+模型公开至少两档时显示滑块；不足两档时显示提示。插件提交目录中的档位值，由 DSH 校验和发送，不会绕过模型或部署的能力限制。
 
 ## 档位指引（自定义 provider）
 
@@ -86,6 +88,9 @@ DSH 内置路由的档位来自 pi-ai 目录，插件**完全只读、绝不修�
 3. 复制后用其**整体替换** settings.yaml 里对应的 `- id:` 条目（不要复制出第二个 `llm-pi-ai:` 根）并保存。DSH 会自动加载；若未生效，重启 Web Host 并刷新页面。
 
 知识库未收录的模型会得到带注释的通用模板，按端点文档填值即可。遇到"端点因 developer 角色拒绝请求"之类的情况，面板会直接给出警告与替代建议（例如阿里云百炼端点建议改用内置 zai 路由）。
+
+<details>
+<summary>高级配置：扩展插件知识库</summary>
 
 内置知识库目前收录 GLM-5.2（`minimal/low/medium/high`）与 Kimi K3（`low/high/max`）。要补充其他模型，在 `settings.yaml` 里追加到插件自己的命名空间即可，条目优先于内置：
 
@@ -107,6 +112,8 @@ dsh-reasoning-effort:
 
 注意：插件只提供片段，**不会替你修改任何配置**；内置目录里的档位集合（即使只有一档）也不会被标记——那是上游的刻意数据。
 
+</details>
+
 ## 大肥鱼滑块
 
 插件**默认启用**八帧奔跑小人作为滑块按钮。若想换回纯白按钮：
@@ -115,20 +122,11 @@ dsh-reasoning-effort:
 2. 找到“外观”下方的 **大肥鱼滑块**。
 3. 关闭开关，再回到模型入口。
 
-<img src="assets/readme/settings.webp" alt="DeepSeek Harness 通用设置中的推理强度滑块和大肥鱼滑块开关" width="1200">
+<img src="assets/readme/settings.webp" alt="DeepSeek Harness 通用设置中的推理强度滑块和大肥鱼滑块开关" width="100%">
 
 大肥鱼只替换按钮外观，不改变档位吸附、键盘控制、辐射特效或模型选择。拖动时动画会自动加速；系统启用“减少动态效果”后会停留在稳定帧。
 
 同一页面中的 **推理强度滑块** 总开关可以临时关闭整个增强控件。关闭后无需卸载，DSH 原生模型选择器会立即恢复。两个开关都只保存在当前浏览器。
-
-## 你会得到什么
-
-- **真正跟手的拖动**：按钮按指针位置连续移动，释放后才吸附到有效档位。
-- **深浅主题适配**：深色为蓝紫黑渐变，浅色为蓝白渐变，强度越高蓝色越深。
-- **只向左侧发射的特效**：波浪、冲击波、像素辐射、粒子和拖尾不会越过按钮。
-- **与 DSH 状态同步**：滑块和 `/model` 命令读写同一个会话模型目录。
-- **失败自动回滚**：更新失败时恢复到上一个已确认档位。
-- **无额外网络行为**：插件不新增遥测、凭据处理或服务端存储。
 
 ## 常见问题
 
@@ -136,38 +134,20 @@ dsh-reasoning-effort:
 
 请依次确认：
 
-1. 安装后已经重启 DSH Web Host。
-2. **设置 → 通用设置 → 推理强度滑块** 处于启用状态。
-3. 当前模型在 DSH 模型目录中公开了至少两档推理强度（未声明的模型见下一条），且部署没有关闭 thinking。
+1. 使用发行说明中的目标 RC 与对应插件版本；`0.7.1` 包含 DSH `0.1.2-rc.1` 的模型控件注入修复。
+2. 安装后已经重启 DSH Web Host。
+3. **设置 → 通用设置 → 推理强度滑块** 处于启用状态。
+4. 当前模型在 DSH 模型目录中公开了至少两档推理强度（未声明的模型见下一条），且部署没有关闭 thinking。
 
-### 模型没有声明档位怎么办（如 GLM-5.3）
+### 模型没有声明档位怎么办
 
-不在 pi-ai 自带目录中的新模型没有任何推理档位，菜单会显示"当前模型未提供推理强度档位"。此时在 `~/.dsh/settings.yaml` 中为它声明档位即可，以 zai coding 路由下的 GLM-5.3 为例：
+先查看模型菜单中的 **查看档位声明指引**。若需要手动配置，请根据当前模型和端点文档填写 `settings.yaml` 中对应模型的 `reasoningEfforts` 与 `compat`，不要直接套用其他模型的档位或上下文参数。
 
-```yaml
-llm-pi-ai:
-  providers:
-    zai-coding-cn:
-      models:
-        - id: glm-5.3
-          name: GLM-5.3
-          contextWindow: 1000000
-          maxTokens: 131072
-          reasoningEfforts:   # 键＝滑块显示的档位名，值＝实际发给 API 的 reasoning_effort
-            low: "low"
-            high: "high"
-            xhigh: "max"
-          compat:             # zai 路由检测默认不发 reasoning_effort，需要显式打开
-            thinkingFormat: "zai"
-            supportsReasoningEffort: true
-```
+知识库只提供参考；实际支持的取值以端点能力为准。保存后若未生效，重启 Web Host 并刷新页面。
 
-几点说明：
+### RC 版本仍有问题，如何反馈
 
-- 档位名使用 DSH 档位体系（`off` / `minimal` / `low` / `medium` / `high` / `xhigh`），值是端点实际接受的 `reasoning_effort` 取值；`off` 不声明即不可选，适合无法关闭思考的模型。
-- 已收录在 pi-ai 目录中的模型（如 GLM-5.2）自动继承档位，无需任何配置。
-- 上游目录收录该模型后，手写声明即可删除；手写条目始终优先于目录。
-- 提交的档位值最终由 host 校验并发送，插件不会绕过模型或部署的能力限制。
+请在 [Issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues) 中附上 DSH 版本、插件版本、客户端类型（Web 或桌面封装）、复现步骤，以及相关控制台报错。报告前请隐去令牌和凭据。
 
 ### 如何确认插件已经载入
 
@@ -187,16 +167,6 @@ dsh plugin --profile web remove dsh-reasoning-effort
 
 卸载后重启 DSH Web Host，原生模型选择器会自动恢复。
 
-## 兼容性
-
-| 组件 | 目标版本 |
-| --- | --- |
-| DeepSeek Harness packages | `0.1.0-rc.6` |
-| Node.js | `22.19+` |
-| React | `18.x` |
-
-DeepSeek Harness 仍处于开发者预览阶段；上游 UI 或服务变更可能需要同步更新插件。
-
 ## 开发与构建
 
 ```powershell
@@ -205,7 +175,7 @@ pnpm run check
 pnpm pack
 ```
 
-`pnpm run check` 会进行 TypeScript 校验，并重建 Host 入口与浏览器模块。完整交互与颜色约定见 [design/visual-spec.md](design/visual-spec.md)，安全问题请按照 [SECURITY.md](SECURITY.md) 报告。
+开发环境使用 Node.js `22.19+`（同时满足目标 DSH 的要求）和 `pnpm@11.7.0`。`pnpm run check` 会进行 TypeScript 与国际化校验，并重建 Host 入口、浏览器模块及类型声明。完整交互与颜色约定见 [design/visual-spec.md](design/visual-spec.md)，安全问题请按照 [SECURITY.md](SECURITY.md) 报告。
 
 ## 许可证
 

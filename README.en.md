@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/readme/hero.webp" alt="dsh-reasoning-effort brings a Codex-style model and reasoning-effort slider to DeepSeek Harness" width="1200">
+<img src="assets/readme/hero.webp" alt="dsh-reasoning-effort brings a Codex-style model and reasoning-effort slider to DeepSeek Harness" width="100%">
 
 # dsh-reasoning-effort
 
@@ -8,74 +8,76 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![main 0.7.1](https://img.shields.io/badge/main-0.7.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/tree/main)
-[![DSH 0.1.0-rc.6](https://img.shields.io/badge/DSH-0.1.0--rc.6-8b5cf6?style=flat-square)](https://github.com/deepseek-ai/deepseek-harness)
+[![v0.7.1](https://img.shields.io/badge/release-0.7.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1)
+[![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
 </div>
 
-On first launch, the plugin adds a combined model control below the DSH composer. Open it to find the reasoning-effort slider, whose levels adapt to whatever the selected model exposes, above the familiar model picker. The plugin is enabled by default and stays synchronized with DSH's `/model` command.
+Switch models and adjust reasoning effort below the DSH composer, with an eight-frame Big Fat Fish runner that speeds up as you drag. Levels come from the selected model, and selections stay synchronized with `/model`.
 
-The runtime UI ships in Simplified Chinese and English and follows the DSH language selected under **Settings → General** immediately. The model menu, settings rows, accessibility labels, knowledge-base notes, warnings, and copy-ready YAML comments switch together without a page reload.
+- **Model-defined levels** — adapts to their count, names, and order; failed updates roll back.
+- **Native appearance** — dark and light themes, with Simplified Chinese and English following DSH's active language immediately.
+- **Optional motion** — the runner is on by default, with a plain-thumb option and reduced-motion support.
+- **Custom-model guidance** — copy configuration snippets, review them, and save them yourself.
 
-## First use in three steps
+<img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="100%">
 
-### 1. Install the plugin
+[Install and update](#install-and-update) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
-#### Ask an agent to install it (recommended)
+## Version support policy
 
-If your current agent can run terminal commands, send it this complete prompt:
+This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-```text
-Install dsh-reasoning-effort for the DeepSeek Harness web profile.
+Use the RC version listed in the release notes. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
-Run only these two commands and do not change any other profile:
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
-dsh --profile web --dump-config
+| Item | Current status |
+| --- | --- |
+| Plugin release | [v0.7.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1) |
+| Target of this fix | DSH `0.1.2-rc.1`, Web Profile |
+| Validation | Type checks, locale checks, and build pass; browser validation is pending |
+| Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
-Confirm that dsh-reasoning-effort appears in the output, then report the result.
-Do not stop or restart my running DSH process. Remind me to restart the DSH Web Host manually after installation.
-```
+## Install and update
 
-The agent should report whether `dsh-reasoning-effort` appeared in the resolved configuration.
+### 1. Install a pinned release
 
-#### Install manually
-
-Open PowerShell and run:
+Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#main
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
 dsh --profile web --dump-config
 ```
 
-`main` is currently versioned `0.7.1`, matching the latest release tag `v0.7.1`. `#main` always installs the newest code (which may later include unreleased changes); replace `#main` with `#v0.7.1` to pin this release.
+Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.7.1` with `#main`; the main branch may contain unreleased changes.
 
-### 2. Restart the DSH Web Host
+<details>
+<summary>Ask an agent to install it: copy this prompt</summary>
 
-The plugin loads when the Web Host starts. After installation, stop the current host, start it again, and refresh the DSH page.
+```text
+Install dsh-reasoning-effort v0.7.1 for the DeepSeek Harness web profile.
+Run only these two commands and do not change any other profile:
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
+dsh --profile web --dump-config
+Confirm that dsh-reasoning-effort appears in the configuration and report the result.
+Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
+```
 
-### 3. Open the model control
+</details>
 
-1. Create or open a session.
-2. Click the model-and-effort button below the composer.
-3. Drag the thumb or click the track; release to snap to the nearest level.
-4. Click the model row below the slider to enter DSH's native model list.
+### 2. Restart and refresh
 
-Your result should look like this:
+The plugin loads when the Web Host starts. After installation, restart the DSH Web Host manually and refresh the page.
 
-<img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="1200">
+### 3. Choose a model and effort level
+
+Open a session and click the model control below the composer. Drag the thumb or click the track; release to snap to the nearest valid level. Click the model row below it to expand the model list.
 
 ## Where the levels come from
 
-The slider renders exactly the `reasoning.efforts` the selected model exposes in the DSH model directory — count, names, and order are the model's, and the plugin adapts automatically. A common three-level combination:
+The slider reads `reasoning.efforts` from the current model in DSH's model directory. The model and route determine the count, names, and order. Levels are not fixed to three steps and can differ between endpoints.
 
-| Level | Good for | Tendency |
-| --- | --- | --- |
-| `off` | Simple questions, rewriting, quick actions | Faster |
-| `high` | Everyday coding, analysis, multi-step work | Balanced |
-| `max` | Complex debugging, planning, difficult tasks | More reasoning |
-
-DeepSeek models typically expose `off` / `high` / `max`; GLM coding models (e.g. GLM-5.2) expose five levels: `off` / `low` / `medium` / `high` / `xhigh`. The slider submits effort values exposed by the selected model; it does not bypass model or deployment limits. When a model exposes fewer than two levels, or none at all, the menu shows "current model provides no reasoning-effort levels" — see the troubleshooting section below for how to declare them.
+The slider appears when at least two levels are available; otherwise the menu shows a notice. DSH validates and dispatches the selected value, so the plugin cannot bypass model or deployment limits.
 
 ## Effort guidance for custom providers
 
@@ -86,6 +88,9 @@ Built-in routes get their levels from the pi-ai catalog and the plugin never tou
 3. Replace the matching `- id:` entry with the copied content (do not create a second `llm-pi-ai:` root) and save. DSH reloads automatically; if not, restart the Web Host and refresh.
 
 Models the knowledge base does not know get an annotated template to fill from the endpoint's docs. Known-hostile gateways (e.g. Aliyun Bailian `maas/dashscope.aliyuncs.com`, which rejects the `developer` message role) get an explicit warning, because settings.yaml cannot override that behavior.
+
+<details>
+<summary>Advanced: extend the plugin knowledge base</summary>
 
 The built-in knowledge base covers GLM-5.2 (`minimal/low/medium/high`) and Kimi K3 (`low/high/max`). Add more models under the plugin's own settings namespace; user entries win over built-ins:
 
@@ -107,6 +112,8 @@ dsh-reasoning-effort:
 
 The plugin only provides snippets — it never writes configuration, and catalog-declared level sets (even a single level) are never flagged.
 
+</details>
+
 ## The Big Fat Fish slider
 
 The eight-frame runner is **enabled by default**. To switch back to the plain white thumb:
@@ -115,20 +122,11 @@ The eight-frame runner is **enabled by default**. To switch back to the plain wh
 2. Find **Big Fat Fish slider** below Appearance.
 3. Disable it and return to the model control.
 
-<img src="assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="1200">
+<img src="assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="100%">
 
 The runner changes only the thumb artwork. Snapping, keyboard control, radiation effects, and model selection remain unchanged. It animates faster while dragging and freezes on a stable frame when reduced motion is enabled.
 
 The **Reasoning effort selector** switch on the same page disables the complete enhancement without uninstalling it. DSH's built-in model selector returns immediately. Both preferences stay in the current browser.
-
-## What the plugin adds
-
-- **Direct pointer tracking** — the thumb follows the pointer continuously and snaps only on release.
-- **Native dark and light themes** — blue-violet-black in dark mode and progressively stronger blues on white in light mode.
-- **Left-only motion effects** — waves, shock pulses, pixel radiation, particles, and trails remain behind the thumb.
-- **Shared DSH session state** — the slider and `/model` command use the same session model directory.
-- **Automatic rollback** — a failed update restores the last confirmed selection.
-- **No extra network behavior** — no plugin telemetry, credential handling, or server-side storage.
 
 ## Troubleshooting
 
@@ -136,38 +134,20 @@ The **Reasoning effort selector** switch on the same page disables the complete 
 
 Check that:
 
-1. You restarted the DSH Web Host after installation.
-2. **Settings → General → Reasoning effort selector** is enabled.
-3. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.
+1. You use the target RC and matching plugin release; `0.7.1` includes the model-slot injection fix for DSH `0.1.2-rc.1`.
+2. You restarted the DSH Web Host after installation.
+3. **Settings → General → Reasoning effort selector** is enabled.
+4. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.
 
-### A model declares no effort levels (e.g. GLM-5.3)
+### A model declares no effort levels
 
-Models missing from pi-ai's built-in catalog carry no reasoning levels at all, and the menu shows "current model provides no reasoning-effort levels". Declare them in `~/.dsh/settings.yaml` — for GLM-5.3 on a zai coding route:
+First check **View declaration guidance** in the model menu. For manual configuration, fill in the model's `reasoningEfforts` and `compat` fields in `settings.yaml` using the current model and endpoint documentation. Do not reuse another model's levels or context limits without checking them.
 
-```yaml
-llm-pi-ai:
-  providers:
-    zai-coding-cn:
-      models:
-        - id: glm-5.3
-          name: GLM-5.3
-          contextWindow: 1000000
-          maxTokens: 131072
-          reasoningEfforts:   # key = level shown on the slider, value = reasoning_effort sent to the API
-            low: "low"
-            high: "high"
-            xhigh: "max"
-          compat:             # the zai route's detection does not send reasoning_effort by default
-            thinkingFormat: "zai"
-            supportsReasoningEffort: true
-```
+The knowledge base provides guidance; the endpoint determines accepted values. If saving does not take effect, restart the Web Host and refresh the page.
 
-Notes:
+### Report a problem on an RC version
 
-- Level names come from the DSH level vocabulary (`off` / `minimal` / `low` / `medium` / `high` / `xhigh`); values are the `reasoning_effort` spellings the endpoint accepts. Leaving `off` undeclared makes it unselectable, which suits models that cannot turn thinking off.
-- Models already in the pi-ai catalog (e.g. GLM-5.2) inherit their levels automatically — no configuration needed.
-- Once upstream catalogs include the model, the hand-written declaration can be removed; explicit entries always win over the catalog.
-- Submitted levels are validated and dispatched by the host; the plugin never bypasses model or deployment limits.
+Open an [issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues) with your DSH version, plugin version, client type (Web or desktop wrapper), reproduction steps, and relevant console errors. Remove tokens and credentials before posting.
 
 ### Confirm that the plugin loaded
 
@@ -185,16 +165,6 @@ dsh plugin --profile web remove dsh-reasoning-effort
 
 Restart the DSH Web Host afterward. The native model selector will return automatically.
 
-## Compatibility
-
-| Component | Target |
-| --- | --- |
-| DeepSeek Harness packages | `0.1.0-rc.6` |
-| Node.js | `22.19+` |
-| React | `18.x` |
-
-DeepSeek Harness is a developer preview. Upstream UI or service changes may require a matching plugin update.
-
 ## Development
 
 ```powershell
@@ -203,7 +173,7 @@ pnpm run check
 pnpm pack
 ```
 
-`pnpm run check` validates TypeScript and rebuilds both the host entry and browser module. See [design/visual-spec.md](design/visual-spec.md) for the complete interaction contract and [SECURITY.md](SECURITY.md) for vulnerability reporting.
+Use Node.js `22.19+` (also meeting the target DSH requirements) and `pnpm@11.7.0`. `pnpm run check` validates TypeScript and locale dictionaries, then rebuilds the host entry, browser module, and type declarations. See [design/visual-spec.md](design/visual-spec.md) for the complete interaction contract and [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 ## License
 
