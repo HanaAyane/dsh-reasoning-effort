@@ -41,17 +41,6 @@ The plugin supports **DSH `0.1.5-rc.1`**. Continue using **plugin `v0.7.1`**; no
 
 ## Install and update
 
-### 0. Install or update DSH
-
-For a global npm installation of DSH, pin the current RC:
-
-```powershell
-npm install -g @deepseek-ai/dsh@0.1.5-rc.1
-dsh --version
-```
-
-Confirm that the version output is `0.1.5-rc.1`. This updates DSH itself; install or update the plugin in the next step. For DSH running from source, follow the upstream source upgrade instructions.
-
 ### 1. Install a pinned release
 
 Run these commands in the terminal environment you use to start DSH:
