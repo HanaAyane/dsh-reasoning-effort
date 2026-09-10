@@ -29,16 +29,28 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-Use the RC version listed in the release notes. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The plugin supports **DSH `0.1.5-rc.1`**. Continue using **plugin `v0.7.1`**; no additional adaptation is needed. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
 | Plugin release | [v0.7.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1) |
-| Target of this fix | DSH `0.1.2-rc.1`, Web Profile |
-| Validation | Type checks, locale checks, and build pass; browser validation is pending |
+| Currently compatible version | DSH `0.1.5-rc.1`, Web Profile |
+| Original v0.7.1 fix target | Model-slot injection error in DSH `0.1.2-rc.1` |
+| Upgrade notes | The plugin remains compatible; continue using `v0.7.1` without code changes |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
 ## Install and update
+
+### 0. Install or update DSH
+
+For a global npm installation of DSH, pin the current RC:
+
+```powershell
+npm install -g @deepseek-ai/dsh@0.1.5-rc.1
+dsh --version
+```
+
+Confirm that the version output is `0.1.5-rc.1`. This updates DSH itself; install or update the plugin in the next step. For DSH running from source, follow the upstream source upgrade instructions.
 
 ### 1. Install a pinned release
 
@@ -134,7 +146,7 @@ The **Reasoning effort selector** switch on the same page disables the complete 
 
 Check that:
 
-1. You use the target RC and matching plugin release; `0.7.1` includes the model-slot injection fix for DSH `0.1.2-rc.1`.
+1. Check the running version with `dsh --version`; DSH `0.1.5-rc.1` works with plugin `v0.7.1`.
 2. You restarted the DSH Web Host after installation.
 3. **Settings → General → Reasoning effort selector** is enabled.
 4. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.
