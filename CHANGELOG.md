@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add a one-click **Copy for your agent** brief beside the guidance panel: it composes the observed facts (route, model id, settings.yaml path, entry path and line, levels the directory reads, knowledge-base suggestion, endpoint caveat), the task, the complete declaration rules, and the suggested block, so a user can hand the whole problem to an agent instead of filling the configuration by hand. The rules ship as a locale pair of markdown briefs inlined into the browser bundle at build time, and `pnpm run check:i18n` now fails when one side is missing, empty, or has a different outline.
+
+### Fixed
+
+- Mount the guidance channel as a plain loopback prefix route instead of `connection.rpc.handle`. On DSH `0.1.5-rc.1` the connection plugin injects only `credentials` while its route registration still reads `owner.webServer` off its own context, so `rpc.handle` throws `cannot get property "webServer" without inject` for every caller and the browser half never received a channel — the declaration panel could not render at all. The route reuses the connection service's request fence and the shared transport's envelope shape, method and content-type status codes.
+- Report a failed guidance call in the model menu instead of rendering nothing, so a missing channel no longer looks like "this model needs no guidance".
+
+### Changed
+
+- Teach level declaration generically, in the panel and in both READMEs: the how-to states the key/value rule (DSH level → endpoint spelling, an omitted level counts as unsupported) and lists the `compat` switches to reach for, instead of leaving the answer to a vendor note.
+- Leave `compat` out of the unknown-model template and show it as a commented example. The previous block asserted `thinkingFormat: "openai"` for every unknown model, which made endpoints receive a switch they do not read; with `compat` absent the adapter applies its own base-URL detection, which is what an unrecognized endpoint wants and the correct vendor format for a recognized one.
+- Reword the endpoint caveat to name the switch rather than a vendor: it no longer recommends changing provider (the earlier advice pointed at the built-in `zai` route, which needs its own credentials and was never the only fix).
+
 ## [0.7.1] - 2026-09-08
 
 ### Fixed

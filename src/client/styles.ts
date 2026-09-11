@@ -234,6 +234,7 @@ export const CSS = `
 }
 .re-model-trigger:disabled { cursor: not-allowed; opacity: .5; }
 .re-model-name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -266,8 +267,13 @@ export const CSS = `
   right: 0;
   bottom: calc(100% + 8px);
   z-index: 1200;
-  width: min(312px, calc(100vw - 32px));
-  overflow: hidden;
+  box-sizing: border-box;
+  width: min(312px, var(--re-menu-width, calc(100vw - 24px)));
+  max-height: var(--re-menu-height, calc(100dvh - 24px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  translate: var(--re-menu-x, 0px) var(--re-menu-y, 0px);
   border: 1px solid var(--dsw-alias-stroke-secondary, rgba(121,126,145,.2));
   border-radius: 16px;
   color: var(--dsw-alias-label-primary, #15171b);
@@ -496,6 +502,11 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
   font-size: 11px;
   line-height: 1.55;
 }
+.re-adapt-open-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .re-adapt-open {
   margin-top: 8px;
   padding: 5px 10px;
@@ -506,8 +517,21 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
   font-size: 12px;
   cursor: pointer;
 }
+.re-adapt-agent {
+  margin-top: 8px;
+  padding: 5px 10px;
+  border: 1px solid var(--dsw-alias-border-secondary, rgba(120,125,140,.28));
+  border-radius: 8px;
+  color: var(--dsw-alias-label-secondary, #686c75);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+.re-adapt-agent:hover { filter: brightness(1.06); }
 .re-adapt-open:hover { filter: brightness(1.06); }
 .re-adapt-panel {
+  box-sizing: border-box;
+  max-width: 100%;
   margin-top: 10px;
   padding: 10px;
   border: 1px solid var(--dsw-alias-stroke-secondary, rgba(121,126,145,.2));
@@ -534,6 +558,8 @@ body[data-ds-dark-theme] .re-adapt-panel {
 }
 .re-adapt-arrow { color: var(--dsw-static-deepseek-500, #4d70ff); font-weight: 500; }
 .re-adapt-yaml {
+  box-sizing: border-box;
+  max-width: 100%;
   margin: 9px 0 0;
   padding: 8px 10px;
   overflow: auto;
@@ -565,6 +591,25 @@ body[data-ds-dark-theme] .re-adapt-panel {
   font-size: 11px;
   line-height: 1.6;
 }
+.re-adapt-howto {
+  margin-top: 10px;
+  color: var(--dsw-alias-label-secondary, #686c75);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.re-adapt-switch-intro {
+  margin-top: 8px;
+  color: var(--dsw-alias-label-secondary, #686c75);
+  font-size: 11px;
+  font-weight: 500;
+}
+.re-adapt-switches {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  color: var(--dsw-alias-label-tertiary, #9296a0);
+  font-size: 11px;
+  line-height: 1.6;
+}
 .re-adapt-label {
   margin-top: 10px;
   color: var(--dsw-alias-label-secondary, #686c75);
@@ -577,6 +622,7 @@ body[data-ds-dark-theme] .re-adapt-panel {
 }
 .re-adapt-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 }
@@ -598,6 +644,9 @@ body[data-ds-dark-theme] .re-adapt-panel {
 }
 .re-adapt-apply:disabled,
 .re-adapt-cancel:disabled { cursor: wait; opacity: .6; }
+@media (max-width: 600px) {
+  .re-model-trigger { max-width: 180px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .re-effort-slider[data-top] .re-effort-track { animation: none; }
   .re-effort-knob,

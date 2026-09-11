@@ -71,14 +71,36 @@ interface HostLlmService {
   }>
 }
 
+/** The node request/response pair one Web prefix route owns. */
+interface HostRouteRequest {
+  readonly method?: string
+  readonly url?: string
+  readonly headers: Record<string, string | readonly string[] | undefined>
+  on(event: 'data', listener: (chunk: { readonly length: number; toString(encoding: 'utf8'): string }) => void): void
+  on(event: 'end', listener: () => void): void
+  on(event: 'error', listener: (error: unknown) => void): void
+}
+
+interface HostRouteResponse {
+  writeHead(status: number, headers?: Record<string, string>): void
+  end(body?: string): void
+}
+
+interface HostWebServer {
+  register(route: {
+    readonly kind: 'prefix'
+    readonly path: string
+    readonly handler: (request: HostRouteRequest, response: HostRouteResponse) => void | Promise<void>
+  }): () => void
+}
+
+/**
+ * The Host/Origin and browser-session fence the `/api` transport applies. This
+ * channel reads it from the connection service so it stays exactly as
+ * unreachable as the rest of the Host API.
+ */
 interface HostConnection {
-  rpc: {
-    handle(
-      channel: string,
-      handler: (endpoint: string, payload: unknown, signal: AbortSignal) => Promise<unknown>,
-      options: { authority: 'loopback' | 'trusted-host' },
-    ): () => Promise<void>
-  }
+  requestRejection(request: HostRouteRequest): 401 | 403 | undefined
 }
 
 /** One guidance result handed to the browser half. */
@@ -103,7 +125,7 @@ interface Guidance {
   /** User-authored note shown verbatim; null for built-ins and unknown models. */
   note: string | null
   /** Stable endpoint caveat code localized by the browser half. */
-  warning: 'aliyunDeveloperRole' | null
+  warning: 'developerRole' | null
   /** Existing entry head for replace mode; null for insert mode. */
   entryHead: string | null
   /** Locale-neutral exact declaration; null selects the localized generic template. */
@@ -121,11 +143,72 @@ function okResult(value: unknown): JsonObject {
 }
 
 function failResult(code: string, message: string): JsonObject {
-  return { ok: false, error: { code, message } }
+  // `details` is part of the connection envelope: the browser half refuses a
+  // failure whose details is not an object.
+  return { ok: false, error: { code, message, details: {} } }
 }
 
 function isRecord(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/** One decoded `client-request` envelope posted by the browser half. */
+interface ClientRequestEnvelope {
+  rpcId: string
+  method: string
+  payload?: unknown
+}
+
+/** Accept only the envelope fields this channel answers, mirroring the shared transport. */
+function parseEnvelope(value: unknown): ClientRequestEnvelope | undefined {
+  if (!isRecord(value) || value.type !== 'client-request') return undefined
+  if (typeof value.rpcId !== 'string' || value.rpcId.length === 0) return undefined
+  if (typeof value.method !== 'string' || value.method.length === 0) return undefined
+  return { rpcId: value.rpcId, method: value.method, payload: value.payload }
+}
+
+/** One `server-response` envelope, the only body shape the browser half parses. */
+function envelopeOf(rpcId: string, result: JsonObject): string {
+  return JSON.stringify({ type: 'server-response', rpcId, result })
+}
+
+/** Endpoint segment the browser half addressed, e.g. `diagnose`. */
+function endpointOf(url: string | undefined): string | undefined {
+  if (url === undefined) return undefined
+  const pathname = url.split('?')[0] ?? ''
+  const prefix = `${RPC_CHANNEL}/`
+  if (!pathname.startsWith(prefix)) return undefined
+  const endpoint = pathname.slice(prefix.length)
+  return /^[A-Za-z0-9_$.-]+$/u.test(endpoint) ? endpoint : undefined
+}
+
+/** Largest request body this channel accepts, in bytes. */
+const MAX_REQUEST_BYTES = 64 * 1024
+
+/** Read one JSON request body, refusing anything past {@link MAX_REQUEST_BYTES}. */
+function readJsonBody(request: HostRouteRequest): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const chunks: string[] = []
+    let bytes = 0
+    request.on('data', (chunk) => {
+      bytes += chunk.length
+      if (bytes > MAX_REQUEST_BYTES) {
+        reject(new Error('body too large'))
+        return
+      }
+      chunks.push(chunk.toString('utf8'))
+    })
+    request.on('end', () => {
+      try {
+        resolve(JSON.parse(chunks.join('')))
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error('body is not JSON'))
+      }
+    })
+    request.on('error', (error: unknown) => {
+      reject(error instanceof Error ? error : new Error('request stream failed'))
+    })
+  })
 }
 
 /** Accept only well-formed user entries so one typo cannot break matching. */
@@ -241,11 +324,12 @@ export function apply(ctx: Context): void {
 
   /**
    * Caveat for gateways whose OpenAI-compatible endpoint rejects the
-   * `developer` message role. DSH's pi-ai detection treats these base URLs
-   * as standard OpenAI (developer role enabled) and settings.yaml cannot
-   * override it, so agent requests with a system prompt fail with
-   * `invalid_parameter_error`. The guidance must warn instead of pretending
-   * the declaration alone makes the route usable.
+   * `developer` message role. DSH's pi-ai detection treats a base URL it does
+   * not recognize as standard OpenAI (developer role enabled, and overridable
+   * through `compat.supportsDeveloperRole`), so an agent request carrying a
+   * system prompt can fail with `invalid_parameter_error`. The two Aliyun MaaS
+   * hosts below are the ones observed to answer that way; the code stays
+   * endpoint-shaped so widening it is a new base URL, not new copy.
    */
   function endpointWarning(provider: string): Guidance['warning'] {
     try {
@@ -255,7 +339,7 @@ export function apply(ctx: Context): void {
         : undefined
       const baseURL = isRecord(route) && typeof route.baseURL === 'string' ? route.baseURL : ''
       if (baseURL.includes('maas.aliyuncs.com') || baseURL.includes('dashscope.aliyuncs.com')) {
-        return 'aliyunDeveloperRole'
+        return 'developerRole'
       }
       return null
     } catch {
@@ -317,35 +401,95 @@ export function apply(ctx: Context): void {
     }
   }
 
-  // Only Web profiles provide `connection`; mount the channel there without
-  // ever blocking this row in terminal-only profiles.
-  ctx.inject(['connection'], (connectionCtx) => {
-    const connection = connectionCtx.connection as HostConnection | undefined
-    if (connection === undefined) return
-    connection.rpc.handle(
-      RPC_CHANNEL,
-      async (endpoint, payload) => {
-        switch (endpoint) {
-          case 'diagnose': {
-            const request = isRecord(payload) ? payload : {}
-            const provider = typeof request.provider === 'string' ? request.provider : ''
-            const model = typeof request.model === 'string' ? request.model : ''
-            if (provider.length === 0 || model.length === 0) {
-              return failResult('invalid-request', 'provider and model are required')
-            }
-            try {
-              return okResult(await diagnose(provider, model))
-            } catch (error) {
-              return failResult('diagnose-failed', `diagnose failed: ${error instanceof Error ? error.message : String(error)}`)
-            }
-          }
-          case 'store':
-            return okResult({ entries: readStore().entries ?? [] })
-          default:
-            return failResult('not-found', `unknown endpoint ${JSON.stringify(endpoint)}`)
+  /** Answer one decoded endpoint with the result envelope the browser half parses. */
+  async function answer(endpoint: string, payload: unknown): Promise<JsonObject> {
+    switch (endpoint) {
+      case 'diagnose': {
+        const request = isRecord(payload) ? payload : {}
+        const provider = typeof request.provider === 'string' ? request.provider : ''
+        const model = typeof request.model === 'string' ? request.model : ''
+        if (provider.length === 0 || model.length === 0) {
+          return failResult('invalid-request', 'provider and model are required')
+        }
+        try {
+          return okResult(await diagnose(provider, model))
+        } catch (error) {
+          return failResult('diagnose-failed', `diagnose failed: ${error instanceof Error ? error.message : String(error)}`)
+        }
+      }
+      case 'store':
+        return okResult({ entries: readStore().entries ?? [] })
+      default:
+        return failResult('not-found', `unknown endpoint ${JSON.stringify(endpoint)}`)
+    }
+  }
+
+  // Only Web profiles provide `connection`/`webServer`; mount the channel there
+  // without ever blocking this row in terminal-only profiles.
+  //
+  // The channel is a plain loopback prefix route rather than
+  // `connection.rpc.handle`: on DSH 0.1.5-rc.1 the connection plugin injects
+  // only `credentials`, while `HostConnectionService.register` still reads
+  // `owner.webServer` off its own context, so `rpc.handle` throws
+  // `cannot get property "webServer" without inject` for EVERY caller — no
+  // inject declaration of ours can repair it. Registering the route here and
+  // asking the connection service for the same `requestRejection` fence keeps
+  // the channel exactly as reachable as the shared `/api` transport, and keeps
+  // the split working on builds where `rpc.handle` does register.
+  ctx.inject(['connection', 'webServer'], (routeCtx) => {
+    // `ctx.get` rather than the property proxy: both services are declared
+    // above, so the callback only runs once they are active, and the global
+    // store read is not sensitive to where in the fiber tree they were
+    // provided.
+    const connection = routeCtx.get('connection') as HostConnection | undefined
+    const webServer = routeCtx.get('webServer') as HostWebServer | undefined
+    if (connection === undefined || webServer === undefined) return
+    routeCtx.effect(() => webServer.register({
+      kind: 'prefix',
+      path: RPC_CHANNEL,
+      handler: async (request, response) => {
+        const rejection = connection.requestRejection(request)
+        if (rejection !== undefined) {
+          response.writeHead(rejection)
+          response.end(rejection === 401 ? 'unauthorized' : 'forbidden')
+          return
+        }
+        const endpoint = endpointOf(request.url)
+        if (request.method !== 'POST' || endpoint === undefined) {
+          response.writeHead(404)
+          response.end('not found')
+          return
+        }
+        const mediaType = String(request.headers['content-type'] ?? '').split(';')[0]?.trim().toLowerCase()
+        if (mediaType !== 'application/json') {
+          response.writeHead(415)
+          response.end('content type must be application/json')
+          return
+        }
+        let body: unknown
+        try {
+          body = await readJsonBody(request)
+        } catch {
+          response.writeHead(400)
+          response.end('body is not JSON')
+          return
+        }
+        const message = parseEnvelope(body)
+        if (message === undefined || message.method !== endpoint) {
+          response.writeHead(400)
+          response.end('invalid client-request message')
+          return
+        }
+        response.writeHead(200, { 'content-type': 'application/json' })
+        try {
+          response.end(envelopeOf(message.rpcId, await answer(endpoint, message.payload)))
+        } catch (error) {
+          response.end(envelopeOf(message.rpcId, failResult(
+            'channel-failed',
+            `channel failed: ${error instanceof Error ? error.message : String(error)}`,
+          )))
         }
       },
-      { authority: 'loopback' },
-    )
+    }), 'reasoning-effort: rpc channel')
   })
 }

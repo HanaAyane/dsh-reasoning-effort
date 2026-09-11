@@ -10,7 +10,7 @@
  *
  * @module dsh-reasoning-effort/client
  */
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
@@ -32,6 +32,11 @@ import {
   type ReasoningEffortTranslate,
 } from './locales.js'
 import { CSS } from './styles.js'
+import { positionModelMenu } from './menu-position.js'
+// Agent briefs inlined as text at build time; the copied document picks one by
+// the active locale.
+import agentTutorialEn from './agent-tutorial.en.md'
+import agentTutorialZh from './agent-tutorial.zh.md'
 
 /** One selectable effort exactly as the owning adapter advertised it. */
 interface EffortLevel {
@@ -64,7 +69,7 @@ interface AdaptGuidance {
   readonly mode: 'replace' | 'insert'
   readonly noteKey: 'glm52' | 'kimiK3' | null
   readonly note: string | null
-  readonly warning: 'aliyunDeveloperRole' | null
+  readonly warning: 'developerRole' | null
   readonly entryHead: string | null
   readonly fieldBlock: string | null
   readonly entryLine: string
@@ -96,16 +101,25 @@ function levelsText(levels: readonly string[], t: ReasoningEffortTranslate): str
   return levels.length === 0 ? t('level.none') : levels.map((level) => levelName(level, t)).join(' / ')
 }
 
-/** Localized field-block template for a model the knowledge base does not know. */
+/**
+ * Localized field-block template for a model the knowledge base does not know.
+ *
+ * `compat` stays a commented example rather than a written block: a guessed
+ * `thinkingFormat` is worse than none, because the endpoint then receives a
+ * switch it does not read, while an absent `compat` lets the adapter apply its
+ * own base-URL detection (which is what an unrecognized OpenAI-compatible
+ * endpoint wants anyway, and the correct vendor format for a recognized one).
+ */
 function templateSnippet(t: ReasoningEffortTranslate): string {
   return [
     '          reasoningEfforts:',
     `            low: "low"        # ${t('yaml.keyComment')}`,
     `            high: "high"      # ${t('yaml.valueComment')}`,
     `          # ${t('yaml.compatComment')}`,
-    '          compat:',
-    '            thinkingFormat: "openai"',
-    '            supportsReasoningEffort: true',
+    '          # compat:',
+    '          #   thinkingFormat: "qwen"',
+    '          #   supportsReasoningEffort: false',
+    '          #   supportsDeveloperRole: false',
   ].join('\n')
 }
 
@@ -117,12 +131,58 @@ function guidanceNote(guidance: AdaptGuidance, t: ReasoningEffortTranslate): str
 }
 
 function guidanceWarning(guidance: AdaptGuidance, t: ReasoningEffortTranslate): string | null {
-  return guidance.warning === 'aliyunDeveloperRole' ? t('warning.aliyunDeveloperRole') : null
+  return guidance.warning === 'developerRole' ? t('warning.developerRole') : null
 }
 
 function guidanceSnippet(guidance: AdaptGuidance, t: ReasoningEffortTranslate): string {
   const block = guidance.fieldBlock ?? templateSnippet(t)
   return guidance.entryHead === null ? block : `${guidance.entryHead}\n${block}`
+}
+
+/**
+ * The whole document a user hands to an agent: what was observed, what to do,
+ * the level-declaration rules, and the suggested block as a starting point.
+ * The rules themselves live in the markdown briefs so they can be reviewed and
+ * revised as documents rather than as dictionary strings.
+ */
+function agentBrief(
+  guidance: AdaptGuidance,
+  snippet: string,
+  tutorial: string,
+  warning: string | null,
+  t: ReasoningEffortTranslate,
+): string {
+  const facts = [
+    t('agent.facts', {
+      provider: guidance.provider,
+      model: guidance.model,
+      path: guidance.settingsPath ?? '-',
+      entryPath: guidance.entryPath,
+      entryLine: guidance.entryLine,
+      current: levelsText(guidance.current, t),
+      expected: guidance.matched ? levelsText(guidance.expected, t) : t('level.none'),
+    }),
+    ...(warning === null ? [] : [t('agent.warningLine', { warning })]),
+  ].join('\n')
+  return [
+    t('agent.intro'),
+    '',
+    t('agent.factsHeading'),
+    facts,
+    '',
+    t('agent.task'),
+    '',
+    '---',
+    '',
+    tutorial.replace(/\r\n/gu, '\n').trim(),
+    '',
+    `## ${t('agent.snippetHeading')}`,
+    '',
+    '```yaml',
+    snippet,
+    '```',
+    '',
+  ].join('\n')
 }
 
 /** Wrap the Host RPC channel in typed helpers; null while the Host half is absent. */
@@ -163,6 +223,11 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
+/** The slice of the locale service this half reads: the active language id. */
+interface LocaleRuntimeLike {
+  getLocale(): { active: string }
+}
+
 interface ModelSeatInjectedProps {
   readonly locked: boolean
   readonly available: boolean
@@ -171,6 +236,8 @@ interface ModelSeatInjectedProps {
   readonly load: () => void
   readonly select: (selection: ModelSelection) => Promise<boolean>
   readonly adapt: AdaptationService | null
+  /** Rules document for the active locale, read at copy time. */
+  readonly agentTutorial: () => string
 }
 
 type ModelSeatProps = ModelSeatInjectedProps & PropsLocale<typeof NS>
@@ -744,6 +811,7 @@ function AdvancedModelSelect({
   load,
   select,
   adapt,
+  agentTutorial,
   t,
 }: ModelSeatProps) {
   const state = useSyncExternalStore(
@@ -754,10 +822,17 @@ function AdvancedModelSelect({
   const [modelsOpen, setModelsOpen] = useState(false)
   const [guidance, setGuidance] = useState<AdaptGuidance | null>(null)
   const [guidanceBusy, setGuidanceBusy] = useState(false)
+  const [guidanceFailed, setGuidanceFailed] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [agentCopied, setAgentCopied] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (!open || rootRef.current === null || menuRef.current === null) return
+    return positionModelMenu(rootRef.current, menuRef.current)
+  }, [open])
   const choice = currentModel(state)
   const levels = sliderLevels(state)
   const effortName = levels[effectiveEffortIndex(levels, state)]?.name ?? t('model.defaultEffort')
@@ -788,21 +863,36 @@ function AdvancedModelSelect({
   const modelId = state.current?.model
 
   useEffect(() => {
-    if (adapt === null || provider === undefined || modelId === undefined) {
+    // A brief belongs to the model it describes; never let a stale one be copied.
+    setAgentCopied(false)
+    if (provider === undefined || modelId === undefined) {
       setGuidance(null)
+      setGuidanceFailed(false)
+      setPanelOpen(false)
+      return
+    }
+    // Without a channel the diagnosis cannot run at all; saying so beats
+    // rendering nothing, which reads as "this model needs no guidance".
+    if (adapt === null) {
+      setGuidance(null)
+      setGuidanceBusy(false)
+      setGuidanceFailed(true)
       setPanelOpen(false)
       return
     }
     let cancelled = false
     setGuidanceBusy(true)
+    setGuidanceFailed(false)
     adapt.diagnose(provider, modelId).then((result) => {
       if (cancelled) return
       setGuidance(result)
+      setGuidanceFailed(result === null)
       setGuidanceBusy(false)
       if (result === null || !result.needsGuide) setPanelOpen(false)
     }, () => {
       if (cancelled) return
       setGuidance(null)
+      setGuidanceFailed(true)
       setGuidanceBusy(false)
     })
     return () => {
@@ -864,7 +954,7 @@ function AdvancedModelSelect({
       </button>
 
       {open ? (
-        <div className="re-model-menu" role="menu" aria-label={t('model.menuAria')} aria-busy={busy}>
+        <div ref={menuRef} className="re-model-menu" role="menu" aria-label={t('model.menuAria')} aria-busy={busy}>
           {modelsOpen ? (
             <div className="re-model-pane">
               <button type="button" className="re-model-back" onClick={() => setModelsOpen(false)}>
@@ -944,6 +1034,14 @@ function AdvancedModelSelect({
                             <span className="re-adapt-arrow">{levelsText(guidance.expected, t)}</span>
                           </div>
                         ) : null}
+                        <div className="re-adapt-howto">{t('guidance.howto')}</div>
+                        <div className="re-adapt-switch-intro">{t('guidance.switch.intro')}</div>
+                        <ul className="re-adapt-switches">
+                          <li>{t('guidance.switch.thinkingFormat')}</li>
+                          <li>{t('guidance.switch.reasoningEffort')}</li>
+                          <li>{t('guidance.switch.developerRole')}</li>
+                          <li>{t('guidance.switch.replay')}</li>
+                        </ul>
                         {localizedWarning === null ? null : (
                           <div className="re-adapt-warning">{localizedWarning}</div>
                         )}
@@ -980,18 +1078,41 @@ function AdvancedModelSelect({
                         >
                           {copied ? t('guidance.copied') : t('guidance.copy')}
                         </button>
+                        <button
+                          type="button"
+                          className="re-adapt-agent"
+                          onClick={() => {
+                            void copyText(agentBrief(guidance, localizedSnippet, agentTutorial(), localizedWarning, t))
+                              .then((ok) => setAgentCopied(ok))
+                          }}
+                        >
+                          {agentCopied ? t('guidance.copied') : t('agent.copy')}
+                        </button>
                         <button type="button" className="re-adapt-cancel" onClick={() => setPanelOpen(false)}>
                           {t('guidance.collapse')}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <button type="button" className="re-adapt-open" onClick={() => { setCopied(false); setPanelOpen(true) }}>
-                      {guidanceBusy ? t('guidance.checking') : t('guidance.open')}
-                    </button>
+                    <div className="re-adapt-open-row">
+                      <button type="button" className="re-adapt-open" onClick={() => { setCopied(false); setPanelOpen(true) }}>
+                        {guidanceBusy ? t('guidance.checking') : t('guidance.open')}
+                      </button>
+                      <button
+                        type="button"
+                        className="re-adapt-agent"
+                        onClick={() => {
+                          void copyText(agentBrief(guidance, localizedSnippet, agentTutorial(), localizedWarning, t))
+                            .then((ok) => setAgentCopied(ok))
+                        }}
+                      >
+                        {agentCopied ? t('guidance.copied') : t('agent.copy')}
+                      </button>
+                    </div>
                   )}
                 </div>
               ) : null}
+              {guidanceFailed ? <div className="re-model-status" role="status">{t('guidance.unavailable')}</div> : null}
               <div className="re-menu-separator" />
               <button
                 type="button"
@@ -1073,6 +1194,7 @@ export function apply(ctx: ClientContext) {
 
   const connection = ctx.get('connection') as { rpc?: HostRpc } | undefined
   const adapt = makeAdaptationService(connection?.rpc)
+  const locale = ctx.get('locale') as LocaleRuntimeLike | undefined
 
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'reasoning-effort: dictionaries')
 
@@ -1133,6 +1255,9 @@ export function apply(ctx: ClientContext) {
               load: () => controller.load().then(() => undefined, () => undefined),
               select: (selection: ModelSelection) => controller.select(selection).then(() => true, () => false),
               adapt,
+              // Read at copy time: a language switch must change the next copy,
+              // not require the seat to remount.
+              agentTutorial: () => (locale?.getLocale().active === 'zh' ? agentTutorialZh : agentTutorialEn),
             }
           },
         },

@@ -46,6 +46,7 @@ const common = {
   legalComments: 'none',
   loader: {
     '.png': 'dataurl',
+    '.md': 'text',
   },
   external: [
     'react',

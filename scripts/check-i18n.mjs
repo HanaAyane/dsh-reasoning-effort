@@ -46,3 +46,17 @@ for (const key of Object.keys(zh)) {
 }
 
 console.log('Runtime product copy is locale-owned and both dictionaries match.')
+
+// The agent briefs are a locale pair too: one side left unedited would ship
+// silently, so its counterpart must exist and keep the same outline.
+const briefs = ['../src/client/agent-tutorial.zh.md', '../src/client/agent-tutorial.en.md']
+const headingCount = (text) => text.split(/\r?\n/u).filter((line) => line.startsWith('#')).length
+const outline = []
+for (const relative of briefs) {
+  const text = await readFile(new URL(relative, import.meta.url), 'utf8')
+  assert.ok(text.trim().length > 0, `${relative} must not be empty`)
+  outline.push(headingCount(text))
+}
+assert.equal(outline[0], outline[1], 'both agent briefs must have the same heading count')
+
+console.log('Both agent briefs exist with a matching outline.')

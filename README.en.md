@@ -19,7 +19,7 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 - **Model-defined levels** — adapts to their count, names, and order; failed updates roll back.
 - **Native appearance** — dark and light themes, with Simplified Chinese and English following DSH's active language immediately.
 - **Optional motion** — the runner is on by default, with a plain-thumb option and reduced-motion support.
-- **Custom-model guidance** — copy configuration snippets, review them, and save them yourself.
+- **Custom-model guidance** — copy a configuration snippet, or one-click copy a whole brief for an agent to diagnose and fill in.
 
 <img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="100%">
 
@@ -80,20 +80,53 @@ The slider reads `reasoning.efforts` from the current model in DSH's model direc
 
 The slider appears when at least two levels are available; otherwise the menu shows a notice. DSH validates and dispatches the selected value, so the plugin cannot bypass model or deployment limits.
 
+## Declaring levels for any custom model
+
+This section is vendor-neutral and applies to every model you declare yourself under `llm-pi-ai`.
+
+**Why the levels are missing**: DSH's model directory only reports what the adapter declares. A model you declare has no catalog entry, so the directory exposes no levels — and no slider — until you write `reasoningEfforts`.
+
+**What to write**: find the model's entry in `settings.yaml` and add `reasoningEfforts` — each key is a DSH level, each value is the spelling that endpoint accepts, and a level you leave out counts as unsupported:
+
+```yaml
+      models:
+        - id: <your model id>
+          reasoningEfforts:
+            low: "<value the endpoint accepts>"
+            high: "<value the endpoint accepts>"
+```
+
+**When to add `compat`** (beside `reasoningEfforts`, only when the endpoint needs it):
+
+| Endpoint behaviour | What to add |
+| --- | --- |
+| expresses effort directly through `reasoning_effort` | nothing |
+| needs its thinking switch turned on first | `compat.thinkingFormat`: `"qwen"` (sends `enable_thinking`) / `"zai"` / `"deepseek"` |
+| does not accept `reasoning_effort` | `compat.supportsReasoningEffort: false` |
+| fails with 400 `invalid_parameter_error` | `compat.supportsDeveloperRole: false` |
+| fails while replaying history | `compat.requiresReasoningContentOnAssistantMessages: true` |
+| does not reason at all | `reasoningEfforts: false` |
+
+With no `compat`, the adapter decides from the endpoint address: an address it does not recognize is treated as standard OpenAI, and a recognized vendor endpoint gets that vendor's format automatically. **Guessing the format is worse than leaving it out.**
+
+**How to verify**: open the model menu after saving — the slider appearing means it worked. If the slider appears but requests fail, work through the table above. The plugin's built-in knowledge entries are shortcuts, not a requirement.
+
 ## Effort guidance for custom providers
 
 Built-in routes get their levels from the pi-ai catalog and the plugin never touches them. Only models you declare yourself in `llm-pi-ai` receive guidance:
 
 1. Open the model menu. If the current model is your own declaration and the directory exposes no levels (or the declaration disagrees with the knowledge base), a **View declaration guidance** entry appears.
-2. The panel shows the suggested levels (e.g. GLM-5.2 → minimal/low/medium/high) and a copy-ready complete entry YAML — including the `- id:` line, with your existing `name`/`contextWindow`/`maxTokens` preserved — plus the settings.yaml path.
+2. The panel shows the suggested levels (the ones the knowledge base records for that model, or a generic template when it is not covered) and a copy-ready complete entry YAML — including the `- id:` line, with your existing `name`/`contextWindow`/`maxTokens` preserved — plus the settings.yaml path.
 3. Replace the matching `- id:` entry with the copied content (do not create a second `llm-pi-ai:` root) and save. DSH reloads automatically; if not, restart the Web Host and refresh.
 
-Models the knowledge base does not know get an annotated template to fill from the endpoint's docs. Known-hostile gateways (e.g. Aliyun Bailian `maas/dashscope.aliyuncs.com`, which rejects the `developer` message role) get an explicit warning, because settings.yaml cannot override that behavior.
+Models the knowledge base does not know get a generic template you can edit directly. When a gateway rejects requests for a reason the template cannot express — an endpoint refusing the `developer` message role, for instance — the panel names the matching `compat` switch (`supportsDeveloperRole: false`).
+
+If you would rather not fill it in yourself, or the declaration still fails, press **Copy for your agent** beside the panel: it puts a single brief on the clipboard — the observed facts (route, model id, settings.yaml path, entry line, levels the directory reads, knowledge-base suggestion, endpoint caveat), your task, the complete declaration rules, and a starting snippet. Paste it into any coding agent and it can read settings.yaml, check the endpoint documentation, write the configuration, and tell you what was wrong.
 
 <details>
 <summary>Advanced: extend the plugin knowledge base</summary>
 
-The built-in knowledge base covers GLM-5.2 (`minimal/low/medium/high`) and Kimi K3 (`low/high/max`). Add more models under the plugin's own settings namespace; user entries win over built-ins:
+The built-in entries cover only a few models, purely to save typing. Add more models under the plugin's own settings namespace; user entries win over built-ins:
 
 ```yaml
 dsh-reasoning-effort:
@@ -106,10 +139,12 @@ dsh-reasoning-effort:
         low: "low"
         high: "high"
         max: "max"
-      compat:                # openai-completions routes only
-        thinkingFormat: "openai"
-        supportsReasoningEffort: true
+      # compat:              # only when the endpoint needs a fixed format
+      #   thinkingFormat: "qwen"
+      #   supportsReasoningEffort: false
 ```
+
+A `compat` block is copied into the generated snippet **verbatim**, so fill it in only when the endpoint really needs a fixed format: with none, the adapter decides from the endpoint address (an unrecognized address is treated as standard OpenAI, a recognized vendor gets that vendor's format), and a wrong format overrides that correct decision. On a protocol that does not take the field (e.g. `anthropic-messages`) the pasted entry makes the whole route fail to resolve.
 
 The plugin only provides snippets — it never writes configuration, and catalog-declared level sets (even a single level) are never flagged.
 
