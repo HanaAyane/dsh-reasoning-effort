@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.7.1](https://img.shields.io/badge/release-0.7.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1)
+[![v0.7.2](https://img.shields.io/badge/release-0.7.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.2)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -23,20 +23,29 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 <img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="100%">
 
-[Install and update](#install-and-update) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+[What changed](#whats-new-in-v072) · [Install and update](#install-and-update) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+
+## What's new in v0.7.2
+
+- Add **Copy for your agent** to collect the current model's configuration location, declaration rules, and suggested snippet in one brief.
+- Restore communication for the custom-model guidance panel and show a notice when diagnosis fails.
+- Fix stale copies after model switches and corrupted Unicode names across HTTP chunks.
+- Improve menu placement and scrolling in narrow or short viewports.
+
+See the [v0.7.2 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.2) and [CHANGELOG](CHANGELOG.md) for details.
 
 ## Version support policy
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The plugin supports **DSH `0.1.5-rc.1`**. Continue using **plugin `v0.7.1`**; no additional adaptation is needed. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.7.2`**. The maintainer has tested it with **DSH `0.1.5-rc.2` (Web Profile)** and reports no compatibility issues. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
-| Plugin release | [v0.7.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1) |
-| Currently compatible version | DSH `0.1.5-rc.1`, Web Profile |
-| Original v0.7.1 fix target | Model-slot injection error in DSH `0.1.2-rc.1` |
-| Upgrade notes | The plugin remains compatible; continue using `v0.7.1` without code changes |
+| Plugin release | [v0.7.2](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.2) |
+| Currently compatible version | DSH `0.1.5-rc.2`, Web Profile |
+| Compatibility validation | Maintainer hands-on testing; no compatibility issues found |
+| Upgrade notes | Install `v0.7.2`, then restart the Web Host manually and refresh the page |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
 ## Install and update
@@ -46,19 +55,19 @@ The plugin supports **DSH `0.1.5-rc.1`**. Continue using **plugin `v0.7.1`**; no
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.2
 dsh --profile web --dump-config
 ```
 
-Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.7.1` with `#main`; the main branch may contain unreleased changes.
+Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.7.2` with `#main`; the main branch may contain unreleased changes.
 
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
 
 ```text
-Install dsh-reasoning-effort v0.7.1 for the DeepSeek Harness web profile.
+Install dsh-reasoning-effort v0.7.2 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.2
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -170,7 +179,7 @@ The **Reasoning effort selector** switch on the same page disables the complete 
 
 Check that:
 
-1. Check the running version with `dsh --version`; DSH `0.1.5-rc.1` works with plugin `v0.7.1`.
+1. Check the running version with `dsh --version`; the maintainer-tested combination is DSH `0.1.5-rc.2` + plugin `v0.7.2`.
 2. You restarted the DSH Web Host after installation.
 3. **Settings → General → Reasoning effort selector** is enabled.
 4. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.

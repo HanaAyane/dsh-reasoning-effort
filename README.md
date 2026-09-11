@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.7.1](https://img.shields.io/badge/release-0.7.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1)
+[![v0.7.2](https://img.shields.io/badge/release-0.7.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.2)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -23,20 +23,29 @@
 
 <img src="assets/readme/themes.webp" alt="推理强度选择器在 DeepSeek Harness 深色和浅色主题中的真实效果" width="100%">
 
-[安装与更新](#安装与更新) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
+[本次更新](#v072-更新内容) · [安装与更新](#安装与更新) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
+
+## v0.7.2 更新内容
+
+- 新增 **复制给 Agent**，一键整理当前模型的配置位置、档位规则和建议片段。
+- 修复自定义模型指导面板的通信问题，诊断失败时显示提示。
+- 修复切换模型时可能复制旧简报，以及中文名称跨 HTTP 分包时出现乱码的问题。
+- 改进菜单在窄屏和较短视口中的定位与滚动。
+
+完整记录见 [v0.7.2 发布说明](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.2) 和 [CHANGELOG](CHANGELOG.md)。
 
 ## 版本支持政策
 
 本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
 
-当前支持 **DSH `0.1.5-rc.1`**，继续使用插件 **`v0.7.1`** 即可，无需额外适配。如需继续使用 alpha，请自行进行临时适配。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
+当前发行版为 **插件 `v0.7.2`**，已由维护者在 **DSH `0.1.5-rc.2`（Web Profile）** 中实测，未发现兼容问题。如需继续使用 alpha，请自行进行临时适配。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
 
 | 项目 | 当前说明 |
 | --- | --- |
-| 插件发行版 | [v0.7.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.1) |
-| 当前兼容版本 | DSH `0.1.5-rc.1`，Web Profile |
-| v0.7.1 原始修复目标 | DSH `0.1.2-rc.1` 的模型控件注入错误 |
-| 升级说明 | 插件保持兼容，继续使用 `v0.7.1`，无需修改插件代码 |
+| 插件发行版 | [v0.7.2](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.2) |
+| 当前兼容版本 | DSH `0.1.5-rc.2`，Web Profile |
+| 兼容性验证 | 维护者实测，未发现兼容问题 |
+| 升级说明 | 安装 `v0.7.2` 后手动重启 Web Host 并刷新页面 |
 | alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
 
 ## 安装与更新
@@ -46,19 +55,19 @@
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.2
 dsh --profile web --dump-config
 ```
 
-确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.7.1` 换成 `#main`，但主分支可能包含未发布改动。
+确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.7.2` 换成 `#main`，但主分支可能包含未发布改动。
 
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
 
 ```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.7.1。
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.7.2。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.1
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.2
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -170,7 +179,7 @@ dsh-reasoning-effort:
 
 请依次确认：
 
-1. 用 `dsh --version` 确认实际运行版本；DSH `0.1.5-rc.1` 可继续搭配插件 `v0.7.1` 使用。
+1. 用 `dsh --version` 确认实际运行版本；当前经维护者实测的组合为 DSH `0.1.5-rc.2` + 插件 `v0.7.2`。
 2. 安装后已经重启 DSH Web Host。
 3. **设置 → 通用设置 → 推理强度滑块** 处于启用状态。
 4. 当前模型在 DSH 模型目录中公开了至少两档推理强度（未声明的模型见下一条），且部署没有关闭 thinking。
