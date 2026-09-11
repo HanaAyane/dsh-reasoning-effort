@@ -76,7 +76,7 @@ interface HostRouteRequest {
   readonly method?: string
   readonly url?: string
   readonly headers: Record<string, string | readonly string[] | undefined>
-  on(event: 'data', listener: (chunk: { readonly length: number; toString(encoding: 'utf8'): string }) => void): void
+  on(event: 'data', listener: (chunk: Uint8Array) => void): void
   on(event: 'end', listener: () => void): void
   on(event: 'error', listener: (error: unknown) => void): void
 }
@@ -189,6 +189,7 @@ const MAX_REQUEST_BYTES = 64 * 1024
 function readJsonBody(request: HostRouteRequest): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const chunks: string[] = []
+    const decoder = new TextDecoder()
     let bytes = 0
     request.on('data', (chunk) => {
       bytes += chunk.length
@@ -196,10 +197,12 @@ function readJsonBody(request: HostRouteRequest): Promise<unknown> {
         reject(new Error('body too large'))
         return
       }
-      chunks.push(chunk.toString('utf8'))
+      // HTTP chunks can split a UTF-8 character; keep incomplete bytes for the next chunk.
+      chunks.push(decoder.decode(chunk, { stream: true }))
     })
     request.on('end', () => {
       try {
+        chunks.push(decoder.decode())
         resolve(JSON.parse(chunks.join('')))
       } catch (error) {
         reject(error instanceof Error ? error : new Error('body is not JSON'))

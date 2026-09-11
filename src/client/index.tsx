@@ -820,7 +820,7 @@ function AdvancedModelSelect({
   )
   const [open, setOpen] = useState(false)
   const [modelsOpen, setModelsOpen] = useState(false)
-  const [guidance, setGuidance] = useState<AdaptGuidance | null>(null)
+  const [guidanceResult, setGuidanceResult] = useState<AdaptGuidance | null>(null)
   const [guidanceBusy, setGuidanceBusy] = useState(false)
   const [guidanceFailed, setGuidanceFailed] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
@@ -838,6 +838,12 @@ function AdvancedModelSelect({
   const effortName = levels[effectiveEffortIndex(levels, state)]?.name ?? t('model.defaultEffort')
   const modelLabel = choice?.name ?? state.current?.model ?? t('model.select')
   const busy = state.status === 'loading' || state.status === 'selecting'
+  const provider = state.current?.provider
+  const modelId = state.current?.model
+  // Hide a previous model's result during the render before the effect clears it.
+  const guidance = guidanceResult?.provider === provider && guidanceResult?.model === modelId
+    ? guidanceResult
+    : null
   const localizedNote = guidance === null ? '' : guidanceNote(guidance, t)
   const localizedWarning = guidance === null ? null : guidanceWarning(guidance, t)
   const localizedSnippet = guidance === null ? '' : guidanceSnippet(guidance, t)
@@ -859,25 +865,22 @@ function AdvancedModelSelect({
     return () => document.removeEventListener('mousedown', closeOutside)
   }, [open])
 
-  const provider = state.current?.provider
-  const modelId = state.current?.model
-
   useEffect(() => {
     // A brief belongs to the model it describes; never let a stale one be copied.
+    setGuidanceResult(null)
+    setCopied(false)
     setAgentCopied(false)
+    setPanelOpen(false)
     if (provider === undefined || modelId === undefined) {
-      setGuidance(null)
+      setGuidanceBusy(false)
       setGuidanceFailed(false)
-      setPanelOpen(false)
       return
     }
     // Without a channel the diagnosis cannot run at all; saying so beats
     // rendering nothing, which reads as "this model needs no guidance".
     if (adapt === null) {
-      setGuidance(null)
       setGuidanceBusy(false)
       setGuidanceFailed(true)
-      setPanelOpen(false)
       return
     }
     let cancelled = false
@@ -885,13 +888,13 @@ function AdvancedModelSelect({
     setGuidanceFailed(false)
     adapt.diagnose(provider, modelId).then((result) => {
       if (cancelled) return
-      setGuidance(result)
+      setGuidanceResult(result)
       setGuidanceFailed(result === null)
       setGuidanceBusy(false)
       if (result === null || !result.needsGuide) setPanelOpen(false)
     }, () => {
       if (cancelled) return
-      setGuidance(null)
+      setGuidanceResult(null)
       setGuidanceFailed(true)
       setGuidanceBusy(false)
     })
@@ -1072,6 +1075,7 @@ function AdvancedModelSelect({
                         <button
                           type="button"
                           className="re-adapt-apply"
+                          disabled={busy || guidanceBusy}
                           onClick={() => {
                             void copyText(localizedSnippet).then((ok) => setCopied(ok))
                           }}
@@ -1081,6 +1085,7 @@ function AdvancedModelSelect({
                         <button
                           type="button"
                           className="re-adapt-agent"
+                          disabled={busy || guidanceBusy}
                           onClick={() => {
                             void copyText(agentBrief(guidance, localizedSnippet, agentTutorial(), localizedWarning, t))
                               .then((ok) => setAgentCopied(ok))
@@ -1101,6 +1106,7 @@ function AdvancedModelSelect({
                       <button
                         type="button"
                         className="re-adapt-agent"
+                        disabled={busy || guidanceBusy}
                         onClick={() => {
                           void copyText(agentBrief(guidance, localizedSnippet, agentTutorial(), localizedWarning, t))
                             .then((ok) => setAgentCopied(ok))
