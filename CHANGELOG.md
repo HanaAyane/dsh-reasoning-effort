@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-09-23
+
+### Fixed
+
+- Adapt the Host plugin to DSH `0.1.7-rc.1`'s configuration-backed settings API. Export the plugin's `Config` schema and read its knowledge entries from the plugin configuration when `settings.register` is unavailable; keep the legacy settings path for earlier RC builds. Read the LLM section from the settings descriptor when `settings.get` is unavailable. This restores Host activation and the guidance RPC channel on the new RC.
+- Show the configuration document and model location reported by the active Host instead of always directing users to `settings.yaml`. Generate snippets at the indentation of the actual model entry in `settings.yaml` or a profile patch, including the copied agent brief.
+
+### Compatibility and validation
+
+- `pnpm run check` passes. A globally installed DSH `0.1.7-rc.1` Web Host starts on port 3080 without a plugin activation error, and the authenticated `store` and `diagnose` endpoints return HTTP 200 with successful response envelopes. The browser UI has not yet received a separate hands-on acceptance check.
+
 ## [0.7.2] - 2026-09-11
 
 ### Added

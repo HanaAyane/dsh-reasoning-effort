@@ -11,7 +11,7 @@ DSH 的模型目录只报告**适配器声明过的能力**。pi-ai 适配器在
 
 # 要写什么
 
-在 `settings.yaml` 的 `llm-pi-ai.providers.<路由>.models` 列表里找到该模型的条目，加一个 `reasoningEfforts`：
+在 `{{CONFIG_FILE}}` 的 `{{ENTRY_PATH}}` 列表里找到该模型的条目，加一个 `reasoningEfforts`。该路径由当前 DSH Host 返回，旧版可能使用 `settings.yaml`，新版可能使用 Profile 的 `cordis.patch.yml`：
 
 ```yaml
 - id: <模型 id>
@@ -46,7 +46,7 @@ DSH 的模型目录只报告**适配器声明过的能力**。pi-ai 适配器在
 
 # 怎么确认改对了
 
-1. 保存 `settings.yaml`。DSH 会自动重载；若没生效，重启 Web Host 并刷新页面。
+1. 保存 `{{CONFIG_FILE}}`。DSH 会自动重载；若没生效，重启 Web Host 并刷新页面。
 2. 打开模型菜单：出现推理强度滑块 = 目录已经读到档位。
 3. 滑块出现但请求失败：几乎总是 `compat` 写错，或档位取值端点不认，按上表逐项排查。
 4. 该路由整条从菜单里消失：说明写了当前协议不接受的 `compat` 字段，先删掉它。
@@ -55,5 +55,5 @@ DSH 的模型目录只报告**适配器声明过的能力**。pi-ai 适配器在
 
 - 不要发明档位取值。不确定就查端点文档，或直接问用户。
 - 不要改动该模型条目以外的任何配置；`name`、`contextWindow`、`maxTokens` 等已有字段保持原样。
-- 不要新建第二个 `llm-pi-ai:` 根。
+- 不要重复添加一份 `llm-pi-ai` 配置。
 - 不要为了绕过问题更换 provider（除非用户明确要求）。

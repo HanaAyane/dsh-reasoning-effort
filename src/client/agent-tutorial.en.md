@@ -11,7 +11,7 @@ Conclusion: **a custom model must declare its own levels.** The plugin cannot in
 
 # What to write
 
-In `settings.yaml`, find that model's entry under `llm-pi-ai.providers.<route>.models` and add `reasoningEfforts`:
+In `{{CONFIG_FILE}}`, find that model's entry under `{{ENTRY_PATH}}` and add `reasoningEfforts`. The current DSH Host supplies this location; older builds may use `settings.yaml`, while newer ones may use the profile's `cordis.patch.yml`:
 
 ```yaml
 - id: <model id>
@@ -46,7 +46,7 @@ Rules:
 
 # How to confirm the fix
 
-1. Save `settings.yaml`. DSH reloads automatically; if it does not, restart the Web Host and refresh the page.
+1. Save `{{CONFIG_FILE}}`. DSH reloads automatically; if it does not, restart the Web Host and refresh the page.
 2. Open the model menu: the reasoning-effort slider appearing means the directory now reads the levels.
 3. Slider present but requests failing: almost always a wrong `compat` or a level value the endpoint rejects — work through the table above.
 4. The whole route missing from the menu: a `compat` field the protocol does not take was written; remove it first.
@@ -55,5 +55,5 @@ Rules:
 
 - Do not invent level values. Check the endpoint documentation, or ask the user.
 - Do not change anything outside that model entry; keep `name`, `contextWindow`, `maxTokens` and other existing fields as they are.
-- Do not create a second `llm-pi-ai:` root.
+- Do not add a second copy of the `llm-pi-ai` configuration.
 - Do not switch providers to work around the problem unless the user asks.

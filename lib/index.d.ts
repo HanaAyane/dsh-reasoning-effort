@@ -8,12 +8,14 @@
  * models the directory under-describes and returns copy-ready
  * `reasoningEfforts` declarations (exact when the knowledge base knows the
  * model, a filled template otherwise) for the user to paste into
- * `settings.yaml`. Built-in catalog models are trusted as-is and never
+ * the active DSH configuration document. Built-in catalog models are trusted as-is and never
  * flagged.
  *
  * @module dsh-reasoning-effort
  */
 import type { Context } from '@deepseek-ai/cordis';
+import z from '@deepseek-ai/schemastery';
+import { type KnowledgeEntry } from './knowledge.js';
 export declare const name = "dsh-reasoning-effort";
 /**
  * Hard dependencies: the loader waits for these services before calling
@@ -22,4 +24,13 @@ export declare const name = "dsh-reasoning-effort";
  * RPC channel is mounted through `ctx.inject` instead of blocking this row.
  */
 export declare const inject: string[];
-export declare function apply(ctx: Context): void;
+export declare const Config: z<Schemastery.ObjectS<{
+    entries: z<any[], any[]>;
+}>, Schemastery.ObjectT<{
+    entries: z<any[], any[]>;
+}>>;
+interface StoreShape {
+    entries?: KnowledgeEntry[];
+}
+export declare function apply(ctx: Context, config?: StoreShape): void;
+export {};

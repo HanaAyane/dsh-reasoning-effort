@@ -8,7 +8,7 @@
  * models the directory under-describes and returns copy-ready
  * `reasoningEfforts` declarations (exact when the knowledge base knows the
  * model, a filled template otherwise) for the user to paste into
- * `settings.yaml`. Built-in catalog models are trusted as-is and never
+ * the active DSH configuration document. Built-in catalog models are trusted as-is and never
  * flagged.
  *
  * @module dsh-reasoning-effort
@@ -40,6 +40,7 @@ const RPC_CHANNEL = '/dsh-reasoning-effort'
 const StoreSchema = z.object({
   entries: z.array(z.any()).default([]),
 })
+export const Config = StoreSchema
 
 interface StoreShape {
   entries?: KnowledgeEntry[]
@@ -50,9 +51,9 @@ type JsonObject = Record<string, any>
 
 interface HostSettingsService {
   readonly writable: boolean
-  get(ns: string): unknown
-  register(ns: string, schema: unknown, options?: JsonObject): SettingsScopeLike
-  describe(): Array<{ ns: string; revision: number; user?: unknown }>
+  get?(ns: string): unknown
+  register?(ns: string, schema: unknown, options?: JsonObject): SettingsScopeLike
+  describe(): Array<{ ns: string; revision: number; user?: unknown; value?: unknown }>
   prepareDocument(): Promise<string | undefined>
 }
 
@@ -130,11 +131,13 @@ interface Guidance {
   entryHead: string | null
   /** Locale-neutral exact declaration; null selects the localized generic template. */
   fieldBlock: string | null
-  /** The existing entry line to find in settings.yaml, e.g. `- id: glm-5.2`. */
+  /** The existing model line to find in the active configuration document. */
   entryLine: string
-  /** Where that entry lives, e.g. `llm-pi-ai.providers.aliyun.models`. */
+  /** Where that model entry lives in the active configuration document. */
   entryPath: string
-  /** Absolute settings.yaml path, when the provider can name one. */
+  /** Leading spaces of the model list item in that document. */
+  modelIndent: number
+  /** Absolute configuration document path, when DSH can name one. */
   settingsPath: string | null
 }
 
@@ -238,19 +241,20 @@ function sameSet(a: readonly string[], b: readonly string[]): boolean {
 }
 
 /**
- * Field block (10-space indent) carrying the declared levels and compat,
- * to be appended under a `models` list entry.
+ * Field block carrying the declared levels and compat under a `models` entry.
  */
-function fieldBlock(entry: KnowledgeEntry): string {
-  const lines: string[] = ['          reasoningEfforts:']
+function fieldBlock(entry: KnowledgeEntry, modelIndent: number): string {
+  const fieldPrefix = ' '.repeat(modelIndent + 2)
+  const valuePrefix = ' '.repeat(modelIndent + 4)
+  const lines: string[] = [`${fieldPrefix}reasoningEfforts:`]
   for (const [level, wire] of Object.entries(entry.efforts)) {
-    lines.push(`            ${level}: ${wire === null ? '' : JSON.stringify(wire)}`)
+    lines.push(`${valuePrefix}${level}: ${wire === null ? '' : JSON.stringify(wire)}`)
   }
   if (entry.compat !== undefined && Object.keys(entry.compat).length > 0) {
-    lines.push('          compat:')
-    if (entry.compat.thinkingFormat !== undefined) lines.push(`            thinkingFormat: ${JSON.stringify(entry.compat.thinkingFormat)}`)
+    lines.push(`${fieldPrefix}compat:`)
+    if (entry.compat.thinkingFormat !== undefined) lines.push(`${valuePrefix}thinkingFormat: ${JSON.stringify(entry.compat.thinkingFormat)}`)
     if (entry.compat.supportsReasoningEffort !== undefined) {
-      lines.push(`            supportsReasoningEffort: ${String(entry.compat.supportsReasoningEffort)}`)
+      lines.push(`${valuePrefix}supportsReasoningEffort: ${String(entry.compat.supportsReasoningEffort)}`)
     }
   }
   return lines.join('\n')
@@ -260,37 +264,40 @@ function fieldBlock(entry: KnowledgeEntry): string {
 const ENTRY_SCALAR_KEYS = new Set(['id', 'name', 'contextWindow', 'maxTokens'])
 
 /**
- * Serialize the existing entry's scalar fields (6-space `- id:` line, then
- * 10-space fields). `complete` is false when the entry carries fields this
+ * Serialize the existing entry's scalar fields at the document's indentation.
+ * `complete` is false when the entry carries fields this
  * plugin cannot round-trip — the caller then falls back to insert-below mode
  * so no user data is ever dropped.
  */
-function entryHead(existing: JsonObject | undefined, model: string): { lines: string[]; complete: boolean } {
-  if (existing === undefined) return { lines: [`- id: ${model}`], complete: true }
+function entryHead(existing: JsonObject | undefined, model: string, modelIndent: number): { lines: string[]; complete: boolean } {
+  const itemPrefix = ' '.repeat(modelIndent)
+  const fieldPrefix = ' '.repeat(modelIndent + 2)
+  if (existing === undefined) return { lines: [`${itemPrefix}- id: ${model}`], complete: true }
   const extra = Object.keys(existing).filter((key) => !ENTRY_SCALAR_KEYS.has(key))
-  const lines: string[] = [`- id: ${typeof existing.id === 'string' ? existing.id : model}`]
-  if (typeof existing.name === 'string' && existing.name.length > 0) lines.push(`  name: ${JSON.stringify(existing.name)}`)
-  if (typeof existing.contextWindow === 'number') lines.push(`  contextWindow: ${existing.contextWindow}`)
-  if (typeof existing.maxTokens === 'number') lines.push(`  maxTokens: ${existing.maxTokens}`)
+  const lines: string[] = [`${itemPrefix}- id: ${typeof existing.id === 'string' ? existing.id : model}`]
+  if (typeof existing.name === 'string' && existing.name.length > 0) lines.push(`${fieldPrefix}name: ${JSON.stringify(existing.name)}`)
+  if (typeof existing.contextWindow === 'number') lines.push(`${fieldPrefix}contextWindow: ${existing.contextWindow}`)
+  if (typeof existing.maxTokens === 'number') lines.push(`${fieldPrefix}maxTokens: ${existing.maxTokens}`)
   return { lines, complete: extra.length === 0 }
 }
 
-export function apply(ctx: Context): void {
+export function apply(ctx: Context, config?: StoreShape): void {
   const settings = ctx.get('settings') as HostSettingsService | undefined
   const llm = ctx.get('llm') as HostLlmService | undefined
   if (settings === undefined || llm === undefined) return
   // Aliased after the guard so closures below keep the narrowed types.
   const settingsService = settings
   const llmService = llm
+  const usesProfileConfig = typeof settingsService.register !== 'function'
 
-  const store = settingsService.register(STORE_NS, StoreSchema) as SettingsScopeLike
+  const store = settingsService.register?.(STORE_NS, StoreSchema)
 
   const readStore = (): StoreShape => {
-    const value = store.get()
+    const value = store?.get() ?? config
     return isRecord(value) ? (value as unknown as StoreShape) : {}
   }
 
-  /** The settings.yaml path, memoized (the file provider names it once). */
+  /** The active configuration document path, memoized. */
   let settingsPathPromise: Promise<string | undefined> | undefined
   const settingsPath = (): Promise<string | undefined> => {
     settingsPathPromise ??= settingsService.prepareDocument().catch(() => undefined)
@@ -336,7 +343,8 @@ export function apply(ctx: Context): void {
    */
   function endpointWarning(provider: string): Guidance['warning'] {
     try {
-      const section = settingsService.get(LLM_NS)
+      const section = settingsService.get?.(LLM_NS)
+        ?? settingsService.describe().find((row) => row.ns === LLM_NS)?.value
       const route = isRecord(section) && isRecord((section as JsonObject).providers)
         ? (section as JsonObject).providers[provider] as JsonObject | undefined
         : undefined
@@ -369,13 +377,14 @@ export function apply(ctx: Context): void {
     // catalog's data — including deliberately sparse level sets — is trusted.
     const needsGuide = declared && reason !== 'none'
 
-    const block = entry === undefined ? null : fieldBlock(entry)
+    const modelIndent = usesProfileConfig ? 10 : 8
+    const block = entry === undefined ? null : fieldBlock(entry, modelIndent)
 
     // Replace mode carries the complete entry head and declared levels, so the
     // whole-entry replacement cannot drop user data.
     // Insert mode: the entry carries fields this plugin cannot round-trip,
     // so only the field block is offered, to paste under the existing line.
-    const head = entryHead(userEntry, model)
+    const head = entryHead(userEntry, model, modelIndent)
     const mode: Guidance['mode'] = head.complete ? 'replace' : 'insert'
     const builtIn = entry !== undefined && BUILTIN_ENTRIES.includes(entry)
     const noteKey = builtIn ? entry.noteKey ?? null : null
@@ -399,7 +408,10 @@ export function apply(ctx: Context): void {
       entryHead: head.complete ? head.lines.join('\n') : null,
       fieldBlock: block,
       entryLine,
-      entryPath: `${LLM_NS}.providers.${provider}.models`,
+      entryPath: usesProfileConfig
+        ? `[id: ${LLM_NS}].config.providers.${provider}.models`
+        : `${LLM_NS}.providers.${provider}.models`,
+      modelIndent,
       settingsPath: path ?? null,
     }
   }

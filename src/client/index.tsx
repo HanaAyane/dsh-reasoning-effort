@@ -74,6 +74,7 @@ interface AdaptGuidance {
   readonly fieldBlock: string | null
   readonly entryLine: string
   readonly entryPath: string
+  readonly modelIndent: number
   readonly settingsPath: string | null
 }
 
@@ -110,17 +111,23 @@ function levelsText(levels: readonly string[], t: ReasoningEffortTranslate): str
  * own base-URL detection (which is what an unrecognized OpenAI-compatible
  * endpoint wants anyway, and the correct vendor format for a recognized one).
  */
-function templateSnippet(t: ReasoningEffortTranslate): string {
+function templateSnippet(t: ReasoningEffortTranslate, modelIndent: number): string {
+  const fieldPrefix = ' '.repeat(modelIndent + 2)
+  const valuePrefix = ' '.repeat(modelIndent + 4)
   return [
-    '          reasoningEfforts:',
-    `            low: "low"        # ${t('yaml.keyComment')}`,
-    `            high: "high"      # ${t('yaml.valueComment')}`,
-    `          # ${t('yaml.compatComment')}`,
-    '          # compat:',
-    '          #   thinkingFormat: "qwen"',
-    '          #   supportsReasoningEffort: false',
-    '          #   supportsDeveloperRole: false',
+    `${fieldPrefix}reasoningEfforts:`,
+    `${valuePrefix}low: "low"        # ${t('yaml.keyComment')}`,
+    `${valuePrefix}high: "high"      # ${t('yaml.valueComment')}`,
+    `${fieldPrefix}# ${t('yaml.compatComment')}`,
+    `${fieldPrefix}# compat:`,
+    `${fieldPrefix}#   thinkingFormat: "qwen"`,
+    `${fieldPrefix}#   supportsReasoningEffort: false`,
+    `${fieldPrefix}#   supportsDeveloperRole: false`,
   ].join('\n')
+}
+
+function configDocumentName(path: string | null): string {
+  return path?.split(/[\\/]/u).at(-1) || 'settings.yaml'
 }
 
 function guidanceNote(guidance: AdaptGuidance, t: ReasoningEffortTranslate): string {
@@ -135,7 +142,7 @@ function guidanceWarning(guidance: AdaptGuidance, t: ReasoningEffortTranslate): 
 }
 
 function guidanceSnippet(guidance: AdaptGuidance, t: ReasoningEffortTranslate): string {
-  const block = guidance.fieldBlock ?? templateSnippet(t)
+  const block = guidance.fieldBlock ?? templateSnippet(t, guidance.modelIndent)
   return guidance.entryHead === null ? block : `${guidance.entryHead}\n${block}`
 }
 
@@ -174,7 +181,10 @@ function agentBrief(
     '',
     '---',
     '',
-    tutorial.replace(/\r\n/gu, '\n').trim(),
+    tutorial.replace(/\r\n/gu, '\n')
+      .replaceAll('{{CONFIG_FILE}}', configDocumentName(guidance.settingsPath))
+      .replaceAll('{{ENTRY_PATH}}', guidance.entryPath)
+      .trim(),
     '',
     `## ${t('agent.snippetHeading')}`,
     '',
@@ -1052,7 +1062,7 @@ function AdvancedModelSelect({
                         <pre className="re-adapt-yaml">{localizedSnippet}</pre>
                         <div className="re-adapt-steps">
                           <span>
-                            {t('guidance.step1.open')}<code>settings.yaml</code>
+                            {t('guidance.step1.open')}<code>{configDocumentName(guidance.settingsPath)}</code>
                             {guidance.settingsPath === null ? '' : t('guidance.step1.path', { path: guidance.settingsPath })}
                             {t('guidance.step1.find')}<code>{guidance.entryPath}</code>
                             {t('guidance.step1.list')}<code>{guidance.entryLine}</code>{t('guidance.step1.end')}
