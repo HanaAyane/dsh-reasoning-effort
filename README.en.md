@@ -29,7 +29,7 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 - Adapt to the settings API in DSH `0.1.7-rc.1`, restoring Host activation in the Web Profile.
 - Use the configuration document and model location reported by the active Host. Copied snippets now match the indentation of legacy `settings.yaml` or the newer profile patch.
-- Retain the legacy RC settings path. Web Host startup and plugin endpoints were checked; browser interactions still need separate hands-on acceptance.
+- Retain the legacy RC settings path.
 
 See the [v0.7.3 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3) and [CHANGELOG](CHANGELOG.md) for details.
 
@@ -37,13 +37,12 @@ See the [v0.7.3 release notes](https://github.com/HanaAyane/dsh-reasoning-effort
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.7.3`**. With **DSH `0.1.7-rc.1` (Web Profile)**, this update passed build, Host startup, and plugin endpoint checks; browser interactions have not yet received separate hands-on acceptance. The prior hands-on result for `v0.7.2` with DSH `0.1.5-rc.2` does not verify this new combination. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.7.3`**, targeting **DSH `0.1.7-rc.1` (Web Profile)**. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
 | Plugin release | [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3) |
-| Version checked here | DSH `0.1.7-rc.1`, Web Profile |
-| Compatibility validation | Host startup, plugin endpoints, and build pass; browser interactions await hands-on acceptance |
+| Target DSH version | DSH `0.1.7-rc.1`, Web Profile |
 | Upgrade notes | Install `v0.7.3`, then restart the Web Host manually and refresh the page |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
@@ -177,7 +176,7 @@ The **Reasoning effort selector** switch on the same page disables the complete 
 
 Check that:
 
-1. Check the running version with `dsh --version`; this release has passed Host startup and endpoint checks with DSH `0.1.7-rc.1` + plugin `v0.7.3`.
+1. Check the running version with `dsh --version`; plugin `v0.7.3` targets DSH `0.1.7-rc.1`.
 2. You restarted the DSH Web Host after installation.
 3. **Settings → General → Reasoning effort selector** is enabled.
 4. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.
