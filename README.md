@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.7.3](https://img.shields.io/badge/release-0.7.3-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)
+[![v0.8.0](https://img.shields.io/badge/release-0.8.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -23,27 +23,27 @@
 
 <img src="assets/readme/themes.webp" alt="推理强度选择器在 DeepSeek Harness 深色和浅色主题中的真实效果" width="100%">
 
-[本次更新](#v073-更新内容) · [安装与更新](#安装与更新) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
+[本次更新](#v080-更新内容) · [安装与更新](#安装与更新) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
 
-## v0.7.3 更新内容
+## v0.8.0 更新内容
 
-- 适配 DSH `0.1.7-rc.1` 的新版设置接口，修复插件在 Web Host 启动时无法激活的问题。
-- 档位指引现在使用 Host 返回的实际配置文件与条目位置，并按旧版 `settings.yaml` 或新版 Profile 配置的缩进生成片段。
-- 保留旧版 RC 的设置读取路径。
+- 适配 DSH `0.2.0-rc.1` 的客户端模块拆分与模型选择接口，让插件在新版 Web Profile 中加载。
+- 模型或推理强度提交失败时按新版结果返回错误并回滚，不再把失败当作成功。
+- 本版本改用新版客户端依赖；使用 DSH `0.1.x` 请安装旧版插件。
 
-完整记录见 [v0.7.3 发布说明](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3) 和 [CHANGELOG](CHANGELOG.md)。
+完整记录见 [v0.8.0 发布说明](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0) 和 [CHANGELOG](CHANGELOG.md)。
 
 ## 版本支持政策
 
 本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
 
-当前发行版为 **插件 `v0.7.3`**，面向 **DSH `0.1.7-rc.1`（Web Profile）**。如需继续使用 alpha，请自行进行临时适配。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
+当前发行版为 **插件 `v0.8.0`**，面向 **DSH `0.2.0-rc.1`（Web Profile）**。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
 
 | 项目 | 当前说明 |
 | --- | --- |
-| 插件发行版 | [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3) |
-| 适配版本 | DSH `0.1.7-rc.1`，Web Profile |
-| 升级说明 | 安装 `v0.7.3` 后手动重启 Web Host 并刷新页面 |
+| 插件发行版 | [v0.8.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0) |
+| 适配版本 | DSH `0.2.0-rc.1`，Web Profile |
+| 升级说明 | 安装 `v0.8.0` 后手动重启 Web Host 并刷新页面 |
 | alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
 
 ## 安装与更新
@@ -53,19 +53,21 @@
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.3
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.0
 dsh --profile web --dump-config
 ```
 
-确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.7.3` 换成 `#main`，但主分支可能包含未发布改动。
+确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.8.0` 换成 `#main`，但主分支可能包含未发布改动。
+
+也可以从 [v0.8.0 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.0/dsh-reasoning-effort-0.8.0.tgz)。
 
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
 
 ```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.7.3。
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.8.0。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.3
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.0
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -93,7 +95,7 @@ dsh --profile web --dump-config
 
 **为什么读不到档位**：DSH 的模型目录只报告适配器声明的能力。你自己声明的模型没有目录条目，除非写出 `reasoningEfforts`，否则目录里永远没有档位，滑块也不会出现。
 
-**怎么填**：打开指引面板显示的配置文件（旧版使用 `settings.yaml`，DSH `0.1.7-rc.1` 使用 Profile 的 `cordis.patch.yml`），在 `llm-pi-ai` 的对应模型条目下加 `reasoningEfforts`，并保持原有缩进。键是 DSH 档位，值是端点接受的写法；没写的档位视为不支持：
+**怎么填**：打开指引面板显示的配置文件（DSH `0.2.0-rc.1` 使用 Profile 的 `cordis.patch.yml`），在 `llm-pi-ai` 的对应模型条目下加 `reasoningEfforts`，并保持原有缩进。键是 DSH 档位，值是端点接受的写法；没写的档位视为不支持：
 
 ```yaml
 models:
@@ -133,7 +135,7 @@ DSH 内置路由的档位来自 pi-ai 目录，插件**完全只读、绝不修�
 <details>
 <summary>高级配置：扩展插件知识库</summary>
 
-内置条目只覆盖少数模型，作用仅是省去手填。要补充其他模型，DSH `0.1.7-rc.1` 在 Profile 中已有 `id: reasoning-effort` 条目的 `config` 下添加 `entries`；旧版 RC 则在 `settings.yaml` 的 `dsh-reasoning-effort` 命名空间下添加。下面只展示相对内容，粘贴时保持所在条目的缩进；用户条目优先于内置：
+内置条目只覆盖少数模型，作用仅是省去手填。要补充其他模型，在 Profile 中已有 `id: reasoning-effort` 条目的 `config` 下添加 `entries`。下面只展示相对内容，粘贴时保持所在条目的缩进；用户条目优先于内置：
 
 ```yaml
 entries:
@@ -176,7 +178,7 @@ entries:
 
 请依次确认：
 
-1. 用 `dsh --version` 确认实际运行版本；插件 `v0.7.3` 面向 DSH `0.1.7-rc.1`。
+1. 用 `dsh --version` 确认实际运行版本；插件 `v0.8.0` 面向 DSH `0.2.0-rc.1`。
 2. 安装后已经重启 DSH Web Host。
 3. **设置 → 通用设置 → 推理强度滑块** 处于启用状态。
 4. 当前模型在 DSH 模型目录中公开了至少两档推理强度（未声明的模型见下一条），且部署没有关闭 thinking。

@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.7.3](https://img.shields.io/badge/release-0.7.3-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)
+[![v0.8.0](https://img.shields.io/badge/release-0.8.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -23,27 +23,27 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 <img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="100%">
 
-[What changed](#whats-new-in-v073) · [Install and update](#install-and-update) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+[What changed](#whats-new-in-v080) · [Install and update](#install-and-update) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
-## What's new in v0.7.3
+## What's new in v0.8.0
 
-- Adapt to the settings API in DSH `0.1.7-rc.1`, restoring Host activation in the Web Profile.
-- Use the configuration document and model location reported by the active Host. Copied snippets now match the indentation of legacy `settings.yaml` or the newer profile patch.
-- Retain the legacy RC settings path.
+- Adapt to DSH `0.2.0-rc.1`'s split client modules and model-selection API so the plugin loads in the new Web Profile.
+- Handle failed model and effort selections through the new result contract, restoring the previous value instead of treating failures as success.
+- This release uses the new client dependencies; install an earlier plugin release with DSH `0.1.x`.
 
-See the [v0.7.3 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3) and [CHANGELOG](CHANGELOG.md) for details.
+See the [v0.8.0 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0) and [CHANGELOG](CHANGELOG.md) for details.
 
 ## Version support policy
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.7.3`**, targeting **DSH `0.1.7-rc.1` (Web Profile)**. If you need an alpha version, maintain a temporary adaptation yourself. RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.8.0`**, targeting **DSH `0.2.0-rc.1` (Web Profile)**. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
-| Plugin release | [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3) |
-| Target DSH version | DSH `0.1.7-rc.1`, Web Profile |
-| Upgrade notes | Install `v0.7.3`, then restart the Web Host manually and refresh the page |
+| Plugin release | [v0.8.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0) |
+| Target DSH version | DSH `0.2.0-rc.1`, Web Profile |
+| Upgrade notes | Install `v0.8.0`, then restart the Web Host manually and refresh the page |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
 ## Install and update
@@ -53,19 +53,21 @@ The current release is **plugin `v0.7.3`**, targeting **DSH `0.1.7-rc.1` (Web Pr
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.3
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.0
 dsh --profile web --dump-config
 ```
 
-Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.7.3` with `#main`; the main branch may contain unreleased changes.
+Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.8.0` with `#main`; the main branch may contain unreleased changes.
+
+You can also [download the v0.8.0 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.0/dsh-reasoning-effort-0.8.0.tgz).
 
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
 
 ```text
-Install dsh-reasoning-effort v0.7.3 for the DeepSeek Harness web profile.
+Install dsh-reasoning-effort v0.8.0 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.7.3
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.0
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -93,7 +95,7 @@ This section is vendor-neutral and applies to every model you declare yourself u
 
 **Why the levels are missing**: DSH's model directory only reports what the adapter declares. A model you declare has no catalog entry, so the directory exposes no levels — and no slider — until you write `reasoningEfforts`.
 
-**What to write**: open the configuration file shown in the guidance panel (older builds use `settings.yaml`; DSH `0.1.7-rc.1` uses the profile's `cordis.patch.yml`). Add `reasoningEfforts` under the model's `llm-pi-ai` entry, matching its existing indentation. Each key is a DSH level, each value is the spelling the endpoint accepts, and a level left out counts as unsupported:
+**What to write**: open the configuration file shown in the guidance panel (DSH `0.2.0-rc.1` uses the profile's `cordis.patch.yml`). Add `reasoningEfforts` under the model's `llm-pi-ai` entry, matching its existing indentation. Each key is a DSH level, each value is the spelling the endpoint accepts, and a level left out counts as unsupported:
 
 ```yaml
 models:
@@ -133,7 +135,7 @@ If you would rather not fill it in yourself, or the declaration still fails, pre
 <details>
 <summary>Advanced: extend the plugin knowledge base</summary>
 
-The built-in entries cover only a few models, purely to save typing. With DSH `0.1.7-rc.1`, add `entries` under `config` in the existing `id: reasoning-effort` profile row. With older RCs, add them under `dsh-reasoning-effort` in `settings.yaml`. This example shows relative content; keep the indentation of the containing row. User entries win over built-ins:
+The built-in entries cover only a few models, purely to save typing. Add `entries` under `config` in the existing `id: reasoning-effort` profile row. This example shows relative content; keep the indentation of the containing row. User entries win over built-ins:
 
 ```yaml
 entries:
@@ -176,7 +178,7 @@ The **Reasoning effort selector** switch on the same page disables the complete 
 
 Check that:
 
-1. Check the running version with `dsh --version`; plugin `v0.7.3` targets DSH `0.1.7-rc.1`.
+1. Check the running version with `dsh --version`; plugin `v0.8.0` targets DSH `0.2.0-rc.1`.
 2. You restarted the DSH Web Host after installation.
 3. **Settings → General → Reasoning effort selector** is enabled.
 4. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.

@@ -24,11 +24,11 @@ export declare const name = "dsh-reasoning-effort";
  * RPC channel is mounted through `ctx.inject` instead of blocking this row.
  */
 export declare const inject: string[];
-export declare const Config: z<Schemastery.ObjectS<{
-    entries: z<any[], any[]>;
-}>, Schemastery.ObjectT<{
-    entries: z<any[], any[]>;
-}>>;
+export declare const Config: z<Schemastery.ObjectS<NoInfer<{
+    entries: z<any[], any[], "defined">;
+}>>, Schemastery.ObjectT<NoInfer<{
+    entries: z<any[], any[], "defined">;
+}>>, "plain">;
 interface StoreShape {
     entries?: KnowledgeEntry[];
 }

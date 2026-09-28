@@ -12,13 +12,15 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
-import type { ModelSelection, SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ModelSelection } from '@deepseek-ai/dsh-api-session-controller/types'
 import type {
   ModelDirectory,
   ModelDirectoryResolver,
@@ -611,15 +613,7 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
     }
 
     try {
-      const models = await directory.load()
-      const fresh: ModelDirectoryState = {
-        current: models.current,
-        routable: models.routable,
-        groups: models.groups,
-        failures: models.failures,
-        status: 'ready',
-        error: null,
-      }
+      const fresh = await directory.load()
       const freshLevels = sliderLevels(fresh)
       const index = clampIndex(raw, freshLevels.length)
       const next = freshLevels[index]?.id
@@ -629,11 +623,13 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
       setPreview(index)
       setEffort(next)
 
-      await directory.select({
-        provider: models.current.provider,
-        model: models.current.model,
+      if (fresh.current === null) throw new Error(t('effort.unavailable'))
+      const result = await directory.select({
+        provider: fresh.current.provider,
+        model: fresh.current.model,
         reasoningEffort: next,
       })
+      if (!result.ok) throw result.error
 
       const snapshot = directory.store.getSnapshot()
       const accepted = effortIndex(freshLevels, snapshot.current?.reasoningEffort)
@@ -1262,14 +1258,14 @@ export function apply(ctx: ClientContext) {
           name: SLOT,
           priority: -100,
           locale: NS,
-          inject: (sessionId: SessionId) => {
-            const controller = modelDirectories.directoryFor(sessionId)
+          inject: (sessionId: string) => {
+            const controller = modelDirectories.directoryFor(sessionId as SessionId)
             return {
               available: true,
               controller,
               directory: controller.store,
               load: () => controller.load().then(() => undefined, () => undefined),
-              select: (selection: ModelSelection) => controller.select(selection).then(() => true, () => false),
+              select: (selection: ModelSelection) => controller.select(selection).then((result) => result.ok, () => false),
               adapt,
               // Read at copy time: a language switch must change the next copy,
               // not require the seat to remount.
