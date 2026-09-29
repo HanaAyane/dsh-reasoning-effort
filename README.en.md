@@ -23,7 +23,7 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 <img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="100%">
 
-[What changed](#whats-new-in-v080) · [Install and update](#install-and-update) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+[What changed](#whats-new-in-v080) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
 ## What's new in v0.8.0
 
@@ -37,18 +37,19 @@ See the [v0.8.0 release notes](https://github.com/HanaAyane/dsh-reasoning-effort
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.8.0`**, targeting **DSH `0.2.0-rc.1` (Web Profile)**. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.8.0`**. It supports the Web Profile on DSH `0.2.0-rc.1`, and both the Web and Desktop profiles on DSH `0.2.0-rc.2`. Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
 | Plugin release | [v0.8.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0) |
-| Target DSH version | DSH `0.2.0-rc.1`, Web Profile |
-| Upgrade notes | Install `v0.8.0`, then restart the Web Host manually and refresh the page |
+| Web | DSH `0.2.0-rc.1` and `0.2.0-rc.2`; use the `web` profile |
+| Desktop | DSH Desktop `0.2.0-rc.2`; use the `desktop` profile |
+| Upgrade notes | Install `v0.8.0`, then restart the corresponding Web Host or desktop app |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
 ## Install and update
 
-### 1. Install a pinned release
+### Web: install a pinned release
 
 Run these commands in the terminal environment you use to start DSH:
 
@@ -75,13 +76,30 @@ Do not stop or restart the running DSH process. Remind me to restart the Web Hos
 
 </details>
 
-### 2. Restart and refresh
+### Web: restart and refresh
 
 The plugin loads when the Web Host starts. After installation, restart the DSH Web Host manually and refresh the page.
 
-### 3. Choose a model and effort level
+### Choose a model and effort level
 
 Open a session and click the model control below the composer. Drag the thumb or click the track; release to snap to the nearest valid level. Click the model row below it to expand the model list.
+
+### Install in DSH Desktop
+
+These steps apply to **DSH Desktop `0.2.0-rc.2`**. Desktop stores plugins in its own `desktop` profile; an installation in the `web` profile does not carry over.
+
+1. Launch the desktop app once to initialize its profile, then **fully quit** from the application menu or system tray. Closing the window may leave the app running in the background.
+2. Use **Manage dsh command…** in the desktop app to install or repair its bundled command. Open a new terminal and confirm that `dsh --version` reports `0.2.0-rc.2`. If an npm installation of dsh is also present, use `Get-Command dsh` in PowerShell to check which command your terminal resolves. On Windows, you can call `resources/runtime/cli/bin/dsh.cmd` directly from the Desktop installation directory.
+3. Use the **Desktop bundled command** to install and check the plugin:
+
+   ```powershell
+   dsh plugin --profile desktop add github:HanaAyane/dsh-reasoning-effort#v0.8.0
+   dsh plugin --profile desktop list
+   ```
+
+   Confirm that `dsh-reasoning-effort` appears in the list, then reopen the desktop app. Use the same `add` command to update an existing installation. Alternatively, install the plugin through the desktop app's plugin manager and restart the app as directed.
+
+The Desktop bundled command and a separately installed npm dsh use different runtimes. Do not modify the `desktop` profile with the npm command; Desktop loads plugins from its own profile. See the [official DSH Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.0-rc.2/apps/desktop/README.md#bundled-command-runtime) for details.
 
 ## Where the levels come from
 
@@ -95,7 +113,7 @@ This section is vendor-neutral and applies to every model you declare yourself u
 
 **Why the levels are missing**: DSH's model directory only reports what the adapter declares. A model you declare has no catalog entry, so the directory exposes no levels — and no slider — until you write `reasoningEfforts`.
 
-**What to write**: open the configuration file shown in the guidance panel (DSH `0.2.0-rc.1` uses the profile's `cordis.patch.yml`). Add `reasoningEfforts` under the model's `llm-pi-ai` entry, matching its existing indentation. Each key is a DSH level, each value is the spelling the endpoint accepts, and a level left out counts as unsupported:
+**What to write**: open the configuration file shown in the guidance panel (the target profile's `cordis.patch.yml`). Add `reasoningEfforts` under the model's `llm-pi-ai` entry, matching its existing indentation. Each key is a DSH level, each value is the spelling the endpoint accepts, and a level left out counts as unsupported:
 
 ```yaml
 models:
@@ -178,8 +196,8 @@ The **Reasoning effort selector** switch on the same page disables the complete 
 
 Check that:
 
-1. Check the running version with `dsh --version`; plugin `v0.8.0` targets DSH `0.2.0-rc.1`.
-2. You restarted the DSH Web Host after installation.
+1. Check that the running version matches the support table above; Desktop shows its version under **About DeepSeek Harness**.
+2. You restarted the corresponding Web Host or fully quit and reopened the desktop app after installation.
 3. **Settings → General → Reasoning effort selector** is enabled.
 4. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.
 
@@ -199,7 +217,7 @@ Open an [issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues) with y
 dsh --profile web --dump-config
 ```
 
-The output should contain `name: dsh-reasoning-effort`.
+The Web output should contain `name: dsh-reasoning-effort`. For Desktop, fully quit the app, then run `dsh plugin --profile desktop list` with its bundled command and confirm that the plugin appears.
 
 ### Uninstall
 
@@ -207,7 +225,7 @@ The output should contain `name: dsh-reasoning-effort`.
 dsh plugin --profile web remove dsh-reasoning-effort
 ```
 
-Restart the DSH Web Host afterward. The native model selector will return automatically.
+For Desktop, fully quit the app, then run `dsh plugin --profile desktop remove dsh-reasoning-effort` with its bundled command. Restart the corresponding Web Host or desktop app afterward; the native model selector will return automatically.
 
 ## Development
 
