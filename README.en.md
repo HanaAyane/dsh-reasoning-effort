@@ -113,7 +113,7 @@ The slider appears when at least two levels are available; otherwise the menu sh
 
 This section is vendor-neutral and applies to every model you declare yourself under `llm-pi-ai`.
 
-**Why the levels are missing**: DSH's model directory only reports what the adapter declares. A model you declare has no catalog entry, so the directory exposes no levels — and no slider — until you write `reasoningEfforts`.
+**Why the levels are missing**: DSH's model directory only reports what the adapter declares. Custom models without inherited catalog metadata need explicit `reasoningEfforts` to expose levels. Missing directory levels do not prove the endpoint cannot reason.
 
 **What to write**: open the configuration file shown in the guidance panel (the target profile's `cordis.patch.yml`). Add `reasoningEfforts` under the model's `llm-pi-ai` entry, matching its existing indentation. Each key is a DSH level, each value is the spelling the endpoint accepts, and a level left out counts as unsupported:
 
@@ -138,7 +138,7 @@ models:
 
 With no `compat`, the adapter decides from the endpoint address: an address it does not recognize is treated as standard OpenAI, and a recognized vendor endpoint gets that vendor's format automatically. **Guessing the format is worse than leaving it out.**
 
-**How to verify**: open the model menu after saving — the slider appearing means it worked. If the slider appears but requests fail, work through the table above. The plugin's built-in knowledge entries are shortcuts, not a requirement.
+**How to verify**: check configuration parsing and directory levels after saving, then validate actual requests. A visible slider establishes metadata only, not endpoint acceptance or effective strength changes. Built-in knowledge entries are references, not a requirement.
 
 ## Effort guidance for custom providers
 
@@ -150,7 +150,9 @@ Built-in routes get their levels from the pi-ai catalog and the plugin never tou
 
 Models the knowledge base does not know get a generic template you can edit directly. When a gateway rejects requests for a reason the template cannot express — an endpoint refusing the `developer` message role, for instance — the panel names the matching `compat` switch (`supportsDeveloperRole: false`).
 
-If you would rather not fill it in yourself, or the declaration still fails, press **Copy for your agent** beside the panel: it puts a single brief on the clipboard — the observed facts (route, model id, active configuration file, entry line, levels the directory reads, knowledge-base suggestion, endpoint caveat), your task, the complete declaration rules, and a starting snippet. Paste it into a coding agent so it can read the target file, check the endpoint documentation, complete the configuration, and explain the result.
+Press **Copy for your agent** to configure missing levels, adjust existing ones, or diagnose failures. Models you declare retain this entry even when valid levels already exist. The copied brief includes the route, model ID, actual configuration path, entry location, directory levels, and vendor-neutral declaration rules. It excludes built-in knowledge-base level presets and compat recommendations.
+
+Paste the prompt into your coding agent. It reads the actual route's `api` / `baseURL`, checks the endpoint's official documentation, distinguishes effort enums, thinking switches, token budgets, and aliases, and makes a minimal model-entry change. It asks for missing evidence or provides a patch when file access is unavailable. The prompt requires preserving existing configuration and reporting configuration parsing, directory metadata, and actual-request validation separately.
 
 <details>
 <summary>Advanced: extend the plugin knowledge base</summary>

@@ -149,30 +149,24 @@ function guidanceSnippet(guidance: AdaptGuidance, t: ReasoningEffortTranslate): 
 }
 
 /**
- * The whole document a user hands to an agent: what was observed, what to do,
- * the level-declaration rules, and the suggested block as a starting point.
+ * Copy observed model/configuration facts and vendor-neutral declaration rules.
+ * Knowledge-base suggestions are excluded: the recipient verifies the endpoint.
  * The rules themselves live in the markdown briefs so they can be reviewed and
  * revised as documents rather than as dictionary strings.
  */
 function agentBrief(
   guidance: AdaptGuidance,
-  snippet: string,
   tutorial: string,
-  warning: string | null,
   t: ReasoningEffortTranslate,
 ): string {
-  const facts = [
-    t('agent.facts', {
-      provider: guidance.provider,
-      model: guidance.model,
-      path: guidance.settingsPath ?? '-',
-      entryPath: guidance.entryPath,
-      entryLine: guidance.entryLine,
-      current: levelsText(guidance.current, t),
-      expected: guidance.matched ? levelsText(guidance.expected, t) : t('level.none'),
-    }),
-    ...(warning === null ? [] : [t('agent.warningLine', { warning })]),
-  ].join('\n')
+  const facts = t('agent.facts', {
+    provider: guidance.provider,
+    model: guidance.model,
+    path: guidance.settingsPath ?? t('agent.configUnknown'),
+    entryPath: guidance.entryPath,
+    entryLine: guidance.entryLine,
+    current: levelsText(guidance.current, t),
+  })
   return [
     t('agent.intro'),
     '',
@@ -184,15 +178,9 @@ function agentBrief(
     '---',
     '',
     tutorial.replace(/\r\n/gu, '\n')
-      .replaceAll('{{CONFIG_FILE}}', configDocumentName(guidance.settingsPath))
+      .replaceAll('{{CONFIG_FILE}}', guidance.settingsPath ?? t('agent.configUnknown'))
       .replaceAll('{{ENTRY_PATH}}', guidance.entryPath)
       .trim(),
-    '',
-    `## ${t('agent.snippetHeading')}`,
-    '',
-    '```yaml',
-    snippet,
-    '```',
     '',
   ].join('\n')
 }
@@ -1093,7 +1081,7 @@ function AdvancedModelSelect({
                           className="re-adapt-agent"
                           disabled={busy || guidanceBusy}
                           onClick={() => {
-                            void copyText(agentBrief(guidance, localizedSnippet, agentTutorial(), localizedWarning, t))
+                            void copyText(agentBrief(guidance, agentTutorial(), t))
                               .then((ok) => setAgentCopied(ok))
                           }}
                         >
@@ -1114,7 +1102,7 @@ function AdvancedModelSelect({
                         className="re-adapt-agent"
                         disabled={busy || guidanceBusy}
                         onClick={() => {
-                          void copyText(agentBrief(guidance, localizedSnippet, agentTutorial(), localizedWarning, t))
+                          void copyText(agentBrief(guidance, agentTutorial(), t))
                             .then((ok) => setAgentCopied(ok))
                         }}
                       >
@@ -1122,6 +1110,24 @@ function AdvancedModelSelect({
                       </button>
                     </div>
                   )}
+                </div>
+              ) : null}
+              {guidance !== null && guidance.userDeclared && !guidance.needsGuide ? (
+                <div className="re-adapt">
+                  <div className="re-adapt-desc">{t('agent.customize')}</div>
+                  <div className="re-adapt-open-row">
+                    <button
+                      type="button"
+                      className="re-adapt-agent"
+                      disabled={busy || guidanceBusy}
+                      onClick={() => {
+                        void copyText(agentBrief(guidance, agentTutorial(), t))
+                          .then((ok) => setAgentCopied(ok))
+                      }}
+                    >
+                      {agentCopied ? t('guidance.copied') : t('agent.copy')}
+                    </button>
+                  </div>
                 </div>
               ) : null}
               {guidanceFailed ? <div className="re-model-status" role="status">{t('guidance.unavailable')}</div> : null}

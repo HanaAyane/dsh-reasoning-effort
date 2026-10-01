@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Make **Copy for your agent** available for user-declared models with existing levels as well as missing declarations.
+- Copy vendor-neutral endpoint research and configuration instructions without built-in model presets; distinguish off semantics, aliases, protocol compatibility, and configuration versus request validation in both languages.
+
 ## [0.8.1] - 2026-10-01
 
 ### Changed

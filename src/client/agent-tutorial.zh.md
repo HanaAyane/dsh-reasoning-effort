@@ -1,59 +1,47 @@
-# 背景：为什么读不到推理强度档位
+# 先确认目标和端点能力
 
-DSH 的模型目录只报告**适配器声明过的能力**。pi-ai 适配器在模型没有推理元数据时完全不输出 `reasoning` 字段，于是浏览器拿到的目录里没有 `reasoning.efforts`，模型菜单里也不会出现滑块。
+目标配置文件：`{{CONFIG_FILE}}`。模型条目位置：`{{ENTRY_PATH}}`。这些信息是复制时的快照；修改前重新确认当前 Profile、provider 和模型 ID，按实际文件缩进操作，不根据示例重建整份配置。
 
-自定义路由（用户在 `llm-pi-ai` 里自己声明的 provider）默认没有这层元数据：
+读取模型条目和所属路由的 `api`、`baseURL`、已有 `reasoningEfforts`、模型级与路由级 `compat`，并检查当前安装的 DSH / pi-ai 版本。字段省略时可能继承内置目录，先查有效配置。目录没有档位只说明当前没有公开元数据，不证明端点不支持推理；已有目录档位也不证明网关接受每个参数。
 
-- 它的 provider key 不是 pi-ai 内置目录里的 provider（内置如 `deepseek`、`zai`、`moonshotai-cn`、`qwen-token-plan-cn`），所以查不到目录条目；
-- 查不到目录条目时 `reasoning` 默认取 `false`，除非在该模型条目里显式写 `reasoningEfforts`。
+以实际端点的官方文档和已确认的请求行为为依据。模型原厂文档可以参考，但同名模型在代理、网关、订阅端点或不同协议上的参数可能不同。模型列表通常只有 ID，不能仅凭列表推断档位。内置或用户知识库的建议只作线索；不要以与知识库不同为由覆盖有效配置。
 
-结论：**自定义模型必须自己声明档位。** 插件不会也不能替用户发明档位——提交未声明的档位会被 DSH 以 `UNSUPPORTED_REASONING_EFFORT` 拒绝。
+给出能力表：控制方式、端点参数、合法取值、各档位的实际含义、关闭方式、证据来源。区分力度枚举、思考开关和 token 预算；别名不等于独立强度。如果没有可靠资料，询问端点文档、期望档位或脱敏错误，不猜测。
 
-# 要写什么
+# 声明 reasoningEfforts 的规则
 
-在 `{{CONFIG_FILE}}` 的 `{{ENTRY_PATH}}` 列表里找到该模型的条目，加一个 `reasoningEfforts`。该路径由当前 DSH Host 返回，旧版可能使用 `settings.yaml`，新版可能使用 Profile 的 `cordis.patch.yml`：
+DSH 的 `reasoningEfforts` 用显示档位映射端点取值。下面只是结构示例，所有占位符都必须替换；`low` / `high` 也必须根据已确认的能力调整，不是该模型的推荐档位：
 
 ```yaml
-- id: <模型 id>
-  reasoningEfforts:      # 键 = DSH 档位；值 = 端点实际接受的写法
-    low: "low"
-    high: "high"
+reasoningEfforts:
+  low: "<端点已确认支持的取值>"
+  high: "<端点已确认支持的另一个取值>"
 ```
 
-规则：
+1. 键只能是 `off`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`；非空值是端点取值的字符串，不能把数值预算直接写进映射。
+2. 只声明确实可用的档位。省略的档位视为不支持；非 `off` 档位不能使用空值或空字符串。不要为了凑齐滑块伪造强度差异。
+3. `off: "<关闭取值>"` 用于端点明确支持的关闭值。`off: null` 表示支持这个选项但省略力度值；它本身不能保证关闭思考，必须核对当前协议、思考开关和端点默认行为。除 `off` 外不能写 `null`。
+4. `reasoningEfforts: false` 表示不向 DSH 公开推理档位，不保证端点停止思考。不要写空对象，也不能只声明 `off`；声明映射至少需要一个非 `off` 档位。
+5. 插件需要至少两档才显示滑块。端点只有一档或只有开关时如实说明；只有经证实可用的开关才能作为 `off` 与一个开启档位。
+6. 预算型控制要检查当前适配器是否支持该协议及 `thinkingBudgets` 等字段。不要把字符串档位当成 token 数；需要路由级预算改动时说明对同路由其他模型的影响，再由用户明确范围。
 
-1. **键只能是 DSH 档位**：`off`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`。
-2. **值是端点自己的写法**：端点文档说它的 `reasoning_effort` 接受 `"high"` / `"max"`，就写 `high: "high"`、`max: "max"`。
-3. **没写的档位一律视为不支持**（解析时被固定为不支持），所以只写端点确实提供的档位。
-4. 模型完全不推理时写 `reasoningEfforts: false`；**不要写空的 `reasoningEfforts:` 或 `{}`**，那会直接报错。
-5. `off` 是特例：写 `off:`（值留空）表示"支持关闭，且关闭时不发任何参数"；完全不写 `off` 表示"不支持关闭"。
-6. 至少要两档，插件才显示滑块。
+# 按协议检查 compat
 
-# compat：只在端点需要时才写
+先确认解析后的实际 `api`，再检查该版本 DSH 允许的兼容字段。保持已有有效字段，仅在有文档或明确错误证据时添加或调整 `compat`；不能把某厂商的格式通用于其他端点。
 
-`compat` 与 `reasoningEfforts` 平级。不写时适配器按端点地址自行判断：它不认识的地址按标准 OpenAI 处理，认识的厂商端点自动套用该厂商的格式——**所以写错格式比不写更糟**。
+在 `openai-completions` 上，适配器可能通过 `thinkingFormat` 处理端点的思考开关，通过 `supportsReasoningEffort` 决定是否发送力度字段；这些设置必须与端点真实参数一致。若只关闭力度字段，不能因此宣称不同档位有效。其他协议必须按自己的适配器规则处理，不能照抄这些字段。
 
-| 端点行为 | 写什么 |
-| --- | --- |
-| 直接用 `reasoning_effort` 表达强度 | 什么都不用写 |
-| 要先发思考开关才认强度 | `compat: { thinkingFormat: "qwen" }` 发 `enable_thinking` + `reasoning_effort`；`"zai"` 发 `thinking: {type: enabled}` + `reasoning_effort`；`"deepseek"` 发 `thinking: {type: enabled}` |
-| 不接受 `reasoning_effort` | `compat: { supportsReasoningEffort: false }` |
-| 请求返回 400 `invalid_parameter_error` | `compat: { supportsDeveloperRole: false }`，系统提示改发 `system` 角色 |
-| 回放历史消息报错 | `compat: { requiresReasoningContentOnAssistantMessages: true }` |
-| 端点只认 `<thinking>` 文本 | `compat: { requiresThinkingAsText: true }` |
+400 错误不一定来自 `developer` 角色；只有错误内容明确指向角色或文档确认不支持时，才考虑协议允许的 `supportsDeveloperRole: false`。历史消息失败也有多种原因，先读取脱敏错误并检查推理内容保留与回放要求，不能直接套用一个开关。端点要求宿主无法表达的参数时，报告适配器限制，不编造配置键。
 
-**注意协议**：这些 `compat` 字段只在 `api: openai-completions` 的路由上有效。如果该模型所在路由是别的协议（例如 `anthropic-messages`）而写了它们，DSH 不是忽略而是**直接报错**，整条 provider 路由会解析失败并从模型菜单里消失。
+# 修改范围与交付
 
-# 怎么确认改对了
+在现有模型条目中合并必要的 `reasoningEfforts` / `compat`，保留 `name`、`contextWindow`、`maxTokens`、输入能力、认证和其他字段。不要重复添加 `llm-pi-ai`、替换整条 provider、自动换模型或迁移 Profile。默认不修改路由级字段；确实需要时解释原因和影响并确认范围。
 
-1. 保存 `{{CONFIG_FILE}}`。DSH 会自动重载；若没生效，重启 Web Host 并刷新页面。
-2. 打开模型菜单：出现推理强度滑块 = 目录已经读到档位。
-3. 滑块出现但请求失败：几乎总是 `compat` 写错，或档位取值端点不认，按上表逐项排查。
-4. 该路由整条从菜单里消失：说明写了当前协议不接受的 `compat` 字段，先删掉它。
+能访问文件时先检查已有改动，保留原内容或备份，再展示最小差异。无法访问文件时给出正确缩进的字段补丁、实际位置和需要用户完成的步骤。不要输出密钥；模型 ID、端点和配置路径只用于定位目标。
 
-# 不要做的事
+# 分层验证
 
-- 不要发明档位取值。不确定就查端点文档，或直接问用户。
-- 不要改动该模型条目以外的任何配置；`name`、`contextWindow`、`maxTokens` 等已有字段保持原样。
-- 不要重复添加一份 `llm-pi-ai` 配置。
-- 不要为了绕过问题更换 provider（除非用户明确要求）。
+1. 使用当前 DSH 的配置校验或诊断确认解析成功，检查目标模型和 provider 的具体错误；目录加载失败不等于某一个 `compat` 字段一定错误。
+2. 让 Host 重新加载目标配置并刷新菜单，确认目录公开的档位与声明一致。如需重启，明确目标实例与 Profile。滑块出现只验证元数据，不能证明参数已发送或实际强度改变。
+3. 在用户允许实际请求时，用最小测试核对各档位发出的参数与端点响应，必要时核对关闭行为及历史回放；不要仅凭一次回复长短推断推理强度，也不要声称未执行的测试通过。
+4. 最后交付：依据与来源、档位映射及别名含义、修改差异、已完成的验证、未验证项和下一步。已有配置正确时说明无需修改；端点不支持独立力度控制时说明实际限制。

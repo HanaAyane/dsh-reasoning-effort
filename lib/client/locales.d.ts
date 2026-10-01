@@ -51,9 +51,9 @@ export declare const zh: {
     'agent.intro': string;
     'agent.factsHeading': string;
     'agent.facts': string;
-    'agent.warningLine': string;
     'agent.task': string;
-    'agent.snippetHeading': string;
+    'agent.configUnknown': string;
+    'agent.customize': string;
     'knowledge.glm52': string;
     'knowledge.kimiK3': string;
     'knowledge.unknown': string;
@@ -122,9 +122,9 @@ export declare const en: {
     'agent.intro': string;
     'agent.factsHeading': string;
     'agent.facts': string;
-    'agent.warningLine': string;
     'agent.task': string;
-    'agent.snippetHeading': string;
+    'agent.configUnknown': string;
+    'agent.customize': string;
     'knowledge.glm52': string;
     'knowledge.kimiK3': string;
     'knowledge.unknown': string;
