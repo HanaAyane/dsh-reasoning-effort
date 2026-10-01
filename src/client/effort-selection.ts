@@ -35,6 +35,24 @@ export function effectiveEffortIndex(levels: readonly EffortLevel[], state: Mode
   return fallback >= 0 ? fallback : Math.floor((levels.length - 1) / 2)
 }
 
+/**
+ * The index the slider has to write back so the thumb stops describing a level
+ * the session never received, or undefined when the session already holds one.
+ *
+ * The slider draws `effectiveEffortIndex`. A session with no effort for the
+ * route therefore draws the adapter default or the middle notch while the
+ * request carries nothing at all, and the backend then decides on its own.
+ * Drawing a level is a claim that it is in effect, so the drawn level gets
+ * submitted instead of only being painted.
+ * @param levels - the levels the current model advertises.
+ * @param state - the current directory projection.
+ * @returns the index to submit, or undefined when nothing needs submitting.
+ */
+export function pendingEffortIndex(levels: readonly EffortLevel[], state: ModelDirectoryState): number | undefined {
+  if (levels.length === 0 || state.current === null) return undefined
+  return effortIndex(levels, state.current.reasoningEffort) >= 0 ? undefined : effectiveEffortIndex(levels, state)
+}
+
 function sameModel(current: ModelSelection | null, target: ModelSelection): boolean {
   return current?.provider === target.provider && current.model === target.model
 }

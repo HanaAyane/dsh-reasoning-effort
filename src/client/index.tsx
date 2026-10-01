@@ -40,6 +40,7 @@ import {
   currentModel,
   effectiveEffortIndex,
   effortIndex,
+  pendingEffortIndex,
   selectEffort,
   sliderLevels,
 } from './effort-selection.js'
@@ -448,6 +449,7 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
   const pointerActiveRef = useRef(false)
   const activePointerIdRef = useRef<number | null>(null)
   const gestureCatalogRef = useRef('')
+  const materializedRef = useRef<string | null>(null)
   const catalogKey = JSON.stringify([
     directoryState.current?.provider,
     directoryState.current?.model,
@@ -629,9 +631,36 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
       committingRef.current = false
       setCommitting(false)
     }
+    materializedRef.current = null
     setDragging(false)
     setLocalError(null)
   }, [directory, directoryState.current?.provider, directoryState.current?.model])
+
+  // The thumb only claims a level once the session holds it. A session with no
+  // effort for this route draws the adapter default or the middle notch, and
+  // without this the drawn level would be a guess while the request carried
+  // nothing and the backend picked for itself.
+  const pendingKey = JSON.stringify([
+    directoryState.current?.provider,
+    directoryState.current?.model,
+    levels.map((level) => level.id),
+  ])
+
+  useEffect(() => {
+    if (!available || committingRef.current || draggingRef.current) return
+    if (effortIndex(levels, directoryState.current?.reasoningEffort) >= 0) {
+      // Nothing to write back, and a later loss of the held level may try again.
+      materializedRef.current = null
+      return
+    }
+    if (materializedRef.current === pendingKey) return
+    const index = pendingEffortIndex(levels, directoryState)
+    if (index === undefined) return
+    // One attempt per route and catalog: a failed write-back must not retry in
+    // a loop, and the error it sets stays visible until a route change.
+    materializedRef.current = pendingKey
+    void commit(index)
+  }, [available, levels, directoryState, pendingKey, commit])
 
   const rawFromPointer = (input: HTMLInputElement, clientX: number) => {
     const bounds = input.getBoundingClientRect()
