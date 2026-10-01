@@ -35,16 +35,18 @@ import {
 } from './locales.js'
 import { CSS } from './styles.js'
 import { positionModelMenu } from './menu-position.js'
+import {
+  clampIndex,
+  currentModel,
+  effectiveEffortIndex,
+  effortIndex,
+  selectEffort,
+  sliderLevels,
+} from './effort-selection.js'
 // Agent briefs inlined as text at build time; the copied document picks one by
 // the active locale.
 import agentTutorialEn from './agent-tutorial.en.md'
 import agentTutorialZh from './agent-tutorial.zh.md'
-
-/** One selectable effort exactly as the owning adapter advertised it. */
-interface EffortLevel {
-  readonly id: string
-  readonly name: string
-}
 
 /** Host RPC result envelope (matches `@deepseek-ai/dsh-host-apiproxy`). */
 type ReRpcResult<T> =
@@ -314,43 +316,6 @@ const chibiThumbStore = {
   },
 }
 
-function currentModel(state: ModelDirectoryState) {
-  if (state.current === null) return undefined
-  const group = state.groups.find((candidate) => candidate.id === state.current?.provider)
-  return group?.models.find((candidate) => candidate.id === state.current?.model)
-}
-
-/**
- * Effort levels the current model advertises, in adapter order. A model needs
- * at least two before a slider says anything a plain label would not, so
- * fewer-than-two collapses to none.
- */
-function sliderLevels(state: ModelDirectoryState): readonly EffortLevel[] {
-  const efforts = currentModel(state)?.reasoning?.efforts
-  return efforts !== undefined && efforts.length >= 2 ? efforts : []
-}
-
-function effortIndex(levels: readonly EffortLevel[], id: string | undefined): number {
-  return levels.findIndex((level) => level.id === id)
-}
-
-function clampIndex(value: number, count: number): number {
-  return Math.max(0, Math.min(count - 1, Math.round(value)))
-}
-
-/**
- * Level index the slider should rest at: the session's current effort when the
- * model still offers it, else the adapter default, else the middle level.
- */
-function effectiveEffortIndex(levels: readonly EffortLevel[], state: ModelDirectoryState): number {
-  const reasoning = currentModel(state)?.reasoning
-  const current = effortIndex(levels, state.current?.reasoningEffort)
-  if (current >= 0) return current
-  const fallback = effortIndex(levels, reasoning?.defaultEffort)
-  if (fallback >= 0) return fallback
-  return Math.floor((levels.length - 1) / 2)
-}
-
 interface RadiationState {
   progress: number
   dragging: boolean
@@ -477,17 +442,24 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
   const inputRef = useRef<HTMLInputElement>(null)
   const committedRef = useRef('')
   const committingRef = useRef(false)
+  const selectionAbortRef = useRef<AbortController | null>(null)
   const previewRef = useRef(0)
   const draggingRef = useRef(false)
   const pointerActiveRef = useRef(false)
   const activePointerIdRef = useRef<number | null>(null)
+  const gestureCatalogRef = useRef('')
+  const catalogKey = JSON.stringify([
+    directoryState.current?.provider,
+    directoryState.current?.model,
+    levels.map((level) => level.id),
+  ])
   const globalPointerMoveRef = useRef<((event: PointerEvent) => void) | null>(null)
   const globalPointerEndRef = useRef<((event: PointerEvent) => void) | null>(null)
   const globalPointerCancelRef = useRef<((event: PointerEvent) => void) | null>(null)
   const radiationRef = useRef<RadiationState>({ progress: 0.5, dragging: false })
   const redrawRef = useRef<(() => void) | null>(null)
   const available = directoryState.current !== null && levels.length >= 2
-  const busy = committing || directoryState.status === 'selecting'
+  const busy = committing || directoryState.status === 'selecting' || directoryState.status === 'loading'
   const error = localError ?? directoryState.error
 
   useEffect(() => {
@@ -498,8 +470,19 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
     previewRef.current = index
     setEffort(next)
     setPreview(index)
-    setLocalError(null)
-  }, [available, levels, directoryState])
+  }, [available, levels, directoryState, committing, dragging])
+
+  useEffect(() => () => {
+    selectionAbortRef.current?.abort()
+    const input = inputRef.current
+    const pointerId = activePointerIdRef.current
+    if (input !== null && pointerId !== null && input.hasPointerCapture(pointerId)) {
+      input.releasePointerCapture(pointerId)
+    }
+    pointerActiveRef.current = false
+    activePointerIdRef.current = null
+    draggingRef.current = false
+  }, [directory, directoryState.current?.provider, directoryState.current?.model])
 
   useEffect(() => {
     directory.load().catch(() => undefined)
@@ -571,6 +554,11 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
   }, [])
 
   const rollback = useCallback(() => {
+    const input = inputRef.current
+    const pointerId = activePointerIdRef.current
+    if (input !== null && pointerId !== null && input.hasPointerCapture(pointerId)) {
+      input.releasePointerCapture(pointerId)
+    }
     const previous = committedRef.current
     previewRef.current = Math.max(0, effortIndex(levels, previous))
     pointerActiveRef.current = false
@@ -581,64 +569,69 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
     setDragging(false)
   }, [levels])
 
-  const commit = useCallback(async (raw: number) => {
-    if (committingRef.current) return
-    committingRef.current = true
-    const previous = committedRef.current
+  const cancelChangedGesture = useCallback(() => {
+    if (gestureCatalogRef.current === catalogKey) return false
+    rollback()
+    setLocalError(t('effort.catalogChanged'))
+    return true
+  }, [catalogKey, rollback, t])
 
+  useEffect(() => {
+    if (pointerActiveRef.current) cancelChangedGesture()
+  }, [cancelChangedGesture])
+
+  const commit = useCallback(async (raw: number) => {
+    if (committingRef.current || directoryState.current === null) return
+    const index = clampIndex(raw, levels.length)
+    const next = levels[index]?.id
+    if (next === undefined) return
+    const target = {
+      provider: directoryState.current.provider,
+      model: directoryState.current.model,
+      reasoningEffort: next,
+    }
+    const operation = new AbortController()
+    selectionAbortRef.current = operation
+    committingRef.current = true
     setDragging(false)
     setCommitting(true)
     setLocalError(null)
-
-    // Optimistic snap from the rendered levels keeps the thumb responsive
-    // while the directory round-trip revalidates against fresh data below.
-    const optimisticIndex = clampIndex(raw, levels.length)
-    const optimistic = levels[optimisticIndex]?.id
-    if (optimistic !== undefined) {
-      previewRef.current = optimisticIndex
-      setPreview(optimisticIndex)
-      setEffort(optimistic)
-    }
+    previewRef.current = index
+    setPreview(index)
+    setEffort(next)
 
     try {
-      const fresh = await directory.load()
-      const freshLevels = sliderLevels(fresh)
-      const index = clampIndex(raw, freshLevels.length)
-      const next = freshLevels[index]?.id
-      if (next === undefined) throw new Error(t('effort.unavailable'))
-
-      previewRef.current = index
-      setPreview(index)
+      const confirmed = await selectEffort(directory, target, operation.signal, t)
+      if (selectionAbortRef.current !== operation) return
+      const confirmedIndex = effortIndex(sliderLevels(confirmed), next)
+      committedRef.current = next
+      previewRef.current = confirmedIndex
       setEffort(next)
-
-      if (fresh.current === null) throw new Error(t('effort.unavailable'))
-      const result = await directory.select({
-        provider: fresh.current.provider,
-        model: fresh.current.model,
-        reasoningEffort: next,
-      })
-      if (!result.ok) throw result.error
-
-      const snapshot = directory.store.getSnapshot()
-      const accepted = effortIndex(freshLevels, snapshot.current?.reasoningEffort)
-      const settled = accepted >= 0 ? accepted : index
-      const settledId = freshLevels[settled]?.id ?? next
-      committedRef.current = settledId
-      previewRef.current = settled
-      setEffort(settledId)
-      setPreview(settled)
+      setPreview(confirmedIndex)
     } catch (cause) {
-      const restore = Math.max(0, effortIndex(levels, previous))
-      committedRef.current = previous
-      previewRef.current = restore
-      setEffort(previous)
-      setPreview(restore)
-      setLocalError(cause instanceof Error ? cause.message : String(cause))
+      if (!operation.signal.aborted) {
+        setLocalError(cause instanceof Error ? cause.message : String(cause))
+      }
     } finally {
+      if (selectionAbortRef.current === operation) {
+        selectionAbortRef.current = null
+        committingRef.current = false
+        // Synchronization below resumes with the current directory, including
+        // after a failed selection or a route change during the round-trip.
+        if (!operation.signal.aborted) setCommitting(false)
+      }
+    }
+  }, [directory, directoryState.current, levels, t])
+
+  useEffect(() => {
+    if (selectionAbortRef.current?.signal.aborted) {
+      selectionAbortRef.current = null
       committingRef.current = false
       setCommitting(false)
     }
-  }, [directory, levels])
+    setDragging(false)
+    setLocalError(null)
+  }, [directory, directoryState.current?.provider, directoryState.current?.model])
 
   const rawFromPointer = (input: HTMLInputElement, clientX: number) => {
     const bounds = input.getBoundingClientRect()
@@ -656,6 +649,9 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
   }
 
   const beginDragging = (input: HTMLInputElement, pointerId: number, clientX: number) => {
+    if (committingRef.current || busy) return
+    gestureCatalogRef.current = catalogKey
+    setLocalError(null)
     pointerActiveRef.current = true
     activePointerIdRef.current = pointerId
     draggingRef.current = true
@@ -670,12 +666,14 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
 
   const moveDragging = (input: HTMLInputElement, pointerId: number, clientX: number) => {
     if (!pointerActiveRef.current || activePointerIdRef.current !== pointerId) return
+    if (cancelChangedGesture()) return
     showPointerPreview(rawFromPointer(input, clientX))
   }
 
   const stopDragging = (input: HTMLInputElement, pointerId?: number, clientX?: number) => {
     if (!pointerActiveRef.current) return
     if (pointerId !== undefined && activePointerIdRef.current !== pointerId) return
+    if (cancelChangedGesture()) return
     const raw = clientX === undefined ? previewRef.current : rawFromPointer(input, clientX)
     pointerActiveRef.current = false
     activePointerIdRef.current = null
@@ -769,8 +767,10 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
           aria-label={t('effort.label')}
           aria-valuetext={effortName}
           onChange={(event) => {
+            if (pointerActiveRef.current || committingRef.current) return
             const raw = Number(event.currentTarget.value)
             showPointerPreview(raw)
+            void commit(raw)
           }}
           onPointerDown={(event) => {
             event.preventDefault()
@@ -780,6 +780,7 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
           onPointerMove={(event) => moveDragging(event.currentTarget, event.pointerId, event.clientX)}
           onPointerUp={(event) => stopDragging(event.currentTarget, event.pointerId, event.clientX)}
           onPointerCancel={(event) => {
+            if (!pointerActiveRef.current || activePointerIdRef.current !== event.pointerId) return
             if (event.currentTarget.hasPointerCapture(event.pointerId)) {
               event.currentTarget.releasePointerCapture(event.pointerId)
             }
