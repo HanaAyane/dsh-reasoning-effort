@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.8.0](https://img.shields.io/badge/release-0.8.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0)
+[![v0.8.1](https://img.shields.io/badge/release-0.8.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 
@@ -23,28 +23,30 @@
 
 <img src="assets/readme/themes.webp" alt="推理强度选择器在 DeepSeek Harness 深色和浅色主题中的真实效果" width="100%">
 
-[本次更新](#v080-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
+[本次更新](#v081-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
 
-## v0.8.0 更新内容
+## v0.8.1 更新内容
 
-- 适配 DSH `0.2.0-rc.1` 的客户端模块拆分与模型选择接口，让插件在新版 Web Profile 中加载。
-- 模型或推理强度提交失败时按新版结果返回错误并回滚，不再把失败当作成功。
-- 本版本改用新版客户端依赖；使用 DSH `0.1.x` 请安装旧版插件。
+- 模型与推理强度菜单采用 DSH 原生的半透明背景、背景模糊和浮层阴影，浅色与深色均跟随当前主题。
+- 修正无效的背景变量，移除额外的实体边框，让弹层外观更贴合 DSH 自带界面。
+- 修正警告提示的主题变量名称，使文字与背景颜色正确适配主题。
 
-完整记录见 [v0.8.0 发布说明](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0) 和 [CHANGELOG](CHANGELOG.md)。
+菜单的位置、尺寸、打开动画及交互方式保持不变。
+
+完整记录见 [v0.8.1 发布说明](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1) 和 [CHANGELOG](CHANGELOG.md)。
 
 ## 版本支持政策
 
 本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
 
-当前发行版为 **插件 `v0.8.0`**，支持 DSH `0.2.0-rc.1` 的 Web Profile，以及 DSH `0.2.0-rc.2` 的 Web 和 Desktop Profile。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
+当前发行版为 **插件 `v0.8.1`**，支持 DSH `0.2.0-rc.1` 的 Web Profile，以及 DSH `0.2.0-rc.2` 的 Web 和 Desktop Profile。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
 
 | 项目 | 当前说明 |
 | --- | --- |
-| 插件发行版 | [v0.8.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.0) |
+| 插件发行版 | [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1) |
 | Web | DSH `0.2.0-rc.1`、`0.2.0-rc.2`；使用 `web` Profile |
 | 桌面端 | DSH Desktop `0.2.0-rc.2`；使用 `desktop` Profile |
-| 升级说明 | 安装 `v0.8.0` 后重新启动对应的 Web Host 或桌面应用 |
+| 升级说明 | 安装 `v0.8.1` 后重新启动对应的 Web Host 或桌面应用 |
 | alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
 
 ## 安装与更新
@@ -54,21 +56,21 @@
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.0
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.1
 dsh --profile web --dump-config
 ```
 
-确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.8.0` 换成 `#main`，但主分支可能包含未发布改动。
+确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.8.1` 换成 `#main`，但主分支可能包含未发布改动。
 
-也可以从 [v0.8.0 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.0/dsh-reasoning-effort-0.8.0.tgz)。
+也可以从 [v0.8.1 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.1/dsh-reasoning-effort-0.8.1.tgz)。
 
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
 
 ```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.8.0。
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.8.1。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.0
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.1
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -93,7 +95,7 @@ dsh --profile web --dump-config
 3. 使用**桌面版内置命令**安装并检查插件：
 
    ```powershell
-   dsh plugin --profile desktop add github:HanaAyane/dsh-reasoning-effort#v0.8.0
+   dsh plugin --profile desktop add github:HanaAyane/dsh-reasoning-effort#v0.8.1
    dsh plugin --profile desktop list
    ```
 

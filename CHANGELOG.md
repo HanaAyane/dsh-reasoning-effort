@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-01
+
+### Changed
+
+- Match the model and reasoning-effort menu to DSH's native surface with theme-controlled translucent fill, backdrop blur, and elevation shadow in both light and dark themes.
+- Remove the menu's solid border and let the theme's elevation shadow define its edge.
+
+### Fixed
+
+- Replace the undefined menu background token so the surface follows DSH's active theme instead of always using hardcoded fallback colors.
+- Correct the warning color tokens so custom-model guidance warnings use the theme's warning text and background colors.
+
 ## [0.8.0] - 2026-09-28
 
 ### Changed
