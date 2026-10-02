@@ -15,6 +15,13 @@ export declare const zh: {
     'effort.title': string;
     'effort.failed': string;
     'effort.unavailable': string;
+    'effort.catalogChanged': string;
+    'effort.modelChanged': string;
+    'effort.unsupported': string;
+    'effort.unconfirmed': string;
+    'effort.busy': string;
+    'effort.selectionChanged': string;
+    'effort.unset': string;
     'model.defaultEffort': string;
     'model.select': string;
     'model.aria': string;
@@ -86,6 +93,13 @@ export declare const en: {
     'effort.title': string;
     'effort.failed': string;
     'effort.unavailable': string;
+    'effort.catalogChanged': string;
+    'effort.modelChanged': string;
+    'effort.unsupported': string;
+    'effort.unconfirmed': string;
+    'effort.busy': string;
+    'effort.selectionChanged': string;
+    'effort.unset': string;
     'model.defaultEffort': string;
     'model.select': string;
     'model.aria': string;

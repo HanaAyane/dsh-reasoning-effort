@@ -34,6 +34,18 @@ const wrapPlugin = {
   },
 }
 
+/** Inline identical Markdown text on LF and CRLF checkouts. */
+const markdownTextPlugin = {
+  name: 'normalize-markdown-line-endings',
+  setup(buildApi) {
+    buildApi.onLoad({ filter: /\.md$/ }, async ({ path }) => ({
+      contents: (await readFile(path, 'utf8')).replace(/\r\n?/gu, '\n'),
+      loader: 'text',
+      watchFiles: [path],
+    }))
+  },
+}
+
 const common = {
   entryPoints: [resolve(root, 'src', 'client', 'index.tsx')],
   outfile: temporary,
@@ -53,7 +65,7 @@ const common = {
     'react/jsx-runtime',
     '@deepseek-ai/*',
   ],
-  plugins: [wrapPlugin],
+  plugins: [markdownTextPlugin, wrapPlugin],
 }
 
 if (process.argv.includes('--watch')) {
