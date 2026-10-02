@@ -28,31 +28,6 @@ export function clampIndex(value: number, count: number): number {
   return Math.max(0, Math.min(count - 1, Math.round(value)))
 }
 
-export function effectiveEffortIndex(levels: readonly EffortLevel[], state: ModelDirectoryState): number {
-  const selected = effortIndex(levels, state.current?.reasoningEffort)
-  if (selected >= 0) return selected
-  const fallback = effortIndex(levels, currentModel(state)?.reasoning?.defaultEffort)
-  return fallback >= 0 ? fallback : Math.floor((levels.length - 1) / 2)
-}
-
-/**
- * The index the slider has to write back so the thumb stops describing a level
- * the session never received, or undefined when the session already holds one.
- *
- * The slider draws `effectiveEffortIndex`. A session with no effort for the
- * route therefore draws the adapter default or the middle notch while the
- * request carries nothing at all, and the backend then decides on its own.
- * Drawing a level is a claim that it is in effect, so the drawn level gets
- * submitted instead of only being painted.
- * @param levels - the levels the current model advertises.
- * @param state - the current directory projection.
- * @returns the index to submit, or undefined when nothing needs submitting.
- */
-export function pendingEffortIndex(levels: readonly EffortLevel[], state: ModelDirectoryState): number | undefined {
-  if (levels.length === 0 || state.current === null) return undefined
-  return effortIndex(levels, state.current.reasoningEffort) >= 0 ? undefined : effectiveEffortIndex(levels, state)
-}
-
 function sameModel(current: ModelSelection | null, target: ModelSelection): boolean {
   return current?.provider === target.provider && current.model === target.model
 }
@@ -98,12 +73,16 @@ function waitForSelection(
     const check = () => {
       if (signal.aborted) return abort()
       const state = directory.store.getSnapshot()
-      if (state.current !== null && !sameModel(state.current, target)) {
+      if (state.pending !== null && (
+        !sameModel(state.pending, target) || state.pending.reasoningEffort !== target.reasoningEffort
+      )) {
+        finish(undefined, new Error(t('effort.selectionChanged')))
+      } else if (state.current !== null && !sameModel(state.current, target)) {
         finish(undefined, new Error(t('effort.modelChanged')))
       } else if (state.status === 'error') {
         finish(undefined, new Error(state.error ?? t('effort.unconfirmed')))
-      } else if (sameModel(state.current, target) && state.status === 'ready') {
-        if (effortIndex(sliderLevels(state), target.reasoningEffort) < 0) {
+      } else if (sameModel(state.current, target) && state.status === 'ready' && state.pending === null) {
+        if (effortIndex(currentModel(state)?.reasoning?.efforts ?? [], target.reasoningEffort) < 0) {
           finish(undefined, new Error(t('effort.unsupported', { effort: target.reasoningEffort })))
         } else if (state.current?.reasoningEffort === target.reasoningEffort) {
           finish(state)
@@ -126,11 +105,26 @@ export async function selectEffort(
   timeoutMs = 5000,
 ): Promise<ModelDirectoryState> {
   signal.throwIfAborted()
+  const initial = directory.store.getSnapshot()
+  const originalEffort = initial.current?.reasoningEffort
+  if (!sameModel(initial.current, target)) throw new Error(t('effort.modelChanged'))
+  if (initial.status === 'loading' || initial.status === 'selecting' || initial.pending !== null) {
+    throw new Error(t('effort.busy'))
+  }
+
   const fresh = await abortable(directory.load(), signal)
   signal.throwIfAborted()
-  if (!sameModel(fresh.current, target)) throw new Error(t('effort.modelChanged'))
-  if (effortIndex(sliderLevels(fresh), target.reasoningEffort) < 0) {
-    throw new Error(t('effort.unsupported', { effort: target.reasoningEffort }))
+  // load() returns a snapshot; a newer selection can start before this continuation.
+  for (const state of [fresh, directory.store.getSnapshot()]) {
+    if (!sameModel(state.current, target)) throw new Error(t('effort.modelChanged'))
+    if (state.status === 'error') throw new Error(state.error ?? t('effort.unconfirmed'))
+    if (state.status !== 'ready' || state.pending !== null) throw new Error(t('effort.busy'))
+    if (state.current?.reasoningEffort !== originalEffort) {
+      throw new Error(t('effort.selectionChanged'))
+    }
+    if (effortIndex(currentModel(state)?.reasoning?.efforts ?? [], target.reasoningEffort) < 0) {
+      throw new Error(t('effort.unsupported', { effort: target.reasoningEffort }))
+    }
   }
 
   const result = await abortable(directory.select(target), signal)

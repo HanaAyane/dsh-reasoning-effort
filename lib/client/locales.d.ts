@@ -19,6 +19,9 @@ export declare const zh: {
     'effort.modelChanged': string;
     'effort.unsupported': string;
     'effort.unconfirmed': string;
+    'effort.busy': string;
+    'effort.selectionChanged': string;
+    'effort.unset': string;
     'model.defaultEffort': string;
     'model.select': string;
     'model.aria': string;
@@ -94,6 +97,9 @@ export declare const en: {
     'effort.modelChanged': string;
     'effort.unsupported': string;
     'effort.unconfirmed': string;
+    'effort.busy': string;
+    'effort.selectionChanged': string;
+    'effort.unset': string;
     'model.defaultEffort': string;
     'model.select': string;
     'model.aria': string;
