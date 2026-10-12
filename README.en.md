@@ -11,6 +11,8 @@
 [![v0.8.1](https://img.shields.io/badge/release-0.8.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
+[![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
+[![Latest release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/latest/total.svg?style=flat-square&label=latest%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest)
 
 </div>
 
@@ -50,6 +52,8 @@ The current release is **plugin `v0.8.1`**. It supports the Web Profile on DSH `
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
 ## Install and update
+
+The download badges above automatically show total downloads of all release assets and downloads of the latest stable release's assets, with a cache delay. Only uploaded assets (such as plugin packages and checksum files) are counted. Repeat downloads count separately; these figures are not plugin installation counts or unique users and exclude GitHub-generated source ZIP/TAR downloads and Git clones.
 
 ### Web: install a pinned release
 

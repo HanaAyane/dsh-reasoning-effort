@@ -11,6 +11,8 @@
 [![v0.8.1](https://img.shields.io/badge/release-0.8.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
+[![Releases 附件累计下载次数](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
+[![最新版附件下载次数](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/latest/total.svg?style=flat-square&label=latest%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest)
 
 </div>
 
@@ -50,6 +52,8 @@
 | alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
 
 ## 安装与更新
+
+顶部下载徽章自动显示所有 Releases 附件的累计下载次数与最新正式版的附件下载次数，更新有缓存延迟。统计仅包含上传附件（如插件包与校验文件）；重复下载会累计，不代表插件安装量或独立用户数，也不包含 GitHub 自动生成的源码 ZIP/TAR 下载和 Git 克隆。
 
 ### Web：安装固定发行版
 
