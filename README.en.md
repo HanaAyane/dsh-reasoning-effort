@@ -93,8 +93,8 @@ Open a session and click the model control below the composer. Drag the thumb or
 
 These steps apply to **DSH Desktop `0.2.1-rc.2`**. Desktop stores plugins in its own `desktop` profile; an installation in the `web` profile does not carry over.
 
-1. Launch the desktop app once to initialize its profile, then **fully quit** from the application menu or system tray. Closing the window may leave the app running in the background.
-2. Use **Manage dsh command…** in the desktop app to install or repair its bundled command. Open a new terminal and confirm that `dsh --version` reports `0.2.1-rc.2`. If an npm installation of dsh is also present, use `Get-Command dsh` in PowerShell to check which command your terminal resolves. On Windows, you can call `resources/runtime/cli/bin/dsh.cmd` directly from the Desktop installation directory.
+1. Launch Desktop to initialize its profile. Keep the app open and use **Manage dsh command…** in the application menu to install or repair its bundled command.
+2. Open a new terminal, confirm that `dsh --version` reports `0.2.1-rc.2`, and verify that the command comes from Desktop. On Windows PowerShell, use `Get-Command dsh -All` to inspect its path; a matching version alone does not identify the runtime. Then **fully quit** Desktop from the app menu or system tray. Closing the window alone may leave it running in the background.
 3. Use the **Desktop bundled command** to install and check the plugin:
 
    ```powershell
@@ -102,7 +102,16 @@ These steps apply to **DSH Desktop `0.2.1-rc.2`**. Desktop stores plugins in its
    dsh plugin --profile desktop list
    ```
 
-   Confirm that `dsh-reasoning-effort` appears in the list, then reopen the desktop app. Use the same `add` command to update an existing installation. Alternatively, install the plugin through the desktop app's plugin manager and restart the app as directed.
+   On Windows with the default installation path, you can instead call the bundled command directly from PowerShell without registering it on PATH. For this route, launch Desktop once to initialize its profile, then fully quit it. Adjust the first line for a custom installation directory:
+
+   ```powershell
+   $dshDesktop = Join-Path $env:LOCALAPPDATA 'Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd'
+   & $dshDesktop --version
+   & $dshDesktop plugin --profile desktop add 'github:HanaAyane/dsh-reasoning-effort#v0.8.2'
+   & $dshDesktop plugin --profile desktop list
+   ```
+
+   Confirm that `dsh-reasoning-effort` appears in the list, then reopen Desktop. Use the same `add` command to update an existing installation. Alternatively, install through Desktop's plugin manager; this route requires neither CLI registration nor quitting the app beforehand. Reload or restart as directed after installation.
 
 The Desktop bundled command and a separately installed npm dsh use different runtimes. Do not modify the `desktop` profile with the npm command; Desktop loads plugins from its own profile. See the [official DSH Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.md#bundled-command-runtime) for details.
 
