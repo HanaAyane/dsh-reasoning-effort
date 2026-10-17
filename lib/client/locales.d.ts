@@ -31,6 +31,7 @@ export declare const zh: {
     'guidance.mismatch': string;
     'guidance.matched': string;
     'guidance.unmatched': string;
+    'guidance.settings': string;
     'guidance.paste': string;
     'guidance.step1.open': string;
     'guidance.step1.path': string;
@@ -109,6 +110,7 @@ export declare const en: {
     'guidance.mismatch': string;
     'guidance.matched': string;
     'guidance.unmatched': string;
+    'guidance.settings': string;
     'guidance.paste': string;
     'guidance.step1.open': string;
     'guidance.step1.path': string;

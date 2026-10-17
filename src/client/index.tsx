@@ -84,6 +84,9 @@ interface AdaptGuidance {
 /** The client-facing guidance service (Client→Host over the Connection RPC). */
 interface AdaptationService {
   diagnose(provider: string, model: string): Promise<AdaptGuidance | null>
+  subscribe(listener: () => void): () => void
+  getSnapshot(): number
+  invalidate(): void
 }
 
 const LEVEL_NAME_KEYS: Record<string, ReasoningEffortLocaleKey> = {
@@ -189,6 +192,8 @@ function agentBrief(
 /** Wrap the Host RPC channel in typed helpers; null while the Host half is absent. */
 function makeAdaptationService(rpc: HostRpc | undefined): AdaptationService | null {
   if (rpc === undefined) return null
+  let revision = 0
+  const listeners = new Set<() => void>()
   const call = async <T,>(endpoint: string, payload?: unknown): Promise<T | null> => {
     try {
       const result = (await rpc.call(ADAPT_CHANNEL, endpoint, payload)) as ReRpcResult<T>
@@ -199,8 +204,20 @@ function makeAdaptationService(rpc: HostRpc | undefined): AdaptationService | nu
   }
   return {
     diagnose: (provider, model) => call<AdaptGuidance>('diagnose', { provider, model }),
+    subscribe: (listener) => {
+      listeners.add(listener)
+      return () => { listeners.delete(listener) }
+    },
+    getSnapshot: () => revision,
+    invalidate: () => {
+      revision += 1
+      listeners.forEach((listener) => listener())
+    },
   }
 }
+
+const noGuidanceSubscription = () => () => {}
+const noGuidanceRevision = () => 0
 
 /** Copy text to the clipboard, falling back to a transient textarea selection. */
 async function copyText(text: string): Promise<boolean> {
@@ -248,7 +265,7 @@ const SETTINGS_SLOT = 'settings.general.item'
 const ENABLED_STORAGE_KEY = 'dsh-reasoning-effort.enabled'
 const LEGACY_ENABLED_STORAGE_KEY = '@dsh-external/dsh-reasoning-effort.enabled'
 const CHIBI_THUMB_STORAGE_KEY = 'dsh-reasoning-effort.chibi-thumb'
-export const inject = ['slots', 'modelDirectories', 'connection', 'locale', 'remote', 'remote.session']
+export const inject = ['slots', 'sessions', 'modelDirectories', 'connection', 'locale', 'remote', 'remote.session']
 
 function readEnabledPreference(): boolean {
   try {
@@ -826,7 +843,8 @@ function AdvancedModelSelect({
   )
   const [open, setOpen] = useState(false)
   const [modelsOpen, setModelsOpen] = useState(false)
-  const [guidanceResult, setGuidanceResult] = useState<AdaptGuidance | null>(null)
+  const revision = useSyncExternalStore(adapt?.subscribe ?? noGuidanceSubscription, adapt?.getSnapshot ?? noGuidanceRevision)
+  const [guidanceResult, setGuidanceResult] = useState<{ value: AdaptGuidance; revision: number } | null>(null)
   const [guidanceBusy, setGuidanceBusy] = useState(false)
   const [guidanceFailed, setGuidanceFailed] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
@@ -850,8 +868,8 @@ function AdvancedModelSelect({
   const provider = state.current?.provider
   const modelId = state.current?.model
   // Hide a previous model's result during the render before the effect clears it.
-  const guidance = guidanceResult?.provider === provider && guidanceResult?.model === modelId
-    ? guidanceResult
+  const guidance = guidanceResult?.revision === revision && guidanceResult.value.provider === provider && guidanceResult.value.model === modelId
+    ? guidanceResult.value
     : null
   const localizedNote = guidance === null ? '' : guidanceNote(guidance, t)
   const localizedWarning = guidance === null ? null : guidanceWarning(guidance, t)
@@ -880,7 +898,7 @@ function AdvancedModelSelect({
     setCopied(false)
     setAgentCopied(false)
     setPanelOpen(false)
-    if (provider === undefined || modelId === undefined) {
+    if (!available || provider === undefined || modelId === undefined) {
       setGuidanceBusy(false)
       setGuidanceFailed(false)
       return
@@ -897,7 +915,7 @@ function AdvancedModelSelect({
     setGuidanceFailed(false)
     adapt.diagnose(provider, modelId).then((result) => {
       if (cancelled) return
-      setGuidanceResult(result)
+      setGuidanceResult(result === null ? null : { value: result, revision })
       setGuidanceFailed(result === null)
       setGuidanceBusy(false)
       if (result === null || !result.needsGuide) setPanelOpen(false)
@@ -910,7 +928,7 @@ function AdvancedModelSelect({
     return () => {
       cancelled = true
     }
-  }, [adapt, provider, modelId])
+  }, [adapt, available, provider, modelId, revision])
 
   if (!available) return null
 
@@ -962,6 +980,9 @@ function AdvancedModelSelect({
           }
         }}
       >
+        <svg className="re-model-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <path d="M8 1.5 14 5 8 8.5 2 5 8 1.5ZM2 8l6 3.5L14 8M2 11l6 3.5 6-3.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        </svg>
         <span className="re-model-name">{modelLabel}</span>
         <span className="re-model-effort">{effortName}</span>
         <span className="re-model-chevron" aria-hidden="true" />
@@ -1049,6 +1070,7 @@ function AdvancedModelSelect({
                           </div>
                         ) : null}
                         <div className="re-adapt-howto">{t('guidance.howto')}</div>
+                        <div className="re-adapt-howto">{t('guidance.settings')}</div>
                         <div className="re-adapt-switch-intro">{t('guidance.switch.intro')}</div>
                         <ul className="re-adapt-switches">
                           <li>{t('guidance.switch.thinkingFormat')}</li>
@@ -1229,6 +1251,15 @@ export function apply(ctx: ClientContext) {
 
   const connection = ctx.get('connection') as { rpc?: HostRpc } | undefined
   const adapt = makeAdaptationService(connection?.rpc)
+  if (adapt !== null) {
+    ctx.effect(() => ctx.remote.$on('settings/document-updated', adapt.invalidate), 'reasoning-effort: settings updates')
+    ctx.effect(() => ctx.remote.$on('llm/adapters-updated', adapt.invalidate), 'reasoning-effort: adapter updates')
+    ctx.effect(() => ctx.remote.$on('credentials/record-updated', adapt.invalidate), 'reasoning-effort: credential updates')
+    ctx.effect(() => ctx.remote.$on('credentials/reference-updated', adapt.invalidate), 'reasoning-effort: credential reference updates')
+    ctx.on('connection/reset', adapt.invalidate)
+  }
+  const sessions = ctx.get('sessions') as { subagentAddress(sessionId: SessionId): unknown } | undefined
+  if (sessions === undefined) return
   const locale = ctx.get('locale') as LocaleRuntimeLike | undefined
 
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'reasoning-effort: dictionaries')
@@ -1283,12 +1314,15 @@ export function apply(ctx: ClientContext) {
           locale: NS,
           inject: (sessionId: string) => {
             const controller = modelDirectories.directoryFor(sessionId as SessionId)
+            const canSelect = () => sessions.subagentAddress(sessionId as SessionId) === undefined
             return {
-              available: true,
+              available: canSelect(),
               controller,
               directory: controller.store,
-              load: () => controller.load().then(() => undefined, () => undefined),
-              select: (selection: ModelSelection) => controller.select(selection).then((result) => result.ok, () => false),
+              load: () => canSelect() ? controller.load().then(() => undefined, () => undefined) : undefined,
+              select: (selection: ModelSelection) => canSelect()
+                ? controller.select(selection).then((result) => result.ok, () => false)
+                : Promise.resolve(false),
               adapt,
               // Read at copy time: a language switch must change the next copy,
               // not require the seat to remount.

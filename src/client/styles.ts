@@ -233,6 +233,14 @@ export const CSS = `
   background: var(--dsw-alias-fill-tertiary, rgba(120,125,140,.1));
 }
 .re-model-trigger:disabled { cursor: not-allowed; opacity: .5; }
+.re-model-icon {
+  display: var(--dsh-composer-model-icon-display, none);
+  flex: 0 0 auto;
+}
+.re-model-name,
+.re-model-effort {
+  display: var(--dsh-composer-model-text-display, block);
+}
 .re-model-name {
   min-width: 0;
   overflow: hidden;

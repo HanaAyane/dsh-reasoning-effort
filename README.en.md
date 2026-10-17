@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.8.1](https://img.shields.io/badge/release-0.8.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)
+[![v0.8.2](https://img.shields.io/badge/release-0.8.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
@@ -27,28 +27,27 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 [What changed](#whats-new-in-v081) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
-## What's new in v0.8.1
+## What's new in v0.8.2
 
-- Use DSH's native translucent fill, backdrop blur, and elevation shadow for the model and reasoning-effort menu in both light and dark themes.
-- Replace the undefined background token and remove the extra solid border so the menu matches DSH's native interface more closely.
-- Correct the warning color tokens so warning text and backgrounds follow the theme.
+- Adapt to DSH `0.2.1-rc.1` and hide the unavailable model selector in addressed subagent sessions.
+- Refresh guidance after configuration changes and discard stale results.
+- Respect disabled reasoning and existing valid levels instead of flagging knowledge-base differences.
+- Follow the composer's compact display and document the native reasoning-level editor.
 
-Menu position, size, opening animation, and interaction remain unchanged.
-
-See the [v0.8.1 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1) and [CHANGELOG](CHANGELOG.md) for details.
+See the [v0.8.2 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) and [CHANGELOG](CHANGELOG.md) for details.
 
 ## Version support policy
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.8.1`**. It supports the Web Profile on DSH `0.2.0-rc.1`, and both the Web and Desktop profiles on DSH `0.2.0-rc.2`. Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.8.2`**. It requires DSH `0.2.1-rc.1` or newer for Web and Desktop profiles. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
-| Plugin release | [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1) |
-| Web | DSH `0.2.0-rc.1` and `0.2.0-rc.2`; use the `web` profile |
-| Desktop | DSH Desktop `0.2.0-rc.2`; use the `desktop` profile |
-| Upgrade notes | Install `v0.8.1`, then restart the corresponding Web Host or desktop app |
+| Plugin release | [v0.8.2](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) |
+| Web | DSH `0.2.1-rc.1` or newer; use the `web` profile |
+| Desktop | DSH Desktop `0.2.1-rc.1`; use the `desktop` profile |
+| Upgrade notes | Install `v0.8.2`, then restart the corresponding Web Host or desktop app |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
 ## Install and update
@@ -60,21 +59,21 @@ The download badges above automatically show total downloads of all release asse
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.1
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.2
 dsh --profile web --dump-config
 ```
 
-Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.8.1` with `#main`; the main branch may contain unreleased changes.
+Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.8.2` with `#main`; the main branch may contain unreleased changes.
 
-You can also [download the v0.8.1 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.1/dsh-reasoning-effort-0.8.1.tgz).
+You can also [download the v0.8.2 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-reasoning-effort-0.8.2.tgz).
 
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
 
 ```text
-Install dsh-reasoning-effort v0.8.1 for the DeepSeek Harness web profile.
+Install dsh-reasoning-effort v0.8.2 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.1
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.2
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -92,20 +91,20 @@ Open a session and click the model control below the composer. Drag the thumb or
 
 ### Install in DSH Desktop
 
-These steps apply to **DSH Desktop `0.2.0-rc.2`**. Desktop stores plugins in its own `desktop` profile; an installation in the `web` profile does not carry over.
+These steps apply to **DSH Desktop `0.2.1-rc.1`**. Desktop stores plugins in its own `desktop` profile; an installation in the `web` profile does not carry over.
 
 1. Launch the desktop app once to initialize its profile, then **fully quit** from the application menu or system tray. Closing the window may leave the app running in the background.
-2. Use **Manage dsh command…** in the desktop app to install or repair its bundled command. Open a new terminal and confirm that `dsh --version` reports `0.2.0-rc.2`. If an npm installation of dsh is also present, use `Get-Command dsh` in PowerShell to check which command your terminal resolves. On Windows, you can call `resources/runtime/cli/bin/dsh.cmd` directly from the Desktop installation directory.
+2. Use **Manage dsh command…** in the desktop app to install or repair its bundled command. Open a new terminal and confirm that `dsh --version` reports `0.2.1-rc.1`. If an npm installation of dsh is also present, use `Get-Command dsh` in PowerShell to check which command your terminal resolves. On Windows, you can call `resources/runtime/cli/bin/dsh.cmd` directly from the Desktop installation directory.
 3. Use the **Desktop bundled command** to install and check the plugin:
 
    ```powershell
-   dsh plugin --profile desktop add github:HanaAyane/dsh-reasoning-effort#v0.8.1
+   dsh plugin --profile desktop add github:HanaAyane/dsh-reasoning-effort#v0.8.2
    dsh plugin --profile desktop list
    ```
 
    Confirm that `dsh-reasoning-effort` appears in the list, then reopen the desktop app. Use the same `add` command to update an existing installation. Alternatively, install the plugin through the desktop app's plugin manager and restart the app as directed.
 
-The Desktop bundled command and a separately installed npm dsh use different runtimes. Do not modify the `desktop` profile with the npm command; Desktop loads plugins from its own profile. See the [official DSH Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.0-rc.2/apps/desktop/README.md#bundled-command-runtime) for details.
+The Desktop bundled command and a separately installed npm dsh use different runtimes. Do not modify the `desktop` profile with the npm command; Desktop loads plugins from its own profile. See the [official DSH Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.1/apps/desktop/README.md#bundled-command-runtime) for details.
 
 ## Where the levels come from
 
@@ -146,9 +145,11 @@ With no `compat`, the adapter decides from the endpoint address: an address it d
 
 ## Effort guidance for custom providers
 
+DSH `0.2.1-rc.1` can configure custom API levels and wire values directly in **Settings → Models → Edit provider → Customized settings → Model options (›) → Reasoning levels**. The YAML guidance below remains available for advanced configuration.
+
 Built-in routes get their levels from the pi-ai catalog and the plugin never touches them. Only models you declare yourself in `llm-pi-ai` receive guidance:
 
-1. Open the model menu. If the current model is your own declaration and the directory exposes no levels (or the declaration disagrees with the knowledge base), a **View declaration guidance** entry appears.
+1. Open the model menu. If the current model is your own declaration, the directory exposes no levels, and `reasoningEfforts` is not explicitly `false`, a **View declaration guidance** entry appears. Existing valid levels are trusted even when they differ from the knowledge base.
 2. The panel shows suggested levels (from the knowledge base or a generic template), YAML indented for the active configuration file, its path, and the model entry location.
 3. Follow the panel's replace or insert instruction for the matching `- id:` entry, preserve other configuration, and save. DSH reloads automatically; if not, restart the Web Host and refresh.
 

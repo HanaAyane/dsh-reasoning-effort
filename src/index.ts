@@ -234,12 +234,6 @@ function knowledgeOf(store: StoreShape): KnowledgeEntry[] {
   return [...user, ...BUILTIN_ENTRIES]
 }
 
-function sameSet(a: readonly string[], b: readonly string[]): boolean {
-  if (a.length !== b.length) return false
-  const set = new Set(b)
-  return a.every((level) => set.has(level))
-}
-
 /**
  * Field block carrying the declared levels and compat under a `models` entry.
  */
@@ -367,10 +361,10 @@ export function apply(ctx: Context, config?: StoreShape): void {
     const path = await settingsPath()
 
     let reason: Guidance['reason'] = 'none'
-    if (current.length === 0) {
+    // Explicitly disabling reasoning is intentional. Trust every nonempty
+    // catalog level set, even when it differs from our knowledge base.
+    if (userEntry?.reasoningEfforts !== false && current.length === 0) {
       reason = 'missing'
-    } else if (entry !== undefined && !sameSet(current, expected)) {
-      reason = 'mismatch'
     }
 
     // Guidance targets custom-provider declarations only; the built-in

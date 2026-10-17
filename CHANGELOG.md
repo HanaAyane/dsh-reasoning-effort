@@ -2,10 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [0.8.2] - 2026-10-18
 
 ### Changed
 
+- Target DSH `0.2.1-rc.1` with explicit `engines.dsh`, matching development dependencies, and the session UI dependency.
+- Follow the composer's compact model display and explain the native custom API reasoning-level editor in both languages.
+- Hide the model selector for addressed subagent sessions and guard its load/select calls.
+- Invalidate diagnosis on configuration, adapter, credential, and connection changes; discard stale results and copied guidance.
+- Respect explicitly disabled reasoning and valid custom level sets instead of flagging knowledge-base differences.
+- Add component and Host guidance regression checks to `pnpm run check`.
 - Make **Copy for your agent** available for user-declared models with existing levels as well as missing declarations.
 - Copy vendor-neutral endpoint research and configuration instructions without built-in model presets; distinguish off semantics, aliases, protocol compatibility, and configuration versus request validation in both languages.
 
