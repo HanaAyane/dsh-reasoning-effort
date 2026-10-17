@@ -91,29 +91,26 @@ dsh --profile web --dump-config
 
 ### DSH 桌面端安装
 
-适用于 **DSH Desktop `0.2.1-rc.2`**。桌面端的插件保存在独立的 `desktop` Profile 中；安装在 `web` Profile 的插件不会自动出现在桌面端。
+适用于 **DSH Desktop `0.2.1-rc.2`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
 
-1. 启动桌面应用，让它初始化 Desktop Profile。保持应用打开，在应用菜单的 **管理 dsh 命令…** 中安装或修复内置命令。
-2. 打开新终端，确认 `dsh --version` 显示 `0.2.1-rc.2`，并确认命令来自 Desktop。Windows PowerShell 可用 `Get-Command dsh -All` 检查路径；版本号相同并不代表使用了同一个运行时。然后从应用菜单或系统托盘**完全退出**应用，仅关闭窗口可能仍让应用在后台运行。
-3. 使用**桌面版内置命令**安装并检查插件：
+1. 打开 DSH Desktop，在侧栏进入 **插件** 页面。
+2. 点击 **添加插件**，在 **包名或地址** 中填写：
 
-   ```powershell
-   dsh plugin --profile desktop add github:HanaAyane/dsh-reasoning-effort#v0.8.2
-   dsh plugin --profile desktop list
+   ```text
+   github:HanaAyane/dsh-reasoning-effort#v0.8.2
    ```
 
-   Windows 默认安装路径下，也可以直接运行以下 PowerShell 命令，无需注册 PATH；此方式只需先启动一次 Desktop 初始化 Profile，再完全退出应用。自定义安装目录请修改第一行路径：
+   这里填写的是插件地址，不是 `dsh plugin ...` 命令。
+3. 等待页面解析插件信息，确认来源和版本后安装。
+4. 安装完成后，在 **已安装插件** 中确认 `dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。
 
-   ```powershell
-   $dshDesktop = Join-Path $env:LOCALAPPDATA 'Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd'
-   & $dshDesktop --version
-   & $dshDesktop plugin --profile desktop add 'github:HanaAyane/dsh-reasoning-effort#v0.8.2'
-   & $dshDesktop plugin --profile desktop list
-   ```
+若通过 GitHub 仓库安装失败，也可在 **包名或地址** 中填写本版本已构建的插件包地址：
 
-   确认列表中有 `dsh-reasoning-effort`，再重新打开桌面应用。已有安装使用同一条 `add` 命令更新。也可以直接在桌面应用内的插件管理器安装本插件；这种方式无需安装终端命令或预先退出应用，安装后按界面提示重新加载或重启。
+```text
+https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-reasoning-effort-0.8.2.tgz
+```
 
-桌面应用的内置命令与单独 npm 安装的 dsh 有不同的运行时。请勿用 npm 版 `dsh` 修改 `desktop` Profile；桌面端启动后会从自己的 Profile 加载插件。[DSH Desktop 官方说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.zh.md#bundled-command-runtime) 解释了两者的边界。
+桌面端使用独立的 `desktop` Profile；安装在 `web` Profile 的插件不会自动出现在桌面端。若终端提示 `profile "desktop" is managed exclusively by the Electron application`，说明当前 CLI 不允许管理 Desktop Profile，请改用上述应用内入口，不要修改 Profile 名称或绕过限制。参见 [DSH Desktop 官方说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.zh.md#installation-ownership)。
 
 ## 档位从哪里来
 

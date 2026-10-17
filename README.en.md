@@ -91,29 +91,26 @@ Open a session and click the model control below the composer. Drag the thumb or
 
 ### Install in DSH Desktop
 
-These steps apply to **DSH Desktop `0.2.1-rc.2`**. Desktop stores plugins in its own `desktop` profile; an installation in the `web` profile does not carry over.
+For **DSH Desktop `0.2.1-rc.2`**, install inside the desktop app. No terminal command registration or prior app exit is required.
 
-1. Launch Desktop to initialize its profile. Keep the app open and use **Manage dsh command…** in the application menu to install or repair its bundled command.
-2. Open a new terminal, confirm that `dsh --version` reports `0.2.1-rc.2`, and verify that the command comes from Desktop. On Windows PowerShell, use `Get-Command dsh -All` to inspect its path; a matching version alone does not identify the runtime. Then **fully quit** Desktop from the app menu or system tray. Closing the window alone may leave it running in the background.
-3. Use the **Desktop bundled command** to install and check the plugin:
+1. Open DSH Desktop and select **Plugins** in the sidebar.
+2. Choose **Add plugin** and enter this in **Package name or address**:
 
-   ```powershell
-   dsh plugin --profile desktop add github:HanaAyane/dsh-reasoning-effort#v0.8.2
-   dsh plugin --profile desktop list
+   ```text
+   github:HanaAyane/dsh-reasoning-effort#v0.8.2
    ```
 
-   On Windows with the default installation path, you can instead call the bundled command directly from PowerShell without registering it on PATH. For this route, launch Desktop once to initialize its profile, then fully quit it. Adjust the first line for a custom installation directory:
+   Enter the package address, not a `dsh plugin ...` command.
+3. Wait for the plugin information to load, verify the source and version, and install.
+4. Confirm that `dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.
 
-   ```powershell
-   $dshDesktop = Join-Path $env:LOCALAPPDATA 'Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd'
-   & $dshDesktop --version
-   & $dshDesktop plugin --profile desktop add 'github:HanaAyane/dsh-reasoning-effort#v0.8.2'
-   & $dshDesktop plugin --profile desktop list
-   ```
+If installing from the GitHub repository fails, you can also enter the prebuilt release package URL in **Package name or address**:
 
-   Confirm that `dsh-reasoning-effort` appears in the list, then reopen Desktop. Use the same `add` command to update an existing installation. Alternatively, install through Desktop's plugin manager; this route requires neither CLI registration nor quitting the app beforehand. Reload or restart as directed after installation.
+```text
+https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-reasoning-effort-0.8.2.tgz
+```
 
-The Desktop bundled command and a separately installed npm dsh use different runtimes. Do not modify the `desktop` profile with the npm command; Desktop loads plugins from its own profile. See the [official DSH Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.md#bundled-command-runtime) for details.
+Desktop uses its own `desktop` profile; plugins installed in the `web` profile do not carry over. If the terminal reports `profile "desktop" is managed exclusively by the Electron application`, that CLI is not allowed to manage the Desktop profile. Use the in-app installer above instead of changing the profile name or bypassing the restriction. See the [official Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.md#installation-ownership).
 
 ## Where the levels come from
 
