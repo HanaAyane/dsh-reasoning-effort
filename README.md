@@ -29,7 +29,7 @@
 
 ## v0.8.2 更新内容
 
-- 适配 DSH `0.2.1-rc.1`，子代理会话不再显示不可用的模型选择器。
+- 适配 DSH `0.2.1-rc.2`，子代理会话不再显示不可用的模型选择器。
 - 配置变化后刷新档位指引，避免显示或复制过期建议。
 - 尊重关闭推理及已有有效档位，不再因与知识库不同而提示修改。
 - 接入输入栏紧凑显示，补充原生推理等级设置入口说明。
@@ -40,13 +40,13 @@
 
 本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
 
-当前发行版为 **插件 `v0.8.2`**，以 DSH `0.2.1-rc.1` 为最低版本，适用于 Web 和 Desktop Profile。DSH `0.2.0` RC 用户请继续使用 [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
+当前发行版为 **插件 `v0.8.2`**，以 DSH `0.2.1-rc.2` 为最低版本，适用于 Web 和 Desktop Profile。DSH `0.2.0` RC 用户请继续使用 [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
 
 | 项目 | 当前说明 |
 | --- | --- |
 | 插件发行版 | [v0.8.2](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) |
-| Web | DSH `0.2.1-rc.1` 起；使用 `web` Profile |
-| 桌面端 | DSH Desktop `0.2.1-rc.1`；使用 `desktop` Profile |
+| Web | DSH `0.2.1-rc.2` 起；使用 `web` Profile |
+| 桌面端 | DSH Desktop `0.2.1-rc.2`；使用 `desktop` Profile |
 | 升级说明 | 安装 `v0.8.2` 后重新启动对应的 Web Host 或桌面应用 |
 | alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
 
@@ -91,10 +91,10 @@ dsh --profile web --dump-config
 
 ### DSH 桌面端安装
 
-适用于 **DSH Desktop `0.2.1-rc.1`**。桌面端的插件保存在独立的 `desktop` Profile 中；安装在 `web` Profile 的插件不会自动出现在桌面端。
+适用于 **DSH Desktop `0.2.1-rc.2`**。桌面端的插件保存在独立的 `desktop` Profile 中；安装在 `web` Profile 的插件不会自动出现在桌面端。
 
 1. 先启动一次桌面应用，让它初始化 Desktop Profile，然后从应用菜单或系统托盘**完全退出**应用。仅关闭窗口可能仍让应用在后台运行。
-2. 在桌面应用的 **管理 dsh 命令…** 中安装或修复其内置命令，打开新终端，确认 `dsh --version` 显示 `0.2.1-rc.1`。若电脑还装有 npm 版 dsh，用 `Get-Command dsh` 确认终端实际调用的是桌面版命令；Windows 也可以直接调用安装目录下的 `resources/runtime/cli/bin/dsh.cmd`。
+2. 在桌面应用的 **管理 dsh 命令…** 中安装或修复其内置命令，打开新终端，确认 `dsh --version` 显示 `0.2.1-rc.2`。若电脑还装有 npm 版 dsh，用 `Get-Command dsh` 确认终端实际调用的是桌面版命令；Windows 也可以直接调用安装目录下的 `resources/runtime/cli/bin/dsh.cmd`。
 3. 使用**桌面版内置命令**安装并检查插件：
 
    ```powershell
@@ -104,7 +104,7 @@ dsh --profile web --dump-config
 
    确认列表中有 `dsh-reasoning-effort`，再重新打开桌面应用。已有安装使用同一条 `add` 命令更新。也可以在桌面应用内的插件管理器安装本插件；安装后按界面提示重新启动应用。
 
-桌面应用的内置命令与单独 npm 安装的 dsh 有不同的运行时。请勿用 npm 版 `dsh` 修改 `desktop` Profile；桌面端启动后会从自己的 Profile 加载插件。[DSH Desktop 官方说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.1/apps/desktop/README.zh.md#内置命令运行时) 解释了两者的边界。
+桌面应用的内置命令与单独 npm 安装的 dsh 有不同的运行时。请勿用 npm 版 `dsh` 修改 `desktop` Profile；桌面端启动后会从自己的 Profile 加载插件。[DSH Desktop 官方说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.zh.md#内置命令运行时) 解释了两者的边界。
 
 ## 档位从哪里来
 
@@ -145,7 +145,7 @@ models:
 
 ## 档位指引（自定义 provider）
 
-DSH `0.2.1-rc.1` 可直接在 **设置 → 模型 → 编辑提供商 → 自定义设置 → 模型选项（›）→ 推理等级** 中配置自定义 API 的档位和 API 参数值。下面的 YAML 指引保留给高级配置。
+DSH `0.2.1-rc.2` 可直接在 **设置 → 模型 → 编辑提供商 → 自定义设置 → 模型选项（›）→ 推理等级** 中配置自定义 API 的档位和 API 参数值。下面的 YAML 指引保留给高级配置。
 
 DSH 内置路由的档位来自 pi-ai 目录，插件**完全只读、绝不修改**。只有你在 `llm-pi-ai` 配置里自己声明的模型，插件才会给指引：
 

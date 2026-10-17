@@ -29,7 +29,7 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 ## What's new in v0.8.2
 
-- Adapt to DSH `0.2.1-rc.1` and hide the unavailable model selector in addressed subagent sessions.
+- Adapt to DSH `0.2.1-rc.2` and hide the unavailable model selector in addressed subagent sessions.
 - Refresh guidance after configuration changes and discard stale results.
 - Respect disabled reasoning and existing valid levels instead of flagging knowledge-base differences.
 - Follow the composer's compact display and document the native reasoning-level editor.
@@ -40,13 +40,13 @@ See the [v0.8.2 release notes](https://github.com/HanaAyane/dsh-reasoning-effort
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.8.2`**. It requires DSH `0.2.1-rc.1` or newer for Web and Desktop profiles. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.8.2`**. It requires DSH `0.2.1-rc.2` or newer for Web and Desktop profiles. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
 | Plugin release | [v0.8.2](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) |
-| Web | DSH `0.2.1-rc.1` or newer; use the `web` profile |
-| Desktop | DSH Desktop `0.2.1-rc.1`; use the `desktop` profile |
+| Web | DSH `0.2.1-rc.2` or newer; use the `web` profile |
+| Desktop | DSH Desktop `0.2.1-rc.2`; use the `desktop` profile |
 | Upgrade notes | Install `v0.8.2`, then restart the corresponding Web Host or desktop app |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
@@ -91,10 +91,10 @@ Open a session and click the model control below the composer. Drag the thumb or
 
 ### Install in DSH Desktop
 
-These steps apply to **DSH Desktop `0.2.1-rc.1`**. Desktop stores plugins in its own `desktop` profile; an installation in the `web` profile does not carry over.
+These steps apply to **DSH Desktop `0.2.1-rc.2`**. Desktop stores plugins in its own `desktop` profile; an installation in the `web` profile does not carry over.
 
 1. Launch the desktop app once to initialize its profile, then **fully quit** from the application menu or system tray. Closing the window may leave the app running in the background.
-2. Use **Manage dsh command…** in the desktop app to install or repair its bundled command. Open a new terminal and confirm that `dsh --version` reports `0.2.1-rc.1`. If an npm installation of dsh is also present, use `Get-Command dsh` in PowerShell to check which command your terminal resolves. On Windows, you can call `resources/runtime/cli/bin/dsh.cmd` directly from the Desktop installation directory.
+2. Use **Manage dsh command…** in the desktop app to install or repair its bundled command. Open a new terminal and confirm that `dsh --version` reports `0.2.1-rc.2`. If an npm installation of dsh is also present, use `Get-Command dsh` in PowerShell to check which command your terminal resolves. On Windows, you can call `resources/runtime/cli/bin/dsh.cmd` directly from the Desktop installation directory.
 3. Use the **Desktop bundled command** to install and check the plugin:
 
    ```powershell
@@ -104,7 +104,7 @@ These steps apply to **DSH Desktop `0.2.1-rc.1`**. Desktop stores plugins in its
 
    Confirm that `dsh-reasoning-effort` appears in the list, then reopen the desktop app. Use the same `add` command to update an existing installation. Alternatively, install the plugin through the desktop app's plugin manager and restart the app as directed.
 
-The Desktop bundled command and a separately installed npm dsh use different runtimes. Do not modify the `desktop` profile with the npm command; Desktop loads plugins from its own profile. See the [official DSH Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.1/apps/desktop/README.md#bundled-command-runtime) for details.
+The Desktop bundled command and a separately installed npm dsh use different runtimes. Do not modify the `desktop` profile with the npm command; Desktop loads plugins from its own profile. See the [official DSH Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.md#bundled-command-runtime) for details.
 
 ## Where the levels come from
 
@@ -145,7 +145,7 @@ With no `compat`, the adapter decides from the endpoint address: an address it d
 
 ## Effort guidance for custom providers
 
-DSH `0.2.1-rc.1` can configure custom API levels and wire values directly in **Settings → Models → Edit provider → Customized settings → Model options (›) → Reasoning levels**. The YAML guidance below remains available for advanced configuration.
+DSH `0.2.1-rc.2` can configure custom API levels and wire values directly in **Settings → Models → Edit provider → Customized settings → Model options (›) → Reasoning levels**. The YAML guidance below remains available for advanced configuration.
 
 Built-in routes get their levels from the pi-ai catalog and the plugin never touches them. Only models you declare yourself in `llm-pi-ai` receive guidance:
 

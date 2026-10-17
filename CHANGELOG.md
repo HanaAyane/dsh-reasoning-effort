@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
-- Target DSH `0.2.1-rc.1` with explicit `engines.dsh`, matching development dependencies, and the session UI dependency.
+- Target DSH `0.2.1-rc.2` with explicit `engines.dsh`, matching development dependencies, and the session UI dependency.
 - Follow the composer's compact model display and explain the native custom API reasoning-level editor in both languages.
 - Hide the model selector for addressed subagent sessions and guard its load/select calls.
 - Invalidate diagnosis on configuration, adapter, credential, and connection changes; discard stale results and copied guidance.
