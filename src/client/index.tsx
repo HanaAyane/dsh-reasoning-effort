@@ -10,7 +10,7 @@
  *
  * @module dsh-reasoning-effort/client
  */
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
@@ -35,6 +35,7 @@ import {
 } from './locales.js'
 import { CSS } from './styles.js'
 import { positionModelMenu } from './menu-position.js'
+import { wrapNativeSelector } from './native-selector.js'
 import {
   clampIndex,
   currentModel,
@@ -442,7 +443,7 @@ function drawRadiation(
   context.restore()
 }
 
-function EffortSlider({ directory, t }: { directory: ModelDirectory; t: ReasoningEffortTranslate }) {
+function EffortSlider({ directory, t, locked = false }: { directory: ModelDirectory; t: ReasoningEffortTranslate; locked?: boolean }) {
   const directoryState = useSyncExternalStore(
     (notify) => directory.store.subscribe(notify),
     () => directory.store.getSnapshot(),
@@ -476,7 +477,7 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
   const radiationRef = useRef<RadiationState>({ progress: 0, dragging: false })
   const redrawRef = useRef<(() => void) | null>(null)
   const available = directoryState.current !== null && levels.length >= 2
-  const busy = committing || directoryState.status === 'selecting' || directoryState.status === 'loading' || directoryState.pending !== null
+  const busy = locked || committing || directoryState.status === 'selecting' || directoryState.status === 'loading' || directoryState.pending !== null
   const error = localError ?? directoryState.error
 
   useEffect(() => {
@@ -820,6 +821,13 @@ function EffortSlider({ directory, t }: { directory: ModelDirectory; t: Reasonin
           />
           {selectedIndex < 0 ? null : <span className="re-effort-knob" aria-hidden="true" />}
         </div>
+        <div className="re-effort-ticks" aria-hidden="true">
+          {levels.map((level, index) => (
+            <span key={level.id} className={`re-effort-tick${index === selectedIndex ? ' is-selected' : ''}`}
+              style={{ left: `${index / (count - 1) * 100}%` }} title={level.name}>·</span>
+          ))}
+        </div>
+        <div className="re-effort-name" role="status" aria-live="polite">{effortName}</div>
         {error === null ? null : <span className="re-effort-sr" role="status">{error}</span>}
       </div>
     </>
@@ -836,17 +844,20 @@ function AdvancedModelSelect({
   adapt,
   agentTutorial,
   t,
-}: ModelSeatProps) {
+  embedded = false,
+}: ModelSeatProps & { embedded?: boolean }) {
   const state = useSyncExternalStore(
     (notify) => directory.subscribe(notify),
     () => directory.getSnapshot(),
   )
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(embedded)
   const [modelsOpen, setModelsOpen] = useState(false)
   const revision = useSyncExternalStore(adapt?.subscribe ?? noGuidanceSubscription, adapt?.getSnapshot ?? noGuidanceRevision)
   const [guidanceResult, setGuidanceResult] = useState<{ value: AdaptGuidance; revision: number } | null>(null)
   const [guidanceBusy, setGuidanceBusy] = useState(false)
-  const [showCustomGuidance, setShowCustomGuidance] = useState(true)
+  // A native effort pane mounts on every opening. Models with usable levels
+  // must not briefly show the generic tutorial before diagnosis completes.
+  const [showCustomGuidance, setShowCustomGuidance] = useState(() => !embedded || sliderLevels(state).length < 2)
   const [guidanceFailed, setGuidanceFailed] = useState(false)
   const [copied, setCopied] = useState(false)
   const [agentCopied, setAgentCopied] = useState(false)
@@ -873,7 +884,7 @@ function AdvancedModelSelect({
     : null
   // Keep the generic teaching and disclosure mounted while a new diagnosis runs.
   // Only a current result may render model-specific configuration or copy actions.
-  const showGuidance = guidance?.userDeclared ?? showCustomGuidance
+  const showGuidance = guidance?.needsGuide ?? showCustomGuidance
   const advancedBodyRef = useRef<HTMLDivElement>(null)
   const [advancedHeight, setAdvancedHeight] = useState(0)
   useLayoutEffect(() => {
@@ -894,7 +905,7 @@ function AdvancedModelSelect({
   }, [available, load])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || embedded) return
     const closeOutside = (event: MouseEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false)
@@ -903,7 +914,7 @@ function AdvancedModelSelect({
     }
     document.addEventListener('mousedown', closeOutside)
     return () => document.removeEventListener('mousedown', closeOutside)
-  }, [open])
+  }, [open, embedded])
 
   useEffect(() => {
     // A brief belongs to the model it describes; never let a stale one be copied.
@@ -928,7 +939,7 @@ function AdvancedModelSelect({
     adapt.diagnose(provider, modelId).then((result) => {
       if (cancelled) return
       setGuidanceResult(result === null ? null : { value: result, revision })
-      if (result !== null) setShowCustomGuidance(result.userDeclared)
+      if (result !== null) setShowCustomGuidance(result.needsGuide)
       setGuidanceFailed(result === null)
       setGuidanceBusy(false)
     }, () => {
@@ -971,6 +982,159 @@ function AdvancedModelSelect({
     })
     if (accepted) setModelsOpen(false)
   }
+
+  const effortPanel = (
+    <>
+      {levels.length < 2 ? (
+        <div className="re-effort-unavailable">{t('effort.unavailable')}</div>
+      ) : null}
+      {showGuidance ? (
+        <div className="re-settings-guide">
+          <strong>{t('guidance.settings.title')}</strong>
+          <div className="re-settings-path">{t('guidance.settings.path')}</div>
+          <div>{t('guidance.settings.note')}</div>
+        </div>
+      ) : null}
+      {levels.length >= 2 ? (
+        <div className="re-advanced">
+          <EffortSlider directory={controller} t={t} locked={locked} />
+        </div>
+      ) : null}
+      {showGuidance ? (
+        <div className="re-adapt">
+          <details className="re-adapt-advanced">
+            <summary>{t('guidance.advanced')}</summary>
+            <div className="re-adapt-warning" role="note">{t('guidance.manualRisk')}</div>
+            <div ref={advancedBodyRef} style={guidance === null ? { minHeight: advancedHeight } : undefined} aria-busy={guidance === null && !guidanceFailed}>
+              {guidance === null ? (
+                <div className="re-adapt-desc" role="status">
+                  {t(guidanceFailed ? 'guidance.unavailable' : 'guidance.checking')}
+                </div>
+              ) : guidance.needsGuide ? (
+                <>
+                  <div className="re-adapt-copy">
+                    <div className="re-adapt-title">
+                      {guidance.reason === 'missing' ? t('effort.unavailable') : t('guidance.mismatch')}
+                    </div>
+                    <div className="re-adapt-desc">
+                      {guidance.matched
+                        ? t('guidance.matched', {
+                            expected: levelsText(guidance.expected, t),
+                            current: levelsText(guidance.current, t),
+                            note: localizedNote,
+                          })
+                        : t('guidance.unmatched', {
+                            current: levelsText(guidance.current, t),
+                            note: localizedNote,
+                          })}
+                    </div>
+                  </div>
+                  <div className="re-adapt-howto">{t('guidance.howto')}</div>
+                  <div className="re-adapt-switch-intro">{t('guidance.switch.intro')}</div>
+                  <ul className="re-adapt-switches">
+                    <li>{t('guidance.switch.thinkingFormat')}</li>
+                    <li>{t('guidance.switch.reasoningEffort')}</li>
+                    <li>{t('guidance.switch.developerRole')}</li>
+                    <li>{t('guidance.switch.replay')}</li>
+                  </ul>
+                  {localizedWarning === null ? null : (
+                    <div className="re-adapt-warning">{localizedWarning}</div>
+                  )}
+                  <div className="re-adapt-label">{t('guidance.paste')}</div>
+                  <pre className="re-adapt-yaml">{localizedSnippet}</pre>
+                  <div className="re-adapt-steps">
+                    <span>
+                      {t('guidance.step1.open')}<code>{configDocumentName(guidance.settingsPath)}</code>
+                      {guidance.settingsPath === null ? '' : t('guidance.step1.path', { path: guidance.settingsPath })}
+                      {t('guidance.step1.find')}<code>{guidance.entryPath}</code>
+                      {t('guidance.step1.list')}<code>{guidance.entryLine}</code>{t('guidance.step1.end')}
+                    </span>
+                    {guidance.mode === 'replace' ? (
+                      <span>
+                        {t('guidance.step2.replacePrefix')}<code>{guidance.entryLine}</code>
+                        {t('guidance.step2.replaceSuffix')}
+                      </span>
+                    ) : (
+                      <span>
+                        {t('guidance.step2.insertPrefix')}<code>id</code>
+                        {t('guidance.step2.insertSuffix')}
+                      </span>
+                    )}
+                    <span>{t('guidance.step3')}</span>
+                  </div>
+                  <div className="re-adapt-actions">
+                    <button
+                      type="button"
+                      className="re-adapt-apply"
+                      disabled={busy || guidanceBusy}
+                      onClick={() => {
+                        void copyText(localizedSnippet).then((ok) => setCopied(ok))
+                      }}
+                    >
+                      {copied ? t('guidance.copied') : t('guidance.copy')}
+                    </button>
+                    <button
+                      type="button"
+                      className="re-adapt-agent"
+                      disabled={busy || guidanceBusy}
+                      onClick={() => {
+                        void copyText(agentBrief(guidance, agentTutorial(), t))
+                          .then((ok) => setAgentCopied(ok))
+                      }}
+                    >
+                      {agentCopied ? t('guidance.copied') : t('agent.copy')}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="re-adapt-desc">{t('agent.customize')}</div>
+                  <div className="re-adapt-actions">
+                    <button
+                      type="button"
+                      className="re-adapt-agent"
+                      disabled={busy || guidanceBusy}
+                      onClick={() => {
+                        void copyText(agentBrief(guidance, agentTutorial(), t))
+                          .then((ok) => setAgentCopied(ok))
+                      }}
+                    >
+                      {agentCopied ? t('guidance.copied') : t('agent.copy')}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </details>
+        </div>
+      ) : null}
+      {guidanceFailed && !showGuidance ? <div className="re-model-status" role="status">{t('guidance.unavailable')}</div> : null}
+      {!embedded ? (<>
+        <div className="re-menu-separator" />
+        <button
+          type="button"
+          role="menuitem"
+          className="re-model-row"
+          disabled={busy}
+          onClick={() => setModelsOpen(true)}
+        >
+          <span className="re-model-row-name">{modelLabel}</span>
+          <span className="re-model-row-effort">{effortName}</span>
+          <span className="re-row-chevron" aria-hidden="true">›</span>
+        </button>
+      </>) : null}
+      {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
+    </>
+  )
+
+  if (embedded) return (
+    <div className="re-native-effort" onKeyDown={(event) => {
+      // Let the native shell handle Escape; range keys and Tab belong to this panel.
+      if (event.key !== 'Escape') event.stopPropagation()
+    }}>
+      {effortPanel}
+    </div>
+  )
 
   return (
     <div ref={rootRef} className="re-model-root" onKeyDown={onKeyDown}>
@@ -1044,150 +1208,17 @@ function AdvancedModelSelect({
               {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
             </div>
           ) : (
-            <>
-              {levels.length < 2 ? (
-                <div className="re-effort-unavailable">{t('effort.unavailable')}</div>
-              ) : null}
-              {showGuidance ? (
-                <div className="re-settings-guide">
-                  <strong>{t('guidance.settings.title')}</strong>
-                  <div className="re-settings-path">{t('guidance.settings.path')}</div>
-                  <div>{t('guidance.settings.note')}</div>
-                </div>
-              ) : null}
-              {levels.length >= 2 ? (
-                <div className="re-advanced">
-                  <EffortSlider directory={controller} t={t} />
-                </div>
-              ) : null}
-              {showGuidance ? (
-                <div className="re-adapt">
-                  <details className="re-adapt-advanced">
-                    <summary>{t('guidance.advanced')}</summary>
-                    <div className="re-adapt-warning" role="note">{t('guidance.manualRisk')}</div>
-                    <div ref={advancedBodyRef} style={guidance === null ? { minHeight: advancedHeight } : undefined} aria-busy={guidance === null && !guidanceFailed}>
-                      {guidance === null ? (
-                        <div className="re-adapt-desc" role="status">
-                          {t(guidanceFailed ? 'guidance.unavailable' : 'guidance.checking')}
-                        </div>
-                      ) : guidance.needsGuide ? (
-                        <>
-                          <div className="re-adapt-copy">
-                            <div className="re-adapt-title">
-                              {guidance.reason === 'missing' ? t('effort.unavailable') : t('guidance.mismatch')}
-                            </div>
-                            <div className="re-adapt-desc">
-                              {guidance.matched
-                                ? t('guidance.matched', {
-                                    expected: levelsText(guidance.expected, t),
-                                    current: levelsText(guidance.current, t),
-                                    note: localizedNote,
-                                  })
-                                : t('guidance.unmatched', {
-                                    current: levelsText(guidance.current, t),
-                                    note: localizedNote,
-                                  })}
-                            </div>
-                          </div>
-                          <div className="re-adapt-howto">{t('guidance.howto')}</div>
-                          <div className="re-adapt-switch-intro">{t('guidance.switch.intro')}</div>
-                          <ul className="re-adapt-switches">
-                            <li>{t('guidance.switch.thinkingFormat')}</li>
-                            <li>{t('guidance.switch.reasoningEffort')}</li>
-                            <li>{t('guidance.switch.developerRole')}</li>
-                            <li>{t('guidance.switch.replay')}</li>
-                          </ul>
-                          {localizedWarning === null ? null : (
-                            <div className="re-adapt-warning">{localizedWarning}</div>
-                          )}
-                          <div className="re-adapt-label">{t('guidance.paste')}</div>
-                          <pre className="re-adapt-yaml">{localizedSnippet}</pre>
-                          <div className="re-adapt-steps">
-                            <span>
-                              {t('guidance.step1.open')}<code>{configDocumentName(guidance.settingsPath)}</code>
-                              {guidance.settingsPath === null ? '' : t('guidance.step1.path', { path: guidance.settingsPath })}
-                              {t('guidance.step1.find')}<code>{guidance.entryPath}</code>
-                              {t('guidance.step1.list')}<code>{guidance.entryLine}</code>{t('guidance.step1.end')}
-                            </span>
-                            {guidance.mode === 'replace' ? (
-                              <span>
-                                {t('guidance.step2.replacePrefix')}<code>{guidance.entryLine}</code>
-                                {t('guidance.step2.replaceSuffix')}
-                              </span>
-                            ) : (
-                              <span>
-                                {t('guidance.step2.insertPrefix')}<code>id</code>
-                                {t('guidance.step2.insertSuffix')}
-                              </span>
-                            )}
-                            <span>{t('guidance.step3')}</span>
-                          </div>
-                          <div className="re-adapt-actions">
-                            <button
-                              type="button"
-                              className="re-adapt-apply"
-                              disabled={busy || guidanceBusy}
-                              onClick={() => {
-                                void copyText(localizedSnippet).then((ok) => setCopied(ok))
-                              }}
-                            >
-                              {copied ? t('guidance.copied') : t('guidance.copy')}
-                            </button>
-                            <button
-                              type="button"
-                              className="re-adapt-agent"
-                              disabled={busy || guidanceBusy}
-                              onClick={() => {
-                                void copyText(agentBrief(guidance, agentTutorial(), t))
-                                  .then((ok) => setAgentCopied(ok))
-                              }}
-                            >
-                              {agentCopied ? t('guidance.copied') : t('agent.copy')}
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="re-adapt-desc">{t('agent.customize')}</div>
-                          <div className="re-adapt-actions">
-                            <button
-                              type="button"
-                              className="re-adapt-agent"
-                              disabled={busy || guidanceBusy}
-                              onClick={() => {
-                                void copyText(agentBrief(guidance, agentTutorial(), t))
-                                  .then((ok) => setAgentCopied(ok))
-                              }}
-                            >
-                              {agentCopied ? t('guidance.copied') : t('agent.copy')}
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </details>
-                </div>
-              ) : null}
-              {guidanceFailed && !showGuidance ? <div className="re-model-status" role="status">{t('guidance.unavailable')}</div> : null}
-              <div className="re-menu-separator" />
-              <button
-                type="button"
-                role="menuitem"
-                className="re-model-row"
-                disabled={busy}
-                onClick={() => setModelsOpen(true)}
-              >
-                <span className="re-model-row-name">{modelLabel}</span>
-                <span className="re-model-row-effort">{effortName}</span>
-                <span className="re-row-chevron" aria-hidden="true">›</span>
-              </button>
-              {state.error === null ? null : <div className="re-model-error">{state.error}</div>}
-            </>
+            effortPanel
           )}
         </div>
       ) : null}
     </div>
   )
+}
+
+/** Render inside the host's native reasoning pane without a second trigger or menu. */
+function NativeEffortPanel(props: ModelSeatProps) {
+  return <AdvancedModelSelect {...props} embedded />
 }
 
 function ReasoningEffortSetting({ t }: PropsLocale<typeof NS>) {
@@ -1298,46 +1329,74 @@ export function apply(ctx: ClientContext) {
   )
 
   ctx.slots.inject(SLOT, () => {
-    let disposeModelSeat: (() => void) | undefined
-    const syncModelSeat = () => {
-      if (!enabledStore.getSnapshot()) {
-        disposeModelSeat?.()
-        disposeModelSeat = undefined
-        return
+    const inject = (sessionId: string) => {
+      const controller = modelDirectories.directoryFor(sessionId as SessionId)
+      const canSelect = () => sessions.subagentAddress(sessionId as SessionId) === undefined
+      return {
+        available: canSelect(), controller, directory: controller.store,
+        load: () => canSelect() ? controller.load().then(() => undefined, () => undefined) : undefined,
+        select: (selection: ModelSelection) => canSelect()
+          ? controller.select(selection).then(result => result.ok, () => false) : Promise.resolve(false),
+        adapt,
+        agentTutorial: () => locale?.getLocale().active === 'zh' ? agentTutorialZh : agentTutorialEn,
       }
-      if (disposeModelSeat !== undefined) return
-      disposeModelSeat = ctx.slots.register(
-        {
-          name: SLOT,
-          priority: -100,
-          locale: NS,
-          inject: (sessionId: string) => {
-            const controller = modelDirectories.directoryFor(sessionId as SessionId)
-            const canSelect = () => sessions.subagentAddress(sessionId as SessionId) === undefined
-            return {
-              available: canSelect(),
-              controller,
-              directory: controller.store,
-              load: () => canSelect() ? controller.load().then(() => undefined, () => undefined) : undefined,
-              select: (selection: ModelSelection) => canSelect()
-                ? controller.select(selection).then((result) => result.ok, () => false)
-                : Promise.resolve(false),
-              adapt,
-              // Read at copy time: a language switch must change the next copy,
-              // not require the seat to remount.
-              agentTutorial: () => (locale?.getLocale().active === 'zh' ? agentTutorialZh : agentTutorialEn),
-            }
-          },
-        },
-        AdvancedModelSelect,
-      )
     }
-
-    const unsubscribe = enabledStore.subscribe(syncModelSeat)
-    syncModelSeat()
+    let restore: (() => void) | undefined
+    let fallback: (() => void) | undefined
+    let nativeEntry: ReturnType<typeof ctx.slots.entries>[number] | undefined
+    let syncing = false
+    let stopped = false
+    // Register/dispose a lower-priority seat to publish the changed live entry
+    // through the registry's normal version/subscription mechanism.
+    const notify = () => ctx.slots.register({ name: SLOT, priority: 1_000_000 }, () => null)()
+    const sync = () => {
+      if (syncing || stopped) return
+      syncing = true
+      try {
+        if (!enabledStore.getSnapshot()) {
+          restore?.(); restore = undefined
+          fallback?.(); fallback = undefined
+          return
+        }
+        if (restore && nativeEntry && ctx.slots.entries(SLOT).includes(nativeEntry)) return
+        restore?.(); restore = undefined
+        nativeEntry = undefined
+        const entry = ctx.slots.entries?.(SLOT).find(entry => entry.locale === 'model'
+          && entry.children?.['conversation.input.model.label'] !== undefined
+          && typeof entry.component === 'function')
+        if (entry) {
+          fallback?.(); fallback = undefined
+          nativeEntry = entry
+          const original = entry.component
+          function BoundNativeEffortPanel(props: Parameters<Parameters<typeof wrapNativeSelector>[0]>[0]) {
+            const sessionId = props.sessionId as string
+            // Native directory snapshots rerender the wrapper. Keep callback
+            // identities stable or the panel's load effect feeds back into it.
+            const injected = useMemo(() => inject(sessionId), [sessionId, props.directory])
+            return <NativeEffortPanel {...injected}
+              available={sessions!.subagentAddress(sessionId as SessionId) === undefined}
+              locked={props.locked} t={ctx.locale.bind(NS)} />
+          }
+          const wrapped = wrapNativeSelector(original as Parameters<typeof wrapNativeSelector>[0], props => (
+            <BoundNativeEffortPanel {...props} />
+          ))
+          entry.component = wrapped
+          restore = () => {
+            if (entry.component === wrapped) { entry.component = original; notify() }
+          }
+          notify()
+        } else if (!fallback) {
+          fallback = ctx.slots.register({ name: SLOT, priority: -100, locale: NS, inject }, AdvancedModelSelect)
+        }
+      } finally { syncing = false }
+    }
+    const stopWatching = ctx.on('slots/changed', key => { if (key === SLOT) sync() })
+    const unsubscribe = enabledStore.subscribe(sync)
+    sync()
     return () => {
-      unsubscribe()
-      disposeModelSeat?.()
+      stopped = true
+      unsubscribe(); stopWatching()
+      restore?.(); fallback?.()
     }
   })
 }

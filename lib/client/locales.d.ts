@@ -11,6 +11,7 @@ export declare const zh: {
     'level.xhigh': string;
     'level.max': string;
     'level.none': string;
+    'menu.back': string;
     'effort.label': string;
     'effort.title': string;
     'effort.failed': string;
@@ -95,6 +96,7 @@ export declare const en: {
     'level.xhigh': string;
     'level.max': string;
     'level.none': string;
+    'menu.back': string;
     'effort.label': string;
     'effort.title': string;
     'effort.failed': string;

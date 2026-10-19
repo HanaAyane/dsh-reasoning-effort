@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- Integrate the plugin slider into the native selector at runtime without modifying host files; preserve native model search and labels, provide a no-level entry, and restore the native component when disabled.
+
 - Keep generic guidance mounted during model diagnosis and preserve expanded content height while hiding stale configuration and copy actions.
 
 - Expose composer font size and line height through CSS variables while preserving compact defaults.

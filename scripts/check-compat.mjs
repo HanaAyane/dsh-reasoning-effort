@@ -4,6 +4,8 @@ import { readFile, mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { build } from 'esbuild'
+import vm from 'node:vm'
+import * as jsxRuntime from 'react/jsx-runtime'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 
@@ -19,9 +21,10 @@ async function compile(name, entry, extra = '') {
   })
   return import(pathToFileURL(outfile))
 }
-globalThis.window = { localStorage: { getItem: () => null } }
+globalThis.window = { localStorage: { getItem: () => null }, addEventListener() {}, removeEventListener() {} }
 const host = await compile('host', 'src/index.ts')
-const client = await compile('client', 'src/client/index.tsx', '\nexport { AdvancedModelSelect, makeAdaptationService };')
+const nativeAdapter = await compile('native-selector', 'src/client/native-selector.tsx')
+const client = await compile('client', 'src/client/index.tsx', '\nexport { AdvancedModelSelect, NativeEffortPanel, makeAdaptationService, wrapNativeSelector, enabledStore };')
 
 async function diagnose(declaration, levels, model = 'custom-model') {
   let route
@@ -79,7 +82,7 @@ test('same-model config invalidation refreshes diagnosis and ignores late old re
   // Open the menu; no DOM nodes are needed for this logic-only renderer.
   globalThis.document = { addEventListener() {}, removeEventListener() {} }
   await act(async () => { tree.root.findByProps({ className: 're-model-trigger' }).props.onClick() })
-  assert.equal(tree.root.findAllByProps({ className: 're-adapt-desc' }).length, 1)
+  assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
   assert.equal(JSON.stringify(tree.toJSON()).includes('guidance.unavailable'), false)
   // Another invalidation must hide old copy actions while the replacement is pending.
   await act(async () => { adapt.invalidate() })
@@ -112,10 +115,10 @@ test('registered model seat guards subagent loading and selection at call time',
   const ctx = {
     get: name => services[name],
     remote: { $on: (event, callback) => { events.set(event, callback); return () => events.delete(event) } },
-    on: (event, callback) => { events.set(event, callback) },
+    on: (event, callback) => { events.set(event, callback); return () => events.delete(event) },
     // DOM style/storage registration is outside this controller regression.
     effect: (callback, label) => { if (label.includes('updates')) return callback() },
-    slots: { inject: (_, callback) => callback(), register: (options) => { if (options.name === 'conversation.input.model') injection = options.inject; return () => {} } },
+    slots: { spec: () => undefined, inject: (_, callback) => callback(), register: (options) => { if (options.name === 'conversation.input.model') injection = options.inject; return () => {} } },
   }
   client.apply(ctx)
   const hidden = injection('subagent')
@@ -148,6 +151,12 @@ test('custom-model settings instructions are immediate and copy actions stay und
     await act(async () => { tree = TestRenderer.create(React.createElement(client.AdvancedModelSelect, { available: true, locked: false, directory, controller: {}, load: () => {}, select: async () => true, adapt, agentTutorial: () => '', t })) })
     globalThis.document = { addEventListener() {}, removeEventListener() {} }
     await act(async () => { tree.root.findByProps({ className: 're-model-trigger' }).props.onClick() })
+    if (!needsGuide) {
+      assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
+      assert.equal(tree.root.findAllByType('details').length, 0)
+      await act(async () => { tree.unmount() })
+      continue
+    }
     const guide = tree.root.findByProps({ className: 're-settings-guide' })
     assert.equal(guide.findByProps({ className: 're-settings-path' }).children[0], 'guidance.settings.path')
     const markup = JSON.stringify(tree.toJSON())
@@ -202,6 +211,181 @@ test('delayed model diagnosis preserves teaching and hides stale configuration',
   assert.ok(JSON.stringify(tree.toJSON()).includes('guidance.unavailable'))
   await act(async () => { adapt.invalidate() })
   await resolveRequest(requests[4], false)
+  assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
+  await act(async () => { tree.unmount() })
+})
+
+
+test('runtime adapter restores the original registration on disable and disposal', () => {
+  const original = () => null
+  const entry = { component: original, locale: 'model', children: { 'conversation.input.model.label': {} } }
+  let dispose
+  let notifications = 0
+  const ctx = {
+    get: name => ({ modelDirectories: { directoryFor: () => ({}) }, sessions: { subagentAddress: () => undefined } })[name],
+    on: () => () => {}, effect: () => {},
+    slots: {
+      entries: () => [entry],
+      inject: (name, fn) => { const off = fn(); if (name === 'conversation.input.model') dispose = off },
+      register: () => { notifications++; return () => {} },
+    },
+  }
+  client.apply(ctx)
+  assert.notEqual(entry.component, original)
+  client.enabledStore.set(false, false)
+  assert.equal(entry.component, original)
+  client.enabledStore.set(true, false)
+  assert.notEqual(entry.component, original)
+  dispose()
+  assert.equal(entry.component, original)
+  assert.ok(notifications >= 4)
+})
+
+for (const reasoning of [undefined, { efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }] }]) {
+test(`unmodified native selector keeps search and opens plugin pane (${reasoning ? 'with levels' : 'no levels'})`, async () => {
+  const original = await readFile(resolve(root, 'node_modules/@deepseek-ai/dsh-client-ui-model-selection/lib/client.js'))
+  const source = original.toString('utf8')
+  const nativeDocument = { querySelector: () => ({}), addEventListener() {}, removeEventListener() {}, body: {}, activeElement: null }
+  const primitives = new Proxy({
+    rankByName: (models, query) => models.filter(model => model.name.toLowerCase().includes(query.toLowerCase())),
+    observeStickyMenuGroups: () => () => {},
+    MenuSurface: React.forwardRef(({ children, ...props }, ref) => React.createElement('div', { ...props, ref }, children)),
+    MenuGroup: ({ children }) => React.createElement('section', null, children),
+  }, { get: (target, key) => target[key] ?? key })
+  let NativeSelect
+  vm.runInNewContext(source.replace('exports.ModelDirectory = ModelDirectory;', 'exports.TestModelSelect = ModelSelect; exports.ModelDirectory = ModelDirectory;'), {
+    window: { __ModuleLoader__: { load: ({ factory }) => {
+      NativeSelect = factory(name => ({ react: React, 'react/jsx-runtime': jsxRuntime, 'react-dom': { createPortal: node => node }, '@deepseek-ai/cordis': { Service: class {} }, '@deepseek-ai/dsh-client-store': {}, '@deepseek-ai/dsh-client-ui-primitives': primitives })[name]).TestModelSelect
+    } }, addEventListener() {}, removeEventListener() {} },
+    document: nativeDocument, queueMicrotask, console,
+    HTMLInputElement: class {}, HTMLButtonElement: class {}, Node: class {},
+  })
+  const models = Array.from({ length: 5 }, (_, i) => ({ id: `model-${i}`, name: `Model ${i}`, reasoning }))
+  const initial = { current: { provider: 'custom', model: 'model-0' }, groups: [{ id: 'custom', name: 'Custom', models }], failures: [], pending: null, status: 'ready', error: null }
+  const directory = store(initial)
+  const adapt = client.makeAdaptationService({ call: async () => ({ ok: true, value: { ...answer([]), model: 'model-0' } }) })
+  const props = {
+    locked: false, available: true, directory, load: () => {}, select: async () => ({ ok: true }), t,
+    renderSlot: (_name, _owner, opts) => opts?.fallback,
+  }
+  // Exercise production registration/injection, not just the tree adapter.
+  // A real directory load publishes snapshots observed by the native parent.
+  let loads = 0
+  const controller = { store: directory, select: async target => {
+    directory.set({ ...directory.getSnapshot(), current: target })
+    return { ok: true }
+  }, load: async () => {
+    loads++
+    if (loads < 20) directory.set({ ...directory.getSnapshot() })
+    return directory.getSnapshot()
+  } }
+  const entry = { component: NativeSelect, locale: 'model', children: { 'conversation.input.model.label': {} } }
+  let dispose
+  client.apply({
+    get: name => ({ modelDirectories: { directoryFor: () => controller }, sessions: { subagentAddress: () => undefined } })[name],
+    locale: { bind: () => t }, on: () => () => {}, effect: () => {},
+    slots: { entries: () => [entry], register: () => () => {},
+      inject: (name, fn) => { const off = fn(); if (name === 'conversation.input.model') dispose = off },
+    },
+  })
+  NativeSelect = entry.component
+  let tree
+  await act(async () => { tree = TestRenderer.create(React.createElement(NativeSelect, props)) })
+  await act(async () => { tree.root.findByProps({ 'aria-haspopup': 'menu' }).props.onClick() })
+  const row = name => tree.root.findAllByType('button').find(button => button.findAll(node => node.children.includes(name)).length > 0)
+  await act(async () => { row('menu.effort').props.onClick() })
+  assert.ok(loads <= 2, `opening effort triggered ${loads} loads`)
+  const openingLoads = loads
+  await act(async () => { directory.set({ ...directory.getSnapshot() }) })
+  assert.equal(loads, openingLoads, 'parent snapshot updates must not reload the panel')
+  assert.equal(tree.root.findAllByProps({ className: 're-native-effort' }).length, 1)
+  assert.equal(tree.root.findAllByProps({ className: 're-model-trigger' }).length, 0)
+  assert.equal(tree.root.findAllByProps({ className: 're-model-row' }).length, 0)
+  assert.equal(tree.root.findAllByProps({ className: 're-native-back' }).length, 0)
+  if (reasoning) {
+    const pane = tree.root.findByProps({ className: 're-native-pane' })
+    let blurStopped = false
+    pane.props.onBlur({ relatedTarget: null, stopPropagation: () => { blurStopped = true } })
+    assert.equal(blurStopped, true, 'disabling the range must not dismiss the native menu')
+    blurStopped = false
+    pane.props.onBlur({ relatedTarget: {}, stopPropagation: () => { blurStopped = true } })
+    assert.equal(blurStopped, false, 'focus moving outside must reach the native handler')
+    await act(async () => { tree.root.findByProps({ type: 'range' }).props.onChange({ currentTarget: { value: '1' } }) })
+    assert.equal(tree.root.findAllByProps({ className: 're-native-effort' }).length, 1)
+    assert.deepEqual(tree.root.findByProps({ className: 're-effort-name' }).children, ['High'])
+    assert.equal(tree.root.findByProps({ className: 're-effort-ticks' }).findAllByType('span').length, reasoning.efforts.length)
+    assert.equal(tree.root.findByProps({ className: 're-effort-tick is-selected' }).props.title, 'High')
+  }
+  const panel = tree.root.findByProps({ className: 're-native-effort' })
+  let stopped = false
+  panel.props.onKeyDown({ key: 'ArrowRight', stopPropagation: () => { stopped = true } })
+  assert.equal(stopped, true)
+  stopped = false
+  panel.props.onKeyDown({ key: 'Escape', stopPropagation: () => { stopped = true } })
+  assert.equal(stopped, false)
+  await act(async () => { tree.root.findByProps({ className: 're-native-pane' }).props.onKeyDown({ key: 'Escape', preventDefault() {}, stopPropagation() {} }) })
+  assert.equal(tree.root.findAllByProps({ className: 're-native-effort' }).length, 0)
+  await act(async () => { row('menu.model').props.onClick() })
+  const search = tree.root.findByProps({ role: 'searchbox' })
+  await act(async () => { search.props.onChange({ currentTarget: { value: 'Model 3' }, target: { value: 'Model 3' } }) })
+  assert.equal(tree.root.findAllByProps({ role: 'menuitemradio' }).length, 1)
+  await act(async () => { tree.unmount() })
+  dispose()
+})
+}
+
+
+test('embedded slider selects the current route and respects the native lock', async () => {
+  const efforts = [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }]
+  const initial = { current: { provider: 'custom', model: 'reasoner', reasoningEffort: 'low' }, groups: [{ id: 'custom', name: 'Custom', models: [{ id: 'reasoner', name: 'Reasoner', reasoning: { efforts } }] }], failures: [], pending: null, status: 'ready', error: null }
+  const directory = store(initial)
+  const selected = []
+  const controller = {
+    store: directory, load: async () => directory.getSnapshot(),
+    select: async target => { selected.push(target); directory.set({ ...initial, current: target }); return { ok: true } },
+  }
+  const adapt = client.makeAdaptationService({ call: async () => ({ ok: true, value: { ...answer(['low', 'high']), model: 'reasoner' } }) })
+  const props = { available: true, locked: false, directory, controller, load: () => {}, select: async () => true, adapt, agentTutorial: () => '', t }
+  let tree
+  await act(async () => { tree = TestRenderer.create(React.createElement(client.NativeEffortPanel, props)) })
+  const range = tree.root.findByProps({ type: 'range' })
+  await act(async () => { range.props.onKeyDown({ key: 'ArrowRight', currentTarget: { value: '0' }, preventDefault() {} }) })
+  assert.deepEqual(selected, [{ provider: 'custom', model: 'reasoner', reasoningEffort: 'high' }])
+  await act(async () => { tree.update(React.createElement(client.NativeEffortPanel, { ...props, locked: true })) })
+  assert.equal(tree.root.findByProps({ type: 'range' }).props.disabled, true)
+  await act(async () => { tree.root.findByProps({ type: 'range' }).props.onKeyDown({ key: 'ArrowLeft', currentTarget: { value: '1' }, preventDefault() {} }) })
+  assert.equal(selected.length, 1)
+  await act(async () => { tree.unmount() })
+})
+
+
+test('portal traversal retains the original target and key while replacing menu children', () => {
+  const target = { nodeType: 1 }
+  const portal = { $$typeof: Symbol.for('react.portal'), key: 'native-menu', containerInfo: target, implementation: null,
+    children: React.createElement('div', { 'aria-label': 'native' }, 'original') }
+  const result = nativeAdapter.mapNativeTree(portal, element => element.props['aria-label'] === 'native'
+    ? React.cloneElement(element, {}, 'plugin') : element)
+  assert.equal(result.containerInfo, target)
+  assert.equal(result.key, portal.key)
+  assert.equal(result.$$typeof, portal.$$typeof)
+  assert.equal(result.children.props.children, 'plugin')
+  assert.equal(portal.children.props.children, 'original')
+})
+
+
+test('embedded pane with levels never flashes tutorial while diagnosis is pending', async () => {
+  let finish
+  const adapt = client.makeAdaptationService({ call: () => new Promise(resolve => { finish = resolve }) })
+  const directory = store({ current: { provider: 'custom', model: 'custom-model', reasoningEffort: 'low' },
+    groups: [{ id: 'custom', models: [{ id: 'custom-model', reasoning: { efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }] } }] }],
+    failures: [], pending: null, status: 'ready', error: null })
+  const props = { available: true, locked: false, directory, controller: { store: directory, load: async () => {} }, load: () => {}, select: async () => true, adapt, agentTutorial: () => '', t }
+  let tree
+  await act(async () => { tree = TestRenderer.create(React.createElement(client.NativeEffortPanel, props)) })
+  assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
+  assert.equal(tree.root.findAllByProps({ type: 'range' }).length, 1)
+  await act(async () => { finish({ ok: true, value: { ...answer(['low', 'high']), userDeclared: true, needsGuide: false } }) })
+  assert.equal(tree.root.findAllByType('details').length, 0)
   assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
   await act(async () => { tree.unmount() })
 })

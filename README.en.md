@@ -35,6 +35,10 @@ Switch models and adjust reasoning effort below the DSH composer, with an eight-
 
 See the [v0.8.2 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) and [CHANGELOG](CHANGELOG.md) for details.
 
+## Native selector integration (in development)
+
+This branch wraps the DSH native model selector at plugin runtime, preserving native model search and badges while connecting the effort entry to the plugin slider. Models without effort levels also expose the configuration guide here. No host files are modified; disabling the plugin or slider restores the native component. This adapter targets the DSH 0.2.1-rc.2 component structure and needs revalidation after host upgrades.
+
 ## Version support policy
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.

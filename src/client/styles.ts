@@ -12,20 +12,38 @@ import chibiRunnerSprite from '../../assets/chibi-runner-strip.png'
 export const CSS = `
 .re-effort {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
   min-width: 0;
-  height: 32px;
   color: var(--dsw-alias-label-secondary);
   user-select: none;
   box-sizing: border-box;
 }
+.re-effort-name {
+  margin-top: 2px;
+  color: var(--dsw-alias-label-secondary, #686c75);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.re-effort-ticks { position: relative; height: 16px; margin-top: 4px; }
+.re-effort-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  color: var(--dsw-alias-label-tertiary, #9296a0);
+  font-size: 22px;
+  line-height: 16px;
+  user-select: none;
+}
+.re-effort-tick.is-selected { color: var(--dsw-static-deepseek-500, #4d70ff); font-weight: 700; }
 .re-effort-slider {
   --re-progress: 50%;
   position: relative;
   width: 100%;
   height: 30px;
-  flex: 1 1 auto;
+  flex: 0 0 30px;
   border-radius: 999px;
   isolation: isolate;
   transition: filter 180ms ease;
@@ -122,9 +140,8 @@ export const CSS = `
   transition: left 190ms cubic-bezier(.22,1,.36,1), transform 160ms ease, box-shadow 180ms ease;
   pointer-events: none;
 }
-.re-effort.is-chibi {
-  height: 56px;
-}
+.re-effort.is-chibi { padding-top: 12px; }
+.re-effort.is-chibi .re-effort-ticks { margin-top: 14px; }
 .re-effort.is-chibi .re-effort-knob {
   left: clamp(10px, var(--re-progress), calc(100% - 10px));
   width: 40px;
@@ -162,8 +179,7 @@ export const CSS = `
 }
 .re-effort-input:active { cursor: grabbing; }
 .re-effort-input:focus-visible + .re-effort-knob {
-  outline: 2px solid var(--dsw-static-blue-400);
-  outline-offset: 2px;
+  outline: none;
 }
 .re-effort.is-dragging .re-effort-canvas {
   filter: saturate(1.45) brightness(1.28) contrast(1.06);
@@ -293,9 +309,18 @@ export const CSS = `
   box-shadow: var(--dsw-elevation-prominent, 0 14px 42px rgba(18, 24, 42, .18), 0 3px 10px rgba(18, 24, 42, .08));
   animation: re-menu-in 150ms cubic-bezier(.22,1,.36,1);
 }
+.re-native-pane { outline: none; }
+.re-native-effort {
+  width: min(312px, calc(100vw - 40px));
+  max-height: min(312px, calc(100vh - 144px));
+  overflow: auto;
+  overscroll-behavior: contain;
+}
 .re-advanced {
   padding: 14px;
 }
+.re-native-effort .re-advanced { padding: 10px 14px 8px; }
+.re-native-effort .re-effort-name { line-height: 18px; }
 .re-effort-unavailable {
   padding: 10px 14px 0;
   text-align: center;
