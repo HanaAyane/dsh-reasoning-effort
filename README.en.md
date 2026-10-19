@@ -159,19 +159,6 @@ With no `compat`, the adapter decides from the endpoint address: an address it d
 
 </details>
 
-## Composer text size
-
-With native integration, the model control uses DSH typography. These CSS overrides apply only to the fallback selector when native integration is unavailable; its defaults remain `12px` and `1`:
-
-```css
-.re-model-root {
-  --re-composer-font-size: 13px;
-  --re-composer-line-height: 18px;
-}
-```
-
-This is a CSS override hook, not a plugin setting. The button is 28px tall with a maximum width of 230px; check long model names and narrow windows after increasing text size.
-
 ## Effort guidance for custom providers
 
 DSH `0.2.1-rc.2` can configure custom API levels and wire values directly in **Settings → Models → Edit provider → Customized settings → Model options (›) → Reasoning levels**. The YAML guidance below remains available for advanced configuration.
