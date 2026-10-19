@@ -2,16 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [0.9.0] - 2026-10-19
+
+### Added
+
+- Integrate the reasoning slider into the native DSH selector without modifying host files; preserve model search, groups, badges, and typography.
+- Show a dot for each effort level, highlight the selected level, and display its name beneath the slider.
 
 ### Changed
 
-- Integrate the plugin slider into the native selector at runtime without modifying host files; preserve native model search and labels, provide a no-level entry, and restore the native component when disabled.
+- Keep the effort pane open after adjustment and remove its Back button for a compact layout; retain Esc navigation and outside-click dismissal.
+- Prefer graphical Settings for missing custom-model levels. Fold manual configuration and copy actions under Advanced configuration with editing risks explained.
+- Hide tutorials and advanced configuration for valid level sets and explicitly disabled reasoning.
+- Retain CSS font-size and line-height overrides for the fallback selector.
+- Refresh bilingual README illustrations and document the native selector workflow.
 
-- Keep generic guidance mounted during model diagnosis and preserve expanded content height while hiding stale configuration and copy actions.
+### Fixed
 
-- Expose composer font size and line height through CSS variables while preserving compact defaults.
-- Show native Settings instructions immediately at the top of the menu; place YAML, compatibility notes, manual steps, and both copy actions under Advanced configuration.
+- Stabilize injected load callbacks to prevent a render/load loop when opening Effort.
+- Avoid flashing the tutorial before diagnosis completes for models with usable levels.
+- Keep submission-related blur from closing the native menu.
+- Preserve pending guidance layout while hiding stale configuration and copy actions.
+
+Thanks to @Y1zy for the typography and Settings-first feedback in #22 and #23.
 
 ## [0.8.2] - 2026-10-18
 

@@ -1,56 +1,54 @@
 <div align="center">
 
-<img src="assets/readme/hero.webp" alt="dsh-reasoning-effort brings a Codex-style model and reasoning-effort slider to DeepSeek Harness" width="100%">
+<img src="assets/readme/hero.webp" alt="Actual DSH screenshot with the native model control and plugin effort slider" width="100%">
 
 # dsh-reasoning-effort
 
-**A Codex-style model and reasoning-effort control, built directly into DeepSeek Harness.**
+**DSH’s native model selector, with a reasoning-effort slider inside its Effort entry.**
 
 [中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.8.2](https://img.shields.io/badge/release-0.8.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2)
+[![v0.9.0](https://img.shields.io/badge/release-0.9.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
 
 </div>
 
-Switch models and adjust reasoning effort below the DSH composer, with an eight-frame Big Fat Fish runner that speeds up as you drag. Levels come from the selected model, and selections stay synchronized with `/model`.
+Keep native model search, groups, and badges. Open Effort to adjust the plugin slider with level markers and a visible level name. The eight-frame Big Fat Fish runner speeds up as you drag; the menu stays open after adjustment and selections stay synchronized with `/model`.
 
 - **Model-defined levels** — adapts to their count, names, and order; failed updates roll back.
 - **Native appearance** — dark and light themes, with Simplified Chinese and English following DSH's active language immediately.
 - **Optional motion** — the runner is on by default, with a plain-thumb option and reduced-motion support.
-- **Custom-model guidance** — copy a configuration snippet, or one-click copy a whole brief for an agent to diagnose and fill in.
+- **Guidance when needed** — prefer graphical Settings for missing levels; manual steps and copy actions stay under Advanced configuration. Valid levels need no tutorial.
 
-<img src="assets/readme/themes.webp" alt="The reasoning effort selector running in DeepSeek Harness dark and light themes" width="100%">
+<img src="assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
 
-[What changed](#whats-new-in-v081) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+[What changed](#whats-new-in-v090) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
-## What's new in v0.8.2
+## What's new in v0.9.0
 
-- Adapt to DSH `0.2.1-rc.2` and hide the unavailable model selector in addressed subagent sessions.
-- Refresh guidance after configuration changes and discard stale results.
-- Respect disabled reasoning and existing valid levels instead of flagging knowledge-base differences.
-- Follow the composer's compact display and document the native reasoning-level editor.
+- **Native selector integration** — retain DSH model search, groups, and badges; open the plugin slider from the native Effort entry. No host files are modified.
+- **Clearer adjustment** — one dot per level, a highlighted selection and a visible level name. Keep the menu open after adjustment in a compact pane.
+- **Settings first** — lead with the graphical configuration path; fold YAML, manual steps, and Copy for your agent under Advanced configuration with editing risks explained.
+- **Less interruption** — fix tutorial flashes, a repeated-load freeze, and unnecessary guidance for models with valid levels.
 
-See the [v0.8.2 release notes](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) and [CHANGELOG](CHANGELOG.md) for details.
+Thank you to [@Y1zy](https://github.com/Y1zy) for the detailed feedback in [#22](https://github.com/HanaAyane/dsh-reasoning-effort/issues/22) and [#23](https://github.com/HanaAyane/dsh-reasoning-effort/issues/23). These suggestions helped clarify the division of responsibilities: reuse the native selector and focus the plugin on effort adjustment and visualization.
 
-## Native selector integration (in development)
-
-This branch wraps the DSH native model selector at plugin runtime, preserving native model search and badges while connecting the effort entry to the plugin slider. Models without effort levels also expose the configuration guide here. No host files are modified; disabling the plugin or slider restores the native component. This adapter targets the DSH 0.2.1-rc.2 component structure and needs revalidation after host upgrades.
+See the [v0.9.0 release notes](.github/releases/v0.9.0.md) and [CHANGELOG](CHANGELOG.md). Native integration was checked against DSH `0.2.1-rc.2` and needs revalidation after host upgrades. Disabling the plugin or slider restores the native component.
 
 ## Version support policy
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.8.2`**. It requires DSH `0.2.1-rc.2` or newer for Web and Desktop profiles. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.9.0`**. It requires DSH `0.2.1-rc.2` or newer for Web and Desktop profiles. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
-| Plugin release | [v0.8.2](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) |
+| Plugin release | [v0.9.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0) |
 | Web | DSH `0.2.1-rc.2` or newer; use the `web` profile |
 | Desktop | DSH Desktop `0.2.1-rc.2`; use the `desktop` profile |
-| Upgrade notes | Install `v0.8.2`, then restart the corresponding Web Host or desktop app |
+| Upgrade notes | Install `v0.9.0`, then restart the corresponding Web Host or desktop app |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
 ## Install and update
@@ -62,21 +60,21 @@ The download badge above automatically shows total downloads of all release asse
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.2
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
 dsh --profile web --dump-config
 ```
 
-Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.8.2` with `#main`; the main branch may contain unreleased changes.
+Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.9.0` with `#main`; the main branch may contain unreleased changes.
 
-You can also [download the v0.8.2 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-reasoning-effort-0.8.2.tgz).
+You can also [download the v0.9.0 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz).
 
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
 
 ```text
-Install dsh-reasoning-effort v0.8.2 for the DeepSeek Harness web profile.
+Install dsh-reasoning-effort v0.9.0 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.2
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -90,7 +88,7 @@ The plugin loads when the Web Host starts. After installation, restart the DSH W
 
 ### Choose a model and effort level
 
-Open a session and click the model control below the composer. Drag the thumb or click the track; release to snap to the nearest valid level. Click the model row below it to expand the model list.
+Open the model control below the composer. Choose **Model** for native search and model selection, or **Effort** for the plugin slider. Drag or click the track; release to snap to the nearest level while keeping the menu open. Dots mark each level and the selected name appears below. Press Esc to return or click outside to close.
 
 ### Install in DSH Desktop
 
@@ -100,7 +98,7 @@ For **DSH Desktop `0.2.1-rc.2`**, install inside the desktop app. No terminal co
 2. Choose **Add plugin** and enter this in **Package name or address**:
 
    ```text
-   github:HanaAyane/dsh-reasoning-effort#v0.8.2
+   github:HanaAyane/dsh-reasoning-effort#v0.9.0
    ```
 
    Enter the package address, not a `dsh plugin ...` command.
@@ -110,7 +108,7 @@ For **DSH Desktop `0.2.1-rc.2`**, install inside the desktop app. No terminal co
 If installing from the GitHub repository fails, you can also enter the prebuilt release package URL in **Package name or address**:
 
 ```text
-https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-reasoning-effort-0.8.2.tgz
+https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz
 ```
 
 Desktop uses its own `desktop` profile; plugins installed in the `web` profile do not carry over. If the terminal reports `profile "desktop" is managed exclusively by the Electron application`, that CLI is not allowed to manage the Desktop profile. Use the in-app installer above instead of changing the profile name or bypassing the restriction. See the [official Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.md#installation-ownership).
@@ -126,6 +124,13 @@ The slider appears when at least two levels are available; otherwise the menu sh
 This section is vendor-neutral and applies to every model you declare yourself under `llm-pi-ai`.
 
 **Why the levels are missing**: DSH's model directory only reports what the adapter declares. Custom models without inherited catalog metadata need explicit `reasoningEfforts` to expose levels. Missing directory levels do not prove the endpoint cannot reason.
+
+**Use graphical Settings first**: **Settings → Models → Edit provider → Customized settings → Model options (›) → Reasoning levels**. Follow the endpoint documentation for level values.
+
+<details>
+<summary>Advanced: edit YAML manually</summary>
+
+Back up before editing. Invalid indentation, keys, or values can prevent configuration loading or cause request errors.
 
 **What to write**: open the configuration file shown in the guidance panel (the target profile's `cordis.patch.yml`). Add `reasoningEfforts` under the model's `llm-pi-ai` entry, matching its existing indentation. Each key is a DSH level, each value is the spelling the endpoint accepts, and a level left out counts as unsupported:
 
@@ -152,9 +157,11 @@ With no `compat`, the adapter decides from the endpoint address: an address it d
 
 **How to verify**: check configuration parsing and directory levels after saving, then validate actual requests. A visible slider establishes metadata only, not endpoint acceptance or effective strength changes. Built-in knowledge entries are references, not a requirement.
 
+</details>
+
 ## Composer text size
 
-Custom CSS can override the model name and effort font size and line height. Defaults remain `12px` and `1`. For example:
+With native integration, the model control uses DSH typography. These CSS overrides apply only to the fallback selector when native integration is unavailable; its defaults remain `12px` and `1`:
 
 ```css
 .re-model-root {
@@ -171,13 +178,13 @@ DSH `0.2.1-rc.2` can configure custom API levels and wire values directly in **S
 
 Built-in routes get their levels from the pi-ai catalog and the plugin never touches them. Only models you declare yourself in `llm-pi-ai` receive guidance:
 
-1. Open the model menu. If the current model is your own declaration, the directory exposes no levels, and `reasoningEfforts` is not explicitly `false`, the menu shows the graphical Settings path first, with manual guidance under **Advanced configuration**. Existing valid levels are trusted even when they differ from the knowledge base.
+1. Open **Effort** in the model menu. If the current model is your own declaration, the directory exposes no levels, and `reasoningEfforts` is not explicitly `false`, the menu shows the graphical Settings path first, with manual guidance under **Advanced configuration**. Existing valid levels are trusted even when they differ from the knowledge base.
 2. Prefer the Settings path at the top of the panel. For manual editing, expand **Advanced configuration** to see YAML indented for the active configuration file, its path, and the model entry location.
 3. Follow the panel's replace or insert instruction for the matching `- id:` entry, preserve other configuration, and save. DSH reloads automatically; if not, restart the Web Host and refresh.
 
 Models the knowledge base does not know get a generic template you can edit directly. When a gateway rejects requests for a reason the template cannot express — an endpoint refusing the `developer` message role, for instance — the panel names the matching `compat` switch (`supportsDeveloperRole: false`).
 
-Press **Copy for your agent** to configure missing levels, adjust existing ones, or diagnose failures. Models you declare retain this entry even when valid levels already exist. The copied brief includes the route, model ID, actual configuration path, entry location, directory levels, and vendor-neutral declaration rules. It excludes built-in knowledge-base level presets and compat recommendations.
+For missing levels, expand **Advanced configuration** and choose **Copy for your agent**. Models with valid levels or explicitly disabled reasoning no longer show these prompts; use DSH Settings to edit existing levels. The copied brief includes the route, model ID, actual configuration path, entry location, directory levels, and vendor-neutral declaration rules. It excludes built-in knowledge-base level presets and compat recommendations.
 
 Paste the prompt into your coding agent. It reads the actual route's `api` / `baseURL`, checks the endpoint's official documentation, distinguishes effort enums, thinking switches, token budgets, and aliases, and makes a minimal model-entry change. It asks for missing evidence or provides a patch when file access is unavailable. The prompt requires preserving existing configuration and reporting configuration parsing, directory metadata, and actual-request validation separately.
 
@@ -234,7 +241,7 @@ Check that:
 
 ### A model declares no effort levels
 
-First check **Advanced configuration** in the model menu. For manual configuration, use the file path shown in the panel and the current model and endpoint documentation to fill in that entry's `reasoningEfforts` and `compat`. Do not reuse another model's levels or context limits without checking them.
+Start with **Settings → Models → Edit provider → Customized settings → Model options (›) → Reasoning levels**. For manual configuration, use the file path shown in the panel and the current model and endpoint documentation to fill in that entry's `reasoningEfforts` and `compat`. Do not reuse another model's levels or context limits without checking them.
 
 The knowledge base provides guidance; the endpoint determines accepted values. If saving does not take effect, restart the Web Host and refresh the page.
 
@@ -248,7 +255,7 @@ Open an [issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues) with y
 dsh --profile web --dump-config
 ```
 
-The Web output should contain `name: dsh-reasoning-effort`. For Desktop, fully quit the app, then run `dsh plugin --profile desktop list` with its bundled command and confirm that the plugin appears.
+The Web output should contain `name: dsh-reasoning-effort`. For Desktop, confirm the plugin is enabled under **Plugins → Installed plugins** in the app.
 
 ### Uninstall
 
@@ -256,7 +263,7 @@ The Web output should contain `name: dsh-reasoning-effort`. For Desktop, fully q
 dsh plugin --profile web remove dsh-reasoning-effort
 ```
 
-For Desktop, fully quit the app, then run `dsh plugin --profile desktop remove dsh-reasoning-effort` with its bundled command. Restart the corresponding Web Host or desktop app afterward; the native model selector will return automatically.
+For Desktop, uninstall from the in-app **Plugins** page. Restart the corresponding Web Host or desktop app afterward; the native model selector will return automatically.
 
 ## Development
 

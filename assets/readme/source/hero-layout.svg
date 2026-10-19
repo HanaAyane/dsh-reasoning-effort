@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
   <title id="title">dsh-reasoning-effort hero</title>
-  <desc id="desc">A blue violet black project banner showing the reasoning effort slider inside a real DeepSeek Harness interface, with the optional Big Fat Fish runner.</desc>
+  <desc id="desc">A blue violet black project banner showing the reasoning effort slider inside a real DeepSeek Harness screenshot supplied by the maintainer, with the optional Big Fat Fish runner.</desc>
   <defs>
     <linearGradient id="bg" x1="70" y1="20" x2="1120" y2="560" gradientUnits="userSpaceOnUse">
       <stop stop-color="#070A14"/>
@@ -41,15 +41,15 @@
 
   <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
     <g transform="translate(60 56)">
-      <rect width="210" height="34" rx="17" fill="#11172E" stroke="#7188D8" stroke-opacity=".5"/>
+      <rect width="258" height="34" rx="17" fill="#11172E" stroke="#7188D8" stroke-opacity=".5"/>
       <circle cx="18" cy="17" r="5" fill="#7E8FFF"/>
-      <text x="32" y="22" fill="#BFCBFF" font-size="13" font-weight="700" letter-spacing="1.4">DEEPSEEK HARNESS PLUGIN</text>
+      <text x="32" y="22" fill="#BFCBFF" font-size="12" font-weight="700" letter-spacing="1.0">DEEPSEEK HARNESS PLUGIN</text>
     </g>
 
     <text x="60" y="155" fill="#F7F9FF" font-size="48" font-weight="750" letter-spacing="-1.6">Reasoning,</text>
     <text x="60" y="209" fill="#F7F9FF" font-size="48" font-weight="750" letter-spacing="-1.6">at your fingertips.</text>
     <rect x="60" y="230" width="310" height="5" rx="2.5" fill="url(#accent)"/>
-    <text x="60" y="278" fill="#AEBBE1" font-size="21">Model + effort in one DSH-native control.</text>
+    <text x="60" y="278" fill="#AEBBE1" font-size="21">Native selector. Your effort slider.</text>
 
     <g transform="translate(60 314)" font-size="14" font-weight="700" text-anchor="middle">
       <rect width="78" height="40" rx="20" fill="#11172A" stroke="#5C6B9D"/>
@@ -60,9 +60,9 @@
       <text x="225" y="25" fill="#FFFFFF">MAX</text>
     </g>
 
-    <g transform="translate(60 397)" fill="#CFD7F4" font-size="16">
+    <g transform="translate(60 397)" fill="#CFD7F4" font-size="18">
       <circle cx="7" cy="-5" r="4" fill="#6F88FF"/>
-      <text x="22" y="0">Direct pointer tracking</text>
+      <text x="22" y="0">Native search + model badges</text>
       <circle cx="7" cy="29" r="4" fill="#8E6CFF"/>
       <text x="22" y="34">Dark + light themes</text>
       <circle cx="7" cy="63" r="4" fill="#B36EFF"/>
@@ -70,12 +70,11 @@
     </g>
   </g>
 
-  <g filter="url(#shadow)">
-    <rect x="484" y="70" width="676" height="388" rx="30" fill="#101426" stroke="#8EA0FF" stroke-opacity=".38"/>
-    <g clip-path="url(#screenClip)">
-      <image href="dsh-dark-popup.png" x="492" y="78" width="660" height="372" preserveAspectRatio="xMidYMid slice"/>
-      <rect x="492" y="78" width="660" height="372" fill="url(#glowViolet)" opacity=".18"/>
-    </g>
+  <g font-family="Segoe UI, sans-serif">
+    <rect x="502" y="96" width="650" height="354" rx="24" fill="#141414" stroke="#59699C"/>
+    <text x="528" y="130" fill="#AEBBE1" font-size="18">NATIVE SELECTOR · PLUGIN SLIDER</text>
+    <image href="dsh-dark-popup.png" x="514" y="151" width="626" height="245" preserveAspectRatio="xMidYMid meet"/>
+    <text x="827" y="429" text-anchor="middle" fill="#AEBBE1" font-size="18">Actual DSH interface · Model-defined levels</text>
   </g>
 
   <g transform="translate(467 412)">
@@ -87,7 +86,7 @@
   </g>
 
   <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="13" fill="#93A4C7">
-    <text x="958" y="501">SESSION-NATIVE</text>
+    <text x="925" y="501">ACTUAL SCREENSHOT</text>
     <circle cx="1142" cy="496" r="4" fill="#72F1B8"/>
   </g>
 </svg>

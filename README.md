@@ -1,56 +1,54 @@
 <div align="center">
 
-<img src="assets/readme/hero.webp" alt="dsh-reasoning-effort 为 DeepSeek Harness 提供 Codex 风格的模型与推理强度滑块" width="100%">
+<img src="assets/readme/hero.webp" alt="DSH 原生模型入口与插件推理滑块的实际界面截图" width="100%">
 
 # dsh-reasoning-effort
 
-**把 Codex 风格的“模型 + 推理强度”控件直接带进 DeepSeek Harness。**
+**沿用 DSH 原生模型选择器，在“推理等级”里拖动调节思考强度。**
 
 [English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.8.2](https://img.shields.io/badge/release-0.8.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2)
+[![v0.9.0](https://img.shields.io/badge/release-0.9.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Releases 附件累计下载次数](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
 
 </div>
 
-在 DSH 输入框下方切换模型、拖动推理强度，并让八帧“大肥鱼”随拖动加速。档位来自当前模型，选择结果与 `/model` 命令保持同步。
+模型列表、搜索和徽标沿用 DSH 原生界面；进入“推理等级”，用带圆点刻度与档位名称的滑块调整强度。八帧“大肥鱼”随拖动加速，调整后弹窗保持打开，选择结果与 `/model` 命令保持同步。
 
 - **跟随模型档位**：自动适配档数、名称和顺序，提交失败时回滚。
 - **贴合 DSH 界面**：支持深浅主题，简体中文与英文跟随 DSH 语言即时切换。
 - **可选动态外观**：默认启用大肥鱼，支持普通按钮及系统“减少动态效果”设置。
-- **自定义模型指引**：提供可复制的配置片段，并可一键复制整份简报交给 Agent 排查并代填。
+- **按需配置指引**：缺少档位时优先展示图形界面设置路径；手工步骤和复制操作折叠到高级配置，已有有效档位不再提示。
 
-<img src="assets/readme/themes.webp" alt="推理强度选择器在 DeepSeek Harness 深色和浅色主题中的真实效果" width="100%">
+<img src="assets/readme/themes.webp" alt="插件滑块在 DSH 深色与浅色主题中的实际截图" width="100%">
 
-[本次更新](#v081-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
+[本次更新](#v090-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
 
-## v0.8.2 更新内容
+## v0.9.0 更新内容
 
-- 适配 DSH `0.2.1-rc.2`，子代理会话不再显示不可用的模型选择器。
-- 配置变化后刷新档位指引，避免显示或复制过期建议。
-- 尊重关闭推理及已有有效档位，不再因与知识库不同而提示修改。
-- 接入输入栏紧凑显示，补充原生推理等级设置入口说明。
+- **原生选择器接入**：保留 DSH 模型入口、搜索、分组与徽标，在原生“推理等级”入口展示插件滑块，无需修改宿主文件。
+- **更直观的调节**：每档对应一个圆点刻度，当前档位高亮并显示名称；拖动后保持弹窗打开，页面更紧凑。
+- **图形设置优先**：配置教程置顶，YAML、手动步骤及“复制给 Agent”收进高级配置，并说明手动修改风险。
+- **减少打扰**：修复打开时教程闪现、重复加载导致卡死，以及已配置档位仍显示提示的问题。
 
-完整记录见 [v0.8.2 发布说明](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) 和 [CHANGELOG](CHANGELOG.md)。
+感谢 [@Y1zy](https://github.com/Y1zy) 在 [#22](https://github.com/HanaAyane/dsh-reasoning-effort/issues/22) 和 [#23](https://github.com/HanaAyane/dsh-reasoning-effort/issues/23) 中的细致反馈。这些建议促使我重新考虑插件与宿主的分工：直接复用原生选择器，让插件专注于推理调节和可视化。
 
-## 原生选择器接入（开发中）
-
-本分支在插件运行时包装 DSH 原生模型选择器，保留原生模型列表、搜索和徽标，将推理等级入口接到插件滑块；无档位模型也可从此入口查看配置指引。无需修改宿主文件，停用插件或关闭滑块后恢复原生组件。适配基于 DSH 0.2.1-rc.2 的组件结构，宿主升级后需重新验证。
+完整记录见 [v0.9.0 发布说明](.github/releases/v0.9.0.md) 和 [CHANGELOG](CHANGELOG.md)。原生接入按 DSH `0.2.1-rc.2` 验证，宿主升级后需重新验证；停用插件或关闭滑块后恢复原生组件。
 
 ## 版本支持政策
 
 本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
 
-当前发行版为 **插件 `v0.8.2`**，以 DSH `0.2.1-rc.2` 为最低版本，适用于 Web 和 Desktop Profile。DSH `0.2.0` RC 用户请继续使用 [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
+当前发行版为 **插件 `v0.9.0`**，以 DSH `0.2.1-rc.2` 为最低版本，适用于 Web 和 Desktop Profile。DSH `0.2.0` RC 用户请继续使用 [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
 
 | 项目 | 当前说明 |
 | --- | --- |
-| 插件发行版 | [v0.8.2](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.2) |
+| 插件发行版 | [v0.9.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0) |
 | Web | DSH `0.2.1-rc.2` 起；使用 `web` Profile |
 | 桌面端 | DSH Desktop `0.2.1-rc.2`；使用 `desktop` Profile |
-| 升级说明 | 安装 `v0.8.2` 后重新启动对应的 Web Host 或桌面应用 |
+| 升级说明 | 安装 `v0.9.0` 后重新启动对应的 Web Host 或桌面应用 |
 | alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
 
 ## 安装与更新
@@ -62,21 +60,21 @@
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.2
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
 dsh --profile web --dump-config
 ```
 
-确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.8.2` 换成 `#main`，但主分支可能包含未发布改动。
+确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.9.0` 换成 `#main`，但主分支可能包含未发布改动。
 
-也可以从 [v0.8.2 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-reasoning-effort-0.8.2.tgz)。
+也可以从 [v0.9.0 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz)。
 
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
 
 ```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.8.2。
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.0。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.8.2
+dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -90,7 +88,7 @@ dsh --profile web --dump-config
 
 ### 选择模型与强度
 
-打开一个会话，点击输入框下方的模型入口。拖动滑块或点击轨道，释放后吸附到最近的有效档位；点击下方模型行可展开模型列表。
+打开会话，点击输入框下方的模型入口。选择 **模型** 使用原生搜索与模型列表；选择 **推理等级** 打开插件滑块。拖动或点击轨道，释放后吸附到最近档位，弹窗保持打开。圆点标记各档位置，下方显示当前档位名称；按 Esc 返回，点击外部关闭。
 
 ### DSH 桌面端安装
 
@@ -100,7 +98,7 @@ dsh --profile web --dump-config
 2. 点击 **添加插件**，在 **包名或地址** 中填写：
 
    ```text
-   github:HanaAyane/dsh-reasoning-effort#v0.8.2
+   github:HanaAyane/dsh-reasoning-effort#v0.9.0
    ```
 
    这里填写的是插件地址，不是 `dsh plugin ...` 命令。
@@ -110,7 +108,7 @@ dsh --profile web --dump-config
 若通过 GitHub 仓库安装失败，也可在 **包名或地址** 中填写本版本已构建的插件包地址：
 
 ```text
-https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-reasoning-effort-0.8.2.tgz
+https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz
 ```
 
 桌面端使用独立的 `desktop` Profile；安装在 `web` Profile 的插件不会自动出现在桌面端。若终端提示 `profile "desktop" is managed exclusively by the Electron application`，说明当前 CLI 不允许管理 Desktop Profile，请改用上述应用内入口，不要修改 Profile 名称或绕过限制。参见 [DSH Desktop 官方说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.zh.md#installation-ownership)。
@@ -126,6 +124,13 @@ https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.8.2/dsh-r
 这一节与厂商无关，适用于你在 `llm-pi-ai` 里自己声明的任何模型。
 
 **为什么读不到档位**：DSH 的模型目录只报告适配器声明的能力。没有继承内置目录元数据的自定义模型，需要显式声明 `reasoningEfforts` 才能公开档位；目录没有档位并不证明端点不能推理。
+
+**优先使用图形界面**：**设置 → 模型 → 编辑提供商 → 自定义设置 → 模型选项（›）→ 推理等级**，按端点文档填写档位与 API 参数值。
+
+<details>
+<summary>高级配置：手动填写 YAML</summary>
+
+手动修改前请备份。缩进、键名或参数错误可能导致配置加载失败或请求报错。
 
 **怎么填**：打开指引面板显示的配置文件（目标 Profile 的 `cordis.patch.yml`），在 `llm-pi-ai` 的对应模型条目下加 `reasoningEfforts`，并保持原有缩进。键是 DSH 档位，值是端点接受的写法；没写的档位视为不支持：
 
@@ -152,9 +157,11 @@ models:
 
 **怎么验证**：保存后检查配置解析和目录档位，再核对实际请求。滑块出现只说明目录已读到元数据，不能证明端点接受参数或强度确实改变。插件内置的知识条目只是参考，不是必要条件。
 
+</details>
+
 ## 输入栏文字大小
 
-通过自定义 CSS 可覆盖模型名和档位的字号、行高；默认仍为 `12px` 和 `1`。例如：
+原生接入时，模型入口的字号和行高沿用 DSH。以下 CSS 仅用于无法接入原生组件时的备用选择器，其默认值为 `12px` 和 `1`：
 
 ```css
 .re-model-root {
@@ -171,13 +178,13 @@ DSH `0.2.1-rc.2` 可直接在 **设置 → 模型 → 编辑提供商 → 自定
 
 DSH 内置路由的档位来自 pi-ai 目录，插件**完全只读、绝不修改**。只有你在 `llm-pi-ai` 配置里自己声明的模型，插件才会给指引：
 
-1. 打开模型菜单。若当前模型是你自定义声明、目录读不到档位且未明确设置 `reasoningEfforts: false`，菜单最前面直接显示图形界面的配置路径，手工指引位于 **高级配置**；已有有效档位不会因与知识库不同而被提示修改；
+1. 打开模型菜单中的 **推理等级**。若当前模型是你自定义声明、目录读不到档位且未明确设置 `reasoningEfforts: false`，菜单最前面直接显示图形界面的配置路径，手工指引位于 **高级配置**；已有有效档位不会因与知识库不同而被提示修改；
 2. 优先按面板顶部的设置页路径配置；需要手工编辑时，展开 **高级配置**，查看按当前配置文件缩进生成的 YAML、文件路径与条目位置；
 3. 按面板提示替换对应的 `- id:` 条目，或把字段块插入该条目；保留其他配置，保存后让 DSH 重新加载。若未生效，重启 Web Host 并刷新页面。
 
 知识库未收录的模型会得到通用的、可直接修改的模板。遇到"端点因 developer 角色拒绝请求"之类的情况，面板会给出警告和对应的 `compat` 开关（例如提示 `supportsDeveloperRole: false`）。
 
-不想自己填、想调整已有档位、或者配置后仍然报错，就展开 **高级配置** 并点击 **复制给 Agent**。你声明的模型即使已有有效档位，也会显示这个入口。复制内容包含当前路由、模型 ID、实际配置路径、条目位置、目录档位和通用声明规则；不会把内置知识库的预设档位或兼容字段作为建议配置交给 Agent。
+缺少档位且不想手动填写时，展开 **高级配置** 并点击 **复制给 Agent**。已有有效档位或明确关闭推理的模型不再显示这组提示；调整已有档位请使用 DSH 设置页。复制内容包含当前路由、模型 ID、实际配置路径、条目位置、目录档位和通用声明规则；不会把内置知识库的预设档位或兼容字段作为建议配置交给 Agent。
 
 把提示词发给你的 coding agent。它会先读取目标路由的实际 `api` / `baseURL`，查证端点官方文档，区分力度枚举、思考开关、token 预算和别名，再最小修改目标模型条目。资料不足时询问缺失信息；无法访问文件时提供补丁。提示词要求保留已有配置，并分别报告配置解析、目录元数据和实际请求的验证结果。
 
@@ -234,7 +241,7 @@ entries:
 
 ### 模型没有声明档位怎么办
 
-先查看模型菜单中的 **高级配置**。若需要手动配置，请根据面板给出的实际文件路径和当前模型、端点文档填写对应条目的 `reasoningEfforts` 与 `compat`，不要直接套用其他模型的档位或上下文参数。
+先按 **设置 → 模型 → 编辑提供商 → 自定义设置 → 模型选项（›）→ 推理等级** 配置。若需要手动配置，请根据面板给出的实际文件路径和当前模型、端点文档填写对应条目的 `reasoningEfforts` 与 `compat`，不要直接套用其他模型的档位或上下文参数。
 
 知识库只提供参考；实际支持的取值以端点能力为准。保存后若未生效，重启 Web Host 并刷新页面。
 
@@ -250,7 +257,7 @@ entries:
 dsh --profile web --dump-config
 ```
 
-Web 配置中应当出现 `name: dsh-reasoning-effort`。桌面端请在应用完全退出后使用其内置命令运行 `dsh plugin --profile desktop list`，确认列表中有插件。
+Web 配置中应当出现 `name: dsh-reasoning-effort`。桌面端请在应用的 **插件 → 已安装插件** 中确认插件已启用。
 
 ### 如何卸载
 
@@ -258,7 +265,7 @@ Web 配置中应当出现 `name: dsh-reasoning-effort`。桌面端请在应用�
 dsh plugin --profile web remove dsh-reasoning-effort
 ```
 
-桌面端请在应用完全退出后使用桌面版内置命令运行 `dsh plugin --profile desktop remove dsh-reasoning-effort`。卸载后重启对应的 Web Host 或桌面应用，原生模型选择器会自动恢复。
+桌面端请在应用的 **插件** 页面卸载。卸载后重启对应的 Web Host 或桌面应用，原生模型选择器会自动恢复。
 
 ## 开发与构建
 
