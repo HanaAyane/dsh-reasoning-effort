@@ -32,6 +32,11 @@ export declare const zh: {
     'guidance.matched': string;
     'guidance.unmatched': string;
     'guidance.settings': string;
+    'guidance.settings.title': string;
+    'guidance.settings.path': string;
+    'guidance.settings.note': string;
+    'guidance.advanced': string;
+    'guidance.manualRisk': string;
     'guidance.paste': string;
     'guidance.step1.open': string;
     'guidance.step1.path': string;
@@ -111,6 +116,11 @@ export declare const en: {
     'guidance.matched': string;
     'guidance.unmatched': string;
     'guidance.settings': string;
+    'guidance.settings.title': string;
+    'guidance.settings.path': string;
+    'guidance.settings.note': string;
+    'guidance.advanced': string;
+    'guidance.manualRisk': string;
     'guidance.paste': string;
     'guidance.step1.open': string;
     'guidance.step1.path': string;

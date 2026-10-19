@@ -148,14 +148,27 @@ With no `compat`, the adapter decides from the endpoint address: an address it d
 
 **How to verify**: check configuration parsing and directory levels after saving, then validate actual requests. A visible slider establishes metadata only, not endpoint acceptance or effective strength changes. Built-in knowledge entries are references, not a requirement.
 
+## Composer text size
+
+Custom CSS can override the model name and effort font size and line height. Defaults remain `12px` and `1`. For example:
+
+```css
+.re-model-root {
+  --re-composer-font-size: 13px;
+  --re-composer-line-height: 18px;
+}
+```
+
+This is a CSS override hook, not a plugin setting. The button is 28px tall with a maximum width of 230px; check long model names and narrow windows after increasing text size.
+
 ## Effort guidance for custom providers
 
 DSH `0.2.1-rc.2` can configure custom API levels and wire values directly in **Settings → Models → Edit provider → Customized settings → Model options (›) → Reasoning levels**. The YAML guidance below remains available for advanced configuration.
 
 Built-in routes get their levels from the pi-ai catalog and the plugin never touches them. Only models you declare yourself in `llm-pi-ai` receive guidance:
 
-1. Open the model menu. If the current model is your own declaration, the directory exposes no levels, and `reasoningEfforts` is not explicitly `false`, a **View declaration guidance** entry appears. Existing valid levels are trusted even when they differ from the knowledge base.
-2. The panel shows suggested levels (from the knowledge base or a generic template), YAML indented for the active configuration file, its path, and the model entry location.
+1. Open the model menu. If the current model is your own declaration, the directory exposes no levels, and `reasoningEfforts` is not explicitly `false`, the menu shows the graphical Settings path first, with manual guidance under **Advanced configuration**. Existing valid levels are trusted even when they differ from the knowledge base.
+2. Prefer the Settings path at the top of the panel. For manual editing, expand **Advanced configuration** to see YAML indented for the active configuration file, its path, and the model entry location.
 3. Follow the panel's replace or insert instruction for the matching `- id:` entry, preserve other configuration, and save. DSH reloads automatically; if not, restart the Web Host and refresh.
 
 Models the knowledge base does not know get a generic template you can edit directly. When a gateway rejects requests for a reason the template cannot express — an endpoint refusing the `developer` message role, for instance — the panel names the matching `compat` switch (`supportsDeveloperRole: false`).
@@ -217,7 +230,7 @@ Check that:
 
 ### A model declares no effort levels
 
-First check **View declaration guidance** in the model menu. For manual configuration, use the file path shown in the panel and the current model and endpoint documentation to fill in that entry's `reasoningEfforts` and `compat`. Do not reuse another model's levels or context limits without checking them.
+First check **Advanced configuration** in the model menu. For manual configuration, use the file path shown in the panel and the current model and endpoint documentation to fill in that entry's `reasoningEfforts` and `compat`. Do not reuse another model's levels or context limits without checking them.
 
 The knowledge base provides guidance; the endpoint determines accepted values. If saving does not take effect, restart the Web Host and refresh the page.
 

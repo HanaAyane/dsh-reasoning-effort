@@ -137,3 +137,71 @@ test('registered model seat guards subagent loading and selection at call time',
   events.get('settings/document-updated')()
   assert.equal(main.adapt.getSnapshot(), revision + 1)
 })
+
+
+test('custom-model settings instructions are immediate and copy actions stay under advanced', async () => {
+  for (const needsGuide of [true, false]) {
+    const value = { ...answer([]), needsGuide, reason: 'missing', matched: false, expected: [], entryPath: 'models', entryLine: '- id: custom-model', settingsPath: null }
+    const adapt = client.makeAdaptationService({ call: async () => ({ ok: true, value }) })
+    const directory = store({ current: { provider: 'custom', model: 'custom-model' }, groups: [], failures: [], pending: null, status: 'ready', error: null })
+    let tree
+    await act(async () => { tree = TestRenderer.create(React.createElement(client.AdvancedModelSelect, { available: true, locked: false, directory, controller: {}, load: () => {}, select: async () => true, adapt, agentTutorial: () => '', t })) })
+    globalThis.document = { addEventListener() {}, removeEventListener() {} }
+    await act(async () => { tree.root.findByProps({ className: 're-model-trigger' }).props.onClick() })
+    const guide = tree.root.findByProps({ className: 're-settings-guide' })
+    assert.equal(guide.findByProps({ className: 're-settings-path' }).children[0], 'guidance.settings.path')
+    const markup = JSON.stringify(tree.toJSON())
+    assert.ok(markup.indexOf('re-effort-unavailable') < markup.indexOf('re-settings-guide'))
+    assert.equal(tree.root.findAllByProps({ className: 're-advanced' }).length, 0)
+    assert.equal(tree.root.findAllByProps({ className: 're-adapt-open' }).length, 0)
+    const advanced = tree.root.findByType('details')
+    assert.equal(advanced.props.open, undefined)
+    assert.equal(advanced.findAllByProps({ className: 're-adapt-agent' }).length, 1)
+    assert.equal(advanced.findAllByProps({ className: 're-adapt-apply' }).length, needsGuide ? 1 : 0)
+    await act(async () => { tree.unmount() })
+  }
+})
+
+
+test('delayed model diagnosis preserves teaching and hides stale configuration', async () => {
+  const requests = []
+  const adapt = client.makeAdaptationService({ call: (_channel, _method, payload) => new Promise(resolve => requests.push({ payload, resolve })) })
+  const initial = { current: { provider: 'custom', model: 'model-a' }, groups: [], failures: [], pending: null, status: 'ready', error: null }
+  const directory = store(initial)
+  let tree
+  await act(async () => { tree = TestRenderer.create(React.createElement(client.AdvancedModelSelect, { available: true, locked: false, directory, controller: {}, load: () => {}, select: async () => true, adapt, agentTutorial: () => '', t })) })
+  globalThis.document = { addEventListener() {}, removeEventListener() {} }
+  await act(async () => { tree.root.findByProps({ className: 're-model-trigger' }).props.onClick() })
+  const guide = tree.root.findByProps({ className: 're-settings-guide' })
+  const disclosure = tree.root.findByType('details')
+  const resolveRequest = async (req, userDeclared = true) => {
+    await act(async () => { req.resolve({ ok: true, value: { ...answer([]), ...req.payload, userDeclared, needsGuide: userDeclared, reason: 'missing', matched: false, expected: [], entryPath: 'models', entryLine: '- id: test', settingsPath: null, fieldBlock: req.payload.model } }) })
+  }
+  const pending = () => {
+    assert.equal(tree.root.findByProps({ className: 're-settings-guide' }), guide)
+    assert.equal(tree.root.findByType('details'), disclosure)
+    assert.equal(tree.root.findAllByProps({ className: 're-adapt-agent' }).length, 0)
+    assert.equal(tree.root.findAllByProps({ className: 're-adapt-yaml' }).length, 0)
+    assert.ok(JSON.stringify(tree.toJSON()).includes('guidance.checking'))
+  }
+  pending()
+  await resolveRequest(requests[0])
+  await act(async () => { directory.set({ ...initial, current: { provider: 'custom', model: 'model-b' } }) })
+  pending()
+  await act(async () => { directory.set({ ...initial, current: { provider: 'custom', model: 'model-c' } }) })
+  await resolveRequest(requests[1], false) // A late response must not hide the teaching.
+  pending()
+  await resolveRequest(requests[2])
+  assert.equal(tree.root.findByProps({ className: 're-adapt-yaml' }).children[0], 'model-c')
+  await act(async () => { adapt.invalidate() })
+  pending()
+  await act(async () => { requests[3].resolve({ ok: false, error: { message: 'offline' } }) })
+  assert.equal(tree.root.findByProps({ className: 're-settings-guide' }), guide)
+  assert.equal(tree.root.findByType('details'), disclosure)
+  assert.equal(tree.root.findAllByProps({ className: 're-adapt-agent' }).length, 0)
+  assert.ok(JSON.stringify(tree.toJSON()).includes('guidance.unavailable'))
+  await act(async () => { adapt.invalidate() })
+  await resolveRequest(requests[4], false)
+  assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
+  await act(async () => { tree.unmount() })
+})

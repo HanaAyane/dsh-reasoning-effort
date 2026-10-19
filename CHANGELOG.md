@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- Keep generic guidance mounted during model diagnosis and preserve expanded content height while hiding stale configuration and copy actions.
+
+- Expose composer font size and line height through CSS variables while preserving compact defaults.
+- Show native Settings instructions immediately at the top of the menu; place YAML, compatibility notes, manual steps, and both copy actions under Advanced configuration.
+
 ## [0.8.2] - 2026-10-18
 
 ### Changed

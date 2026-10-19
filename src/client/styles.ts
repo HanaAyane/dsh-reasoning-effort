@@ -246,14 +246,14 @@ export const CSS = `
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
-  line-height: 1;
+  font-size: var(--re-composer-font-size, 12px);
+  line-height: var(--re-composer-line-height, 1);
 }
 .re-model-effort {
   flex: 0 0 auto;
   color: var(--dsw-static-deepseek-500, #4d70ff);
-  font-size: 12px;
-  line-height: 1;
+  font-size: var(--re-composer-font-size, 12px);
+  line-height: var(--re-composer-line-height, 1);
 }
 .re-model-chevron {
   flex: 0 0 auto;
@@ -296,6 +296,16 @@ export const CSS = `
 .re-advanced {
   padding: 14px;
 }
+.re-effort-unavailable {
+  padding: 10px 14px 0;
+  text-align: center;
+  color: var(--dsw-alias-label-tertiary, #9296a0);
+  font-size: 12px;
+  line-height: 18px;
+}
+.re-effort-unavailable ~ .re-adapt { padding-top: 0; }
+.re-effort-unavailable ~ .re-adapt > .re-adapt-advanced { margin-top: 0; }
+
 .re-menu-separator {
   height: 1px;
   background: var(--dsw-alias-stroke-secondary, rgba(121,126,145,.16));
@@ -608,6 +618,23 @@ body[data-ds-dark-theme] .re-adapt-panel {
   color: var(--dsw-alias-label-secondary, #686c75);
   font-size: 11px;
   line-height: 1.6;
+}
+.re-settings-guide {
+  margin: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--dsw-alias-fill-tertiary, rgba(120,125,140,.1));
+  color: var(--dsw-alias-label-secondary, #686c75);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.re-settings-guide strong { color: var(--dsw-alias-label-primary, #15171b); font-size: 13px; }
+.re-settings-path { margin: 8px 0; color: var(--dsw-static-deepseek-500, #4d70ff); font-weight: 600; }
+.re-adapt-advanced { margin-top: 10px; }
+.re-adapt-advanced > summary {
+  color: var(--dsw-alias-label-secondary, #686c75);
+  font-size: 12px;
+  cursor: pointer;
 }
 .re-adapt-switch-intro {
   margin-top: 8px;
