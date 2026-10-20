@@ -12,6 +12,7 @@
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
+[![npm monthly downloads](https://img.shields.io/npm/dm/@ayanehana/dsh-reasoning-effort.svg?style=flat-square&label=npm%20downloads%2Fmonth)](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
 
 </div>
 
@@ -53,7 +54,7 @@ The current release is **plugin `v0.9.0`**. It requires DSH `0.2.1-rc.2` or newe
 
 ## Install and update
 
-The download badge shows total downloads of GitHub release assets, with a cache delay. Repeat downloads count separately; these figures are not plugin installation counts or unique users and exclude npm downloads, GitHub-generated source ZIP/TAR downloads, and Git clones.
+The download badges separately show total downloads of GitHub release assets and npm package downloads over the last month, with a cache delay. For a newly published npm package, the badge may temporarily show `package not found or too new` until download statistics become available, then update automatically. Repeat downloads count separately; these figures are not plugin installation counts or unique users. GitHub statistics exclude npm downloads, GitHub-generated source ZIP/TAR downloads, and Git clones.
 
 ### Web: install a pinned release
 
