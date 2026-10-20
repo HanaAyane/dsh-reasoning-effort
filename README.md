@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="assets/readme/hero.webp" alt="DSH 原生模型入口与插件推理滑块的实际界面截图" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/hero.webp" alt="DSH 原生模型入口与插件推理滑块的实际界面截图" width="100%">
 
 # dsh-reasoning-effort
 
 **沿用 DSH 原生模型选择器，在“推理等级”里拖动调节思考强度。**
 
-[English](README.en.md) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
+[English](README.en.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
 [![v0.9.0](https://img.shields.io/badge/release-0.9.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
@@ -22,7 +22,7 @@
 - **可选动态外观**：默认启用大肥鱼，支持普通按钮及系统“减少动态效果”设置。
 - **按需配置指引**：缺少档位时优先展示图形界面设置路径；手工步骤和复制操作折叠到高级配置，已有有效档位不再提示。
 
-<img src="assets/readme/themes.webp" alt="插件滑块在 DSH 深色与浅色主题中的实际截图" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/themes.webp" alt="插件滑块在 DSH 深色与浅色主题中的实际截图" width="100%">
 
 [本次更新](#v090-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
 
@@ -53,18 +53,26 @@
 
 ## 安装与更新
 
-顶部下载徽章自动显示所有 Releases 附件的累计下载次数，更新有缓存延迟。统计仅包含上传附件（如插件包与校验文件）；重复下载会累计，不代表插件安装量或独立用户数，也不包含 GitHub 自动生成的源码 ZIP/TAR 下载和 Git 克隆。
+顶部下载徽章显示 GitHub Releases 附件的累计下载次数，更新有缓存延迟。重复下载会累计，不代表插件安装量或独立用户数；不包含 npm 下载、GitHub 自动生成的源码 ZIP/TAR 下载和 Git 克隆。
 
 ### Web：安装固定发行版
+
+推荐从 npm 安装官方包 `@ayanehana/dsh-reasoning-effort`。npm 上无作用域的同名包由其他维护者发布，对应其他仓库。
+
+[npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [下载 npm 0.9.0 插件包](https://registry.npmjs.org/@ayanehana/dsh-reasoning-effort/-/dsh-reasoning-effort-0.9.0.tgz)。桌面端可直接使用下方的包名安装步骤。
+
+如果此前已通过 GitHub 安装旧的 `dsh-reasoning-effort`，切换到 npm 包前请先卸载旧包；Web 使用 `dsh plugin --profile web remove dsh-reasoning-effort`，桌面端在 **插件** 页面卸载，避免重复加载。
 
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
 dsh --profile web --dump-config
 ```
 
-确认输出中出现 `name: dsh-reasoning-effort`。已有安装也使用同一条 `add` 命令更新。开发体验可将 `#v0.9.0` 换成 `#main`，但主分支可能包含未发布改动。
+确认输出中出现 `name: '@ayanehana/dsh-reasoning-effort'`（引号形式可能不同）。已有 npm 安装也使用同一条 `add` 命令更新。
+
+GitHub 安装地址仍为 `github:HanaAyane/dsh-reasoning-effort#v0.9.0`，该历史发行版的包名为 `dsh-reasoning-effort`。开发体验可将 `#v0.9.0` 换成 `#main`，但主分支可能包含未发布改动。
 
 也可以从 [v0.9.0 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz)。
 
@@ -74,7 +82,7 @@ dsh --profile web --dump-config
 ```text
 请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.0。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -98,14 +106,14 @@ dsh --profile web --dump-config
 2. 点击 **添加插件**，在 **包名或地址** 中填写：
 
    ```text
-   github:HanaAyane/dsh-reasoning-effort#v0.9.0
+   @ayanehana/dsh-reasoning-effort@0.9.0
    ```
 
    这里填写的是插件地址，不是 `dsh plugin ...` 命令。
 3. 等待页面解析插件信息，确认来源和版本后安装。
-4. 安装完成后，在 **已安装插件** 中确认 `dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。
+4. 安装完成后，在 **已安装插件** 中确认 `@ayanehana/dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。
 
-若通过 GitHub 仓库安装失败，也可在 **包名或地址** 中填写本版本已构建的插件包地址：
+若从 npm 安装失败，也可在 **包名或地址** 中填写 GitHub 历史发行版的插件包地址（包名为 `dsh-reasoning-effort`，切换来源前请先卸载原包）：
 
 ```text
 https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz
@@ -209,7 +217,7 @@ entries:
 2. 找到“外观”下方的 **大肥鱼滑块**。
 3. 关闭开关，再回到模型入口。
 
-<img src="assets/readme/settings.webp" alt="DeepSeek Harness 通用设置中的推理强度滑块和大肥鱼滑块开关" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/settings.webp" alt="DeepSeek Harness 通用设置中的推理强度滑块和大肥鱼滑块开关" width="100%">
 
 大肥鱼只替换按钮外观，不改变档位吸附、键盘控制、辐射特效或模型选择。拖动时动画会自动加速；系统启用“减少动态效果”后会停留在稳定帧。
 
@@ -244,15 +252,17 @@ entries:
 dsh --profile web --dump-config
 ```
 
-Web 配置中应当出现 `name: dsh-reasoning-effort`。桌面端请在应用的 **插件 → 已安装插件** 中确认插件已启用。
+npm 安装的 Web 配置中应当出现 `name: '@ayanehana/dsh-reasoning-effort'`（引号形式可能不同）；历史 GitHub 发行版使用 `name: dsh-reasoning-effort`。桌面端请在应用的 **插件 → 已安装插件** 中确认插件已启用。
 
 ### 如何卸载
 
 ```powershell
-dsh plugin --profile web remove dsh-reasoning-effort
+dsh plugin --profile web remove @ayanehana/dsh-reasoning-effort
 ```
 
 桌面端请在应用的 **插件** 页面卸载。卸载后重启对应的 Web Host 或桌面应用，原生模型选择器会自动恢复。
+
+历史 GitHub 发行版使用 `dsh plugin --profile web remove dsh-reasoning-effort` 卸载。
 
 ## 开发与构建
 

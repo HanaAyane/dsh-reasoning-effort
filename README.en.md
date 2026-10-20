@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="assets/readme/hero.webp" alt="Actual DSH screenshot with the native model control and plugin effort slider" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/hero.webp" alt="Actual DSH screenshot with the native model control and plugin effort slider" width="100%">
 
 # dsh-reasoning-effort
 
 **DSH’s native model selector, with a reasoning-effort slider inside its Effort entry.**
 
-[中文首页](README.md) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
+[中文首页](README.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
 [![v0.9.0](https://img.shields.io/badge/release-0.9.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
@@ -22,7 +22,7 @@ Keep native model search, groups, and badges. Open Effort to adjust the plugin s
 - **Optional motion** — the runner is on by default, with a plain-thumb option and reduced-motion support.
 - **Guidance when needed** — prefer graphical Settings for missing levels; manual steps and copy actions stay under Advanced configuration. Valid levels need no tutorial.
 
-<img src="assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
 
 [What changed](#whats-new-in-v090) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
@@ -53,18 +53,26 @@ The current release is **plugin `v0.9.0`**. It requires DSH `0.2.1-rc.2` or newe
 
 ## Install and update
 
-The download badge above automatically shows total downloads of all release assets, with a cache delay. Only uploaded assets (such as plugin packages and checksum files) are counted. Repeat downloads count separately; these figures are not plugin installation counts or unique users and exclude GitHub-generated source ZIP/TAR downloads and Git clones.
+The download badge shows total downloads of GitHub release assets, with a cache delay. Repeat downloads count separately; these figures are not plugin installation counts or unique users and exclude npm downloads, GitHub-generated source ZIP/TAR downloads, and Git clones.
 
 ### Web: install a pinned release
+
+Install the official npm package `@ayanehana/dsh-reasoning-effort`. The unscoped npm package with the same name is published by another maintainer and points to another repository.
+
+[npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Download the npm 0.9.0 package](https://registry.npmjs.org/@ayanehana/dsh-reasoning-effort/-/dsh-reasoning-effort-0.9.0.tgz). For Desktop, use the package-name installation steps below.
+
+If you previously installed the old `dsh-reasoning-effort` package from GitHub, uninstall it before switching to npm to avoid loading both copies. For Web, run `dsh plugin --profile web remove dsh-reasoning-effort`; for Desktop, uninstall it from the **Plugins** page.
 
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
 dsh --profile web --dump-config
 ```
 
-Confirm that the output includes `name: dsh-reasoning-effort`. Use the same `add` command to update an existing installation. To try development changes, replace `#v0.9.0` with `#main`; the main branch may contain unreleased changes.
+Confirm that the output includes `name: '@ayanehana/dsh-reasoning-effort'` (quoting may vary). Use the same `add` command to update an existing npm installation.
+
+The GitHub address remains `github:HanaAyane/dsh-reasoning-effort#v0.9.0`; that historical release uses the package name `dsh-reasoning-effort`. To try development changes, replace `#v0.9.0` with `#main`; the main branch may contain unreleased changes.
 
 You can also [download the v0.9.0 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz).
 
@@ -74,7 +82,7 @@ You can also [download the v0.9.0 package](https://github.com/HanaAyane/dsh-reas
 ```text
 Install dsh-reasoning-effort v0.9.0 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort#v0.9.0
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -98,14 +106,14 @@ For **DSH Desktop `0.2.1-rc.2`**, install inside the desktop app. No terminal co
 2. Choose **Add plugin** and enter this in **Package name or address**:
 
    ```text
-   github:HanaAyane/dsh-reasoning-effort#v0.9.0
+   @ayanehana/dsh-reasoning-effort@0.9.0
    ```
 
    Enter the package address, not a `dsh plugin ...` command.
 3. Wait for the plugin information to load, verify the source and version, and install.
-4. Confirm that `dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.
+4. Confirm that `@ayanehana/dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.
 
-If installing from the GitHub repository fails, you can also enter the prebuilt release package URL in **Package name or address**:
+If installing from npm fails, you can enter the historical GitHub release package URL in **Package name or address** instead (its package name is `dsh-reasoning-effort`; uninstall the existing package before switching sources):
 
 ```text
 https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz
@@ -209,7 +217,7 @@ The eight-frame runner is **enabled by default**. To switch back to the plain wh
 2. Find **Big Fat Fish slider** below Appearance.
 3. Disable it and return to the model control.
 
-<img src="assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="100%">
 
 The runner changes only the thumb artwork. Snapping, keyboard control, radiation effects, and model selection remain unchanged. It animates faster while dragging and freezes on a stable frame when reduced motion is enabled.
 
@@ -242,15 +250,17 @@ Open an [issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues) with y
 dsh --profile web --dump-config
 ```
 
-The Web output should contain `name: dsh-reasoning-effort`. For Desktop, confirm the plugin is enabled under **Plugins → Installed plugins** in the app.
+For npm installations, the Web output should contain `name: '@ayanehana/dsh-reasoning-effort'` (quoting may vary); historical GitHub releases use `name: dsh-reasoning-effort`. For Desktop, confirm the plugin is enabled under **Plugins → Installed plugins** in the app.
 
 ### Uninstall
 
 ```powershell
-dsh plugin --profile web remove dsh-reasoning-effort
+dsh plugin --profile web remove @ayanehana/dsh-reasoning-effort
 ```
 
 For Desktop, uninstall from the in-app **Plugins** page. Restart the corresponding Web Host or desktop app afterward; the native model selector will return automatically.
+
+For historical GitHub releases, uninstall with `dsh plugin --profile web remove dsh-reasoning-effort`.
 
 ## Development
 

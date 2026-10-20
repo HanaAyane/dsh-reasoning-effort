@@ -1,5 +1,5 @@
 {
-  "name": "dsh-reasoning-effort",
+  "name": "@ayanehana/dsh-reasoning-effort",
   "version": "0.9.0",
   "description": "Native DeepSeek Harness model selector integration with a reasoning-effort slider, model-defined levels, animated runner, and Settings-first guidance for custom models.",
   "keywords": [
@@ -20,6 +20,10 @@
     "url": "git+https://github.com/HanaAyane/dsh-reasoning-effort.git"
   },
   "homepage": "https://github.com/HanaAyane/dsh-reasoning-effort#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "bugs": {
     "url": "https://github.com/HanaAyane/dsh-reasoning-effort/issues"
   },

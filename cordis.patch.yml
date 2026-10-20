@@ -3,4 +3,4 @@
 # their profile patch row with the same id.
 - insert:
     - id: reasoning-effort
-      name: 'dsh-reasoning-effort'
+      name: '@ayanehana/dsh-reasoning-effort'
