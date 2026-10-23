@@ -114,6 +114,8 @@ dsh --profile web --dump-config
 3. 等待页面解析插件信息，确认来源和版本后安装。
 4. 安装完成后，在 **已安装插件** 中确认 `@ayanehana/dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。
 
+若提示「没有匹配的版本」，请先按[安装失败排查](#安装时提示没有匹配的版本)检查日志和安装源；更换插件包地址不一定能解决已有依赖的版本解析问题。
+
 若从 npm 安装失败，也可在 **包名或地址** 中填写 GitHub 历史发行版的插件包地址（包名为 `dsh-reasoning-effort`，切换来源前请先卸载原包）：
 
 ```text
@@ -225,6 +227,14 @@ entries:
 同一页面中的 **推理强度滑块** 总开关可以临时关闭整个增强控件。关闭后无需卸载，DSH 原生模型选择器会立即恢复。两个开关都只保存在当前浏览器。
 
 ## 常见问题
+
+### 安装时提示「没有匹配的版本」
+
+即使页面能正常显示插件名称和版本，安装仍可能失败。安装过程中的 `pnpm add` 会重新解析 Profile 的依赖树，失败的包可能是 **Profile 中已有的其他依赖**，不一定是本插件。使用 npmmirror 等镜像源时，镜像同步延迟可能导致所需版本暂时不可用；[Issue #24](https://github.com/HanaAyane/dsh-reasoning-effort/issues/24) 的提交者反馈切换到 npm 官方源后安装成功。
+
+1. Windows 桌面端请打开本次安装对应的日志：`%USERPROFILE%\.dsh\profiles\desktop\.plugin-manager\logs\<operation>\pnpm.log`（`<operation>` 为对应操作的目录名）。查找 `ERR_PNPM_NO_MATCHING_VERSION`，确认实际失败的包名、版本和安装源。
+2. 如果日志指向镜像源缺少所需版本，将实际生效的安装源改为 `https://registry.npmjs.org` 后，在桌面应用内重试。若安装源来自用户目录下的 `.npmrc`，请检查其中的 `registry` 配置。
+3. 若官方源仍报同样错误，请继续核对日志中的具体依赖和版本要求；不要仅凭弹窗就判断本插件版本不存在。反馈时附上相关错误，并隐去令牌和凭据。
 
 ### 安装后看不到滑块
 

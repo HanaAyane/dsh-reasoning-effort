@@ -114,6 +114,8 @@ For **DSH Desktop `0.2.1-rc.2`**, install inside the desktop app. No terminal co
 3. Wait for the plugin information to load, verify the source and version, and install.
 4. Confirm that `@ayanehana/dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.
 
+If installation reports “No matching version”, first [check the installation log and registry](#installation-reports-no-matching-version). Changing the plugin package URL may not resolve version errors in existing dependencies.
+
 If installing from npm fails, you can enter the historical GitHub release package URL in **Package name or address** instead (its package name is `dsh-reasoning-effort`; uninstall the existing package before switching sources):
 
 ```text
@@ -225,6 +227,14 @@ The runner changes only the thumb artwork. Snapping, keyboard control, radiation
 The **Reasoning effort selector** switch on the same page disables the complete enhancement without uninstalling it. DSH's built-in model selector returns immediately. Both preferences stay in the current browser.
 
 ## Troubleshooting
+
+### Installation reports “No matching version”
+
+Installation can fail even when the page displays the plugin name and version correctly. During installation, `pnpm add` resolves the Profile's dependency tree again, so the failing package may be **another dependency already in the Profile**, rather than this plugin. Mirrors such as npmmirror can lag behind the upstream registry and temporarily lack a required version. The reporter of [Issue #24](https://github.com/HanaAyane/dsh-reasoning-effort/issues/24) confirmed that switching to the official npm registry resolved their installation failure.
+
+1. On Windows Desktop, open the log for the failed installation: `%USERPROFILE%\.dsh\profiles\desktop\.plugin-manager\logs\<operation>\pnpm.log` (`<operation>` is the directory for that operation). Look for `ERR_PNPM_NO_MATCHING_VERSION` and identify the actual failing package, version, and registry.
+2. If the log indicates that a mirror lacks the required version, change the effective registry to `https://registry.npmjs.org` and retry in the desktop app. If the registry comes from `.npmrc` in your user directory, check its `registry` setting.
+3. If the official registry returns the same error, check the specific dependency and version requirements in the log; the dialog alone does not establish that this plugin's version is missing. Include the relevant error when reporting the problem, with tokens and credentials removed.
 
 ### The slider does not appear
 
