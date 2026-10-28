@@ -1223,22 +1223,36 @@ function NativeEffortPanel(props: ModelSeatProps) {
 
 function ReasoningEffortSetting({ t }: PropsLocale<typeof NS>) {
   const enabled = useSyncExternalStore(enabledStore.subscribe, enabledStore.getSnapshot)
+  const [showCompatibilityHint, setShowCompatibilityHint] = useState(false)
+
+  useEffect(() => {
+    if (!enabled) {
+      setShowCompatibilityHint(false)
+      return
+    }
+    if (!showCompatibilityHint) return
+    const timer = window.setTimeout(() => setShowCompatibilityHint(false), 5000)
+    return () => window.clearTimeout(timer)
+  }, [enabled, showCompatibilityHint])
 
   return (
     <div className="re-setting-row">
       <div className="re-setting-copy">
         <div className="re-setting-title">{t('settings.effort.title')}</div>
         <div className="re-setting-description">{t('settings.effort.description')}</div>
+        {enabled && showCompatibilityHint && <div className="re-setting-description" role="status">{t('settings.effort.compatibility')}</div>}
       </div>
       <div className="re-setting-control">
-        <span className="re-setting-state">{enabled ? t('settings.enabled') : t('settings.disabled')}</span>
         <button
           type="button"
           role="switch"
           aria-label={t('settings.effort.aria')}
           aria-checked={enabled}
-          className={`re-setting-switch${enabled ? ' is-on' : ''}`}
-          onClick={() => enabledStore.set(!enabled)}
+          className="re-setting-switch"
+          onClick={() => {
+            setShowCompatibilityHint(!enabled)
+            enabledStore.set(!enabled)
+          }}
         >
           <span className="re-setting-switch-knob" aria-hidden="true" />
         </button>
@@ -1258,14 +1272,13 @@ function ChibiThumbSetting({ t }: PropsLocale<typeof NS>) {
         <div className="re-setting-description">{t('settings.chibi.description')}</div>
       </div>
       <div className="re-setting-control">
-        <span className="re-setting-state">{enabled ? t('settings.enabled') : t('settings.disabled')}</span>
         <button
           type="button"
           role="switch"
           aria-label={t('settings.chibi.aria')}
           aria-checked={enabled}
           disabled={!sliderEnabled}
-          className={`re-setting-switch${enabled ? ' is-on' : ''}`}
+          className="re-setting-switch"
           onClick={() => chibiThumbStore.set(!enabled)}
         >
           <span className="re-setting-switch-knob" aria-hidden="true" />

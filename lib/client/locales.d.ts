@@ -78,6 +78,7 @@ export declare const zh: {
     'settings.effort.title': string;
     'settings.effort.description': string;
     'settings.effort.aria': string;
+    'settings.effort.compatibility': string;
     'settings.chibi.title': string;
     'settings.chibi.description': string;
     'settings.chibi.aria': string;
@@ -163,6 +164,7 @@ export declare const en: {
     'settings.effort.title': string;
     'settings.effort.description': string;
     'settings.effort.aria': string;
+    'settings.effort.compatibility': string;
     'settings.chibi.title': string;
     'settings.chibi.description': string;
     'settings.chibi.aria': string;

@@ -411,37 +411,38 @@ export const CSS = `
   line-height: 18px;
 }
 .re-setting-control { display: inline-flex; align-items: center; gap: 10px; flex: none; }
-.re-setting-state { color: var(--dsw-alias-label-secondary, #686c75); font-size: 13px; }
+/* Match DSH ui-primitives/Switch.module.css, including its theme tokens and
+   round corners (the host globally uses superellipses). */
 .re-setting-switch {
+  box-sizing: border-box;
   position: relative;
-  width: 38px;
-  height: 22px;
-  padding: 0;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
   border: 0;
   border-radius: 999px;
-  background: var(--dsw-alias-fill-quaternary, #c7cbd3);
+  corner-shape: round;
+  background: var(--dsw-alias-border-l3);
   cursor: pointer;
-  transition: background 150ms ease;
 }
-.re-setting-switch:hover { filter: brightness(.97); }
-.re-setting-switch:disabled { cursor: not-allowed; opacity: .45; }
+.re-setting-switch:disabled { cursor: default; opacity: .5; }
 .re-setting-switch:focus-visible {
-  outline: 2px solid var(--dsw-static-blue-400, #5d83ff);
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
   outline-offset: 2px;
 }
-.re-setting-switch.is-on { background: var(--dsw-alias-state-business-primary, #4f73ff); }
+.re-setting-switch[aria-checked='true'] { background: var(--dsw-alias-brand-primary); }
 .re-setting-switch-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
+  display: block;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,.2);
-  transition: transform 170ms cubic-bezier(.22,1,.36,1);
+  corner-shape: round;
+  background: var(--dsw-alias-label-primary-foreground);
+  transition: transform 120ms ease;
 }
-.re-setting-switch.is-on .re-setting-switch-knob { transform: translateX(16px); }
+.re-setting-switch[aria-checked='false'] .re-setting-switch-knob { background: var(--dsw-alias-switch-thumb); }
+.re-setting-switch[aria-checked='true'] .re-setting-switch-knob { transform: translateX(16px); }
 body[data-ds-dark-theme] .re-model-menu {
   color: var(--dsw-alias-label-primary, #f2f4f8);
   background: var(--dsw-specific-menu, var(--dsw-alias-bg-layer-3, #202126));

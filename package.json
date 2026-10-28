@@ -1,6 +1,7 @@
 {
   "name": "@ayanehana/dsh-reasoning-effort",
   "version": "0.9.0",
+  "icon": "assets/icon.png",
   "description": "Native DeepSeek Harness model selector integration with a reasoning-effort slider, model-defined levels, animated runner, and Settings-first guidance for custom models.",
   "keywords": [
     "deepseek",
@@ -45,12 +46,16 @@
       "default": "./lib/client/index.js"
     },
     "./cordis.patch.yml": "./cordis.patch.yml",
+    "./icon": "./assets/icon.png",
+    "./locale/*.json": "./locale/*.json",
     "./package.json": "./package.json"
   },
   "files": [
     "lib",
     "src",
+    "locale",
     "assets/chibi-runner-strip.png",
+    "assets/icon.png",
     "design",
     "cordis.patch.yml",
     "README.md",
