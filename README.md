@@ -60,16 +60,16 @@ DSH [`0.2.1-rc.3`](https://github.com/deepseek-ai/deepseek-harness/releases/tag/
 
 ### Web：安装固定发行版
 
-v0.9.1 请使用下方 GitHub Release 插件包安装。npm 官方包为 `@ayanehana/dsh-reasoning-effort`，当前仍为 0.9.0；无作用域的同名包由其他维护者发布。
+推荐从 npm 安装官方包 `@ayanehana/dsh-reasoning-effort@0.9.1`。无作用域的同名包由其他维护者发布。
 
-[npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [下载 v0.9.1 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz)。桌面端可直接使用下方的插件包地址安装步骤。
+[npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [下载 v0.9.1 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz)。桌面端可直接使用下方的包名安装步骤。
 
 如果此前已通过 GitHub 安装旧的 `dsh-reasoning-effort`，切换到带作用域的新包前请先卸载旧包；Web 使用 `dsh plugin --profile web remove dsh-reasoning-effort`，桌面端在 **插件** 页面卸载，避免重复加载。
 
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
 dsh --profile web --dump-config
 ```
 
@@ -85,7 +85,7 @@ GitHub 安装地址仍为 `github:HanaAyane/dsh-reasoning-effort#v0.9.1`，本�
 ```text
 请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.1。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -109,16 +109,16 @@ dsh --profile web --dump-config
 2. 点击 **添加插件**，在 **包名或地址** 中填写：
 
    ```text
-   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
+   @ayanehana/dsh-reasoning-effort@0.9.1
    ```
 
-   这里填写的是插件地址，不是 `dsh plugin ...` 命令。
+   这里填写的是插件包名或地址，不是 `dsh plugin ...` 命令。
 3. 等待页面解析插件信息，确认来源和版本后安装。
 4. 安装完成后，在 **已安装插件** 中确认 `@ayanehana/dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。
 
 若提示「没有匹配的版本」，请先按[安装失败排查](#安装时提示没有匹配的版本)检查日志和安装源；更换插件包地址不一定能解决已有依赖的版本解析问题。
 
-v0.9.1 在 **包名或地址** 中使用以下 Release 插件包地址：
+也可在 **包名或地址** 中使用以下 Release 插件包地址：
 
 ```text
 https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz

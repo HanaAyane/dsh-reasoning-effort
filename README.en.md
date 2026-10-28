@@ -60,16 +60,16 @@ The download badges separately show total downloads of GitHub release assets and
 
 ### Web: install a pinned release
 
-For v0.9.1, install the GitHub Release package below. The official npm package is `@ayanehana/dsh-reasoning-effort`, currently at 0.9.0; the unscoped package belongs to another maintainer.
+Install the official npm package `@ayanehana/dsh-reasoning-effort@0.9.1`. The unscoped package belongs to another maintainer.
 
-[npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Download the v0.9.1 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz). For Desktop, use the package-URL installation steps below.
+[npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Download the v0.9.1 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz). For Desktop, use the package-name installation steps below.
 
 If you previously installed the old `dsh-reasoning-effort` package from GitHub, uninstall it before switching to the scoped package to avoid loading both copies. For Web, run `dsh plugin --profile web remove dsh-reasoning-effort`; for Desktop, uninstall it from the **Plugins** page.
 
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
 dsh --profile web --dump-config
 ```
 
@@ -85,7 +85,7 @@ You can also [download the v0.9.1 package](https://github.com/HanaAyane/dsh-reas
 ```text
 Install dsh-reasoning-effort v0.9.1 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -109,16 +109,16 @@ For **DSH Desktop `0.2.1-rc.2` / `0.2.1-rc.3`**, install inside the desktop app.
 2. Choose **Add plugin** and enter this in **Package name or address**:
 
    ```text
-   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
+   @ayanehana/dsh-reasoning-effort@0.9.1
    ```
 
-   Enter the package address, not a `dsh plugin ...` command.
+   Enter the package name or address, not a `dsh plugin ...` command.
 3. Wait for the plugin information to load, verify the source and version, and install.
 4. Confirm that `@ayanehana/dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.
 
 If installation reports “No matching version”, first [check the installation log and registry](#installation-reports-no-matching-version). Changing the plugin package URL may not resolve version errors in existing dependencies.
 
-The v0.9.1 release package URL for **Package name or address** is:
+Alternatively, use this release package URL in **Package name or address**:
 
 ```text
 https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
