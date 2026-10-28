@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/hero.webp" alt="Actual DSH screenshot with the native model control and plugin effort slider" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/hero.webp" alt="Actual DSH screenshot with the native model control and plugin effort slider" width="100%">
 
 # dsh-reasoning-effort
 
@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.9.0](https://img.shields.io/badge/release-0.9.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0)
+[![v0.9.1](https://img.shields.io/badge/release-0.9.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
@@ -23,34 +23,36 @@ Keep native model search, groups, and badges. Open Effort to adjust the plugin s
 - **Optional motion** — the runner is on by default, with a plain-thumb option and reduced-motion support.
 - **Guidance when needed** — prefer graphical Settings for missing levels; manual steps and copy actions stay under Advanced configuration. Valid levels need no tutorial.
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
 
-[What changed](#whats-new-in-v090) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+[What changed](#whats-new-in-v091) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
-## What's new in v0.9.0
+## What's new in v0.9.1
 
-- **Native selector integration** — retain DSH model search, groups, and badges; open the plugin slider from the native Effort entry. No host files are modified.
-- **Clearer adjustment** — one dot per level, a highlighted selection and a visible level name. Keep the menu open after adjustment in a compact pane.
-- **Settings first** — lead with the graphical configuration path; fold YAML, manual steps, and Copy for your agent under Advanced configuration with editing risks explained.
-- **Less interruption** — fix tutorial flashes, a repeated-load freeze, and unnecessary guidance for models with valid levels.
+- **Brief compatibility hint** — show troubleshooting advice for five seconds whenever the effort slider is enabled. Disabling it hides the hint immediately; opening Settings does not trigger it.
+- **Native switch appearance** — match DSH switch dimensions, theme colors, round thumbs, and animation; remove the extra Enabled/Disabled text.
+- **Plugin icon** — use a right-facing Big Fat Fish running frame from the existing eight-frame animation in the installed plugin list.
+- **Localized description** — follow the DSH interface language in Chinese or English, with English as the fallback.
 
-Thank you to [@Y1zy](https://github.com/Y1zy) for the detailed feedback in [#22](https://github.com/HanaAyane/dsh-reasoning-effort/issues/22) and [#23](https://github.com/HanaAyane/dsh-reasoning-effort/issues/23). These suggestions helped clarify the division of responsibilities: reuse the native selector and focus the plugin on effort adjustment and visualization.
+Thanks to [@oinzc](https://github.com/oinzc) for the feedback in [#25](https://github.com/HanaAyane/dsh-reasoning-effort/issues/25). The hint offers troubleshooting advice; it does not detect conflicts or force a replacement selector. A slider may be unmounted during normal use, such as when its menu is closed, so simple detection can produce false alarms while monitoring third-party UI adds maintenance cost.
 
-See the [v0.9.0 release notes](.github/releases/v0.9.0.md) and [CHANGELOG](CHANGELOG.md). Native integration was checked against DSH `0.2.1-rc.2` and needs revalidation after host upgrades. Disabling the plugin or slider restores the native component.
+See the [v0.9.1 release notes](.github/releases/v0.9.1.md) and [CHANGELOG](CHANGELOG.md).
 
 ## Version support policy
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.9.0`**. It requires DSH `0.2.1-rc.2` or newer for Web and Desktop profiles. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.9.1`**. It supports DSH `0.2.1-rc.2` and `0.2.1-rc.3` for Web and Desktop profiles; the minimum version remains `0.2.1-rc.2`. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
-| Plugin release | [v0.9.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0) |
-| Web | DSH `0.2.1-rc.2` or newer; use the `web` profile |
-| Desktop | DSH Desktop `0.2.1-rc.2`; use the `desktop` profile |
-| Upgrade notes | Install `v0.9.0`, then restart the corresponding Web Host or desktop app |
+| Plugin release | [v0.9.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1) |
+| Web | DSH `0.2.1-rc.2` and `0.2.1-rc.3`; use the `web` profile |
+| Desktop | DSH Desktop `0.2.1-rc.2` and `0.2.1-rc.3`; use the `desktop` profile |
+| Upgrade notes | Install `v0.9.1`, then restart the corresponding Web Host or desktop app |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
+
+Continue using plugin `v0.9.1` with DSH [`0.2.1-rc.3`](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.3). This support documentation update is based on upstream changes; runtime validation on `rc.3` was not performed for this update.
 
 ## Install and update
 
@@ -58,32 +60,32 @@ The download badges separately show total downloads of GitHub release assets and
 
 ### Web: install a pinned release
 
-Install the official npm package `@ayanehana/dsh-reasoning-effort`. The unscoped npm package with the same name is published by another maintainer and points to another repository.
+For v0.9.1, install the GitHub Release package below. The official npm package is `@ayanehana/dsh-reasoning-effort`, currently at 0.9.0; the unscoped package belongs to another maintainer.
 
-[npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Download the npm 0.9.0 package](https://registry.npmjs.org/@ayanehana/dsh-reasoning-effort/-/dsh-reasoning-effort-0.9.0.tgz). For Desktop, use the package-name installation steps below.
+[npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Download the v0.9.1 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz). For Desktop, use the package-URL installation steps below.
 
-If you previously installed the old `dsh-reasoning-effort` package from GitHub, uninstall it before switching to npm to avoid loading both copies. For Web, run `dsh plugin --profile web remove dsh-reasoning-effort`; for Desktop, uninstall it from the **Plugins** page.
+If you previously installed the old `dsh-reasoning-effort` package from GitHub, uninstall it before switching to the scoped package to avoid loading both copies. For Web, run `dsh plugin --profile web remove dsh-reasoning-effort`; for Desktop, uninstall it from the **Plugins** page.
 
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
 dsh --profile web --dump-config
 ```
 
 Confirm that the output includes `name: '@ayanehana/dsh-reasoning-effort'` (quoting may vary). Use the same `add` command to update an existing npm installation.
 
-The GitHub address remains `github:HanaAyane/dsh-reasoning-effort#v0.9.0`; that historical release uses the package name `dsh-reasoning-effort`. To try development changes, replace `#v0.9.0` with `#main`; the main branch may contain unreleased changes.
+The GitHub address remains `github:HanaAyane/dsh-reasoning-effort#v0.9.1`; this release uses the package name `@ayanehana/dsh-reasoning-effort`. To try development changes, replace `#v0.9.1` with `#main`; the main branch may contain unreleased changes.
 
-You can also [download the v0.9.0 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz).
+You can also [download the v0.9.1 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz).
 
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
 
 ```text
-Install dsh-reasoning-effort v0.9.0 for the DeepSeek Harness web profile.
+Install dsh-reasoning-effort v0.9.1 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -101,13 +103,13 @@ Open the model control below the composer. Choose **Model** for native search an
 
 ### Install in DSH Desktop
 
-For **DSH Desktop `0.2.1-rc.2`**, install inside the desktop app. No terminal command registration or prior app exit is required.
+For **DSH Desktop `0.2.1-rc.2` / `0.2.1-rc.3`**, install inside the desktop app. No terminal command registration or prior app exit is required.
 
 1. Open DSH Desktop and select **Plugins** in the sidebar.
 2. Choose **Add plugin** and enter this in **Package name or address**:
 
    ```text
-   @ayanehana/dsh-reasoning-effort@0.9.0
+   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
    ```
 
    Enter the package address, not a `dsh plugin ...` command.
@@ -116,10 +118,10 @@ For **DSH Desktop `0.2.1-rc.2`**, install inside the desktop app. No terminal co
 
 If installation reports “No matching version”, first [check the installation log and registry](#installation-reports-no-matching-version). Changing the plugin package URL may not resolve version errors in existing dependencies.
 
-If installing from npm fails, you can enter the historical GitHub release package URL in **Package name or address** instead (its package name is `dsh-reasoning-effort`; uninstall the existing package before switching sources):
+The v0.9.1 release package URL for **Package name or address** is:
 
 ```text
-https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz
+https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
 ```
 
 Desktop uses its own `desktop` profile; plugins installed in the `web` profile do not carry over. If the terminal reports `profile "desktop" is managed exclusively by the Electron application`, that CLI is not allowed to manage the Desktop profile. Use the in-app installer above instead of changing the profile name or bypassing the restriction. See the [official Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.md#installation-ownership).
@@ -220,7 +222,7 @@ The eight-frame runner is **enabled by default**. To switch back to the plain wh
 2. Find **Big Fat Fish slider** below Appearance.
 3. Disable it and return to the model control.
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="100%">
 
 The runner changes only the thumb artwork. Snapping, keyboard control, radiation effects, and model selection remain unchanged. It animates faster while dragging and freezes on a stable frame when reduced motion is enabled.
 

@@ -1,6 +1,6 @@
 {
   "name": "@ayanehana/dsh-reasoning-effort",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "icon": "assets/icon.png",
   "description": "Native DeepSeek Harness model selector integration with a reasoning-effort slider, model-defined levels, animated runner, and Settings-first guidance for custom models.",
   "keywords": [

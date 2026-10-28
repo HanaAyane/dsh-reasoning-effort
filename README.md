@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/hero.webp" alt="DSH 原生模型入口与插件推理滑块的实际界面截图" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/hero.webp" alt="DSH 原生模型入口与插件推理滑块的实际界面截图" width="100%">
 
 # dsh-reasoning-effort
 
@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.9.0](https://img.shields.io/badge/release-0.9.0-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0)
+[![v0.9.1](https://img.shields.io/badge/release-0.9.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Releases 附件累计下载次数](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
@@ -23,34 +23,36 @@
 - **可选动态外观**：默认启用大肥鱼，支持普通按钮及系统“减少动态效果”设置。
 - **按需配置指引**：缺少档位时优先展示图形界面设置路径；手工步骤和复制操作折叠到高级配置，已有有效档位不再提示。
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/themes.webp" alt="插件滑块在 DSH 深色与浅色主题中的实际截图" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="插件滑块在 DSH 深色与浅色主题中的实际截图" width="100%">
 
-[本次更新](#v090-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
+[本次更新](#v091-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
 
-## v0.9.0 更新内容
+## v0.9.1 更新内容
 
-- **原生选择器接入**：保留 DSH 模型入口、搜索、分组与徽标，在原生“推理等级”入口展示插件滑块，无需修改宿主文件。
-- **更直观的调节**：每档对应一个圆点刻度，当前档位高亮并显示名称；拖动后保持弹窗打开，页面更紧凑。
-- **图形设置优先**：配置教程置顶，YAML、手动步骤及“复制给 Agent”收进高级配置，并说明手动修改风险。
-- **减少打扰**：修复打开时教程闪现、重复加载导致卡死，以及已配置档位仍显示提示的问题。
+- **短暂兼容性提示**：每次开启推理强度滑块时显示排查提示，5 秒后自动消失；关闭开关立即隐藏，进入设置页不自动提示。
+- **原生开关外观**：两个设置开关对齐 DSH 原生尺寸、主题配色、圆形滑钮与动画，移除额外的“启用/停用”文字。
+- **插件图标**：已安装插件列表使用向右奔跑的大肥鱼 Q 版图标，取自现有八帧动画。
+- **多语言介绍**：插件介绍跟随 DSH 界面语言显示中文或英文，其他语言回退为英文。
 
-感谢 [@Y1zy](https://github.com/Y1zy) 在 [#22](https://github.com/HanaAyane/dsh-reasoning-effort/issues/22) 和 [#23](https://github.com/HanaAyane/dsh-reasoning-effort/issues/23) 中的细致反馈。这些建议促使我重新考虑插件与宿主的分工：直接复用原生选择器，让插件专注于推理调节和可视化。
+感谢 [@oinzc](https://github.com/oinzc) 在 [#25](https://github.com/HanaAyane/dsh-reasoning-effort/issues/25) 中的反馈。提示仅提供排查方向，不自动检测冲突，也不强制替换模型入口：菜单未打开等正常状态下滑块也可能未挂载，简单检测容易误报，而持续监控第三方界面会增加维护成本。
 
-完整记录见 [v0.9.0 发布说明](.github/releases/v0.9.0.md) 和 [CHANGELOG](CHANGELOG.md)。原生接入按 DSH `0.2.1-rc.2` 验证，宿主升级后需重新验证；停用插件或关闭滑块后恢复原生组件。
+完整记录见 [v0.9.1 发布说明](.github/releases/v0.9.1.md) 和 [CHANGELOG](CHANGELOG.md)。
 
 ## 版本支持政策
 
 本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
 
-当前发行版为 **插件 `v0.9.0`**，以 DSH `0.2.1-rc.2` 为最低版本，适用于 Web 和 Desktop Profile。DSH `0.2.0` RC 用户请继续使用 [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
+当前发行版为 **插件 `v0.9.1`**，支持 DSH `0.2.1-rc.2` 和 `0.2.1-rc.3`，最低版本仍为 `0.2.1-rc.2`，适用于 Web 和 Desktop Profile。DSH `0.2.0` RC 用户请继续使用 [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
 
 | 项目 | 当前说明 |
 | --- | --- |
-| 插件发行版 | [v0.9.0](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.0) |
-| Web | DSH `0.2.1-rc.2` 起；使用 `web` Profile |
-| 桌面端 | DSH Desktop `0.2.1-rc.2`；使用 `desktop` Profile |
-| 升级说明 | 安装 `v0.9.0` 后重新启动对应的 Web Host 或桌面应用 |
+| 插件发行版 | [v0.9.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1) |
+| Web | DSH `0.2.1-rc.2`、`0.2.1-rc.3`；使用 `web` Profile |
+| 桌面端 | DSH Desktop `0.2.1-rc.2`、`0.2.1-rc.3`；使用 `desktop` Profile |
+| 升级说明 | 安装 `v0.9.1` 后重新启动对应的 Web Host 或桌面应用 |
 | alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
+
+DSH [`0.2.1-rc.3`](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.3) 继续使用插件 `v0.9.1`。本次根据上游变更更新支持说明，未进行 `rc.3` 的运行验证。
 
 ## 安装与更新
 
@@ -58,32 +60,32 @@
 
 ### Web：安装固定发行版
 
-推荐从 npm 安装官方包 `@ayanehana/dsh-reasoning-effort`。npm 上无作用域的同名包由其他维护者发布，对应其他仓库。
+v0.9.1 请使用下方 GitHub Release 插件包安装。npm 官方包为 `@ayanehana/dsh-reasoning-effort`，当前仍为 0.9.0；无作用域的同名包由其他维护者发布。
 
-[npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [下载 npm 0.9.0 插件包](https://registry.npmjs.org/@ayanehana/dsh-reasoning-effort/-/dsh-reasoning-effort-0.9.0.tgz)。桌面端可直接使用下方的包名安装步骤。
+[npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [下载 v0.9.1 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz)。桌面端可直接使用下方的插件包地址安装步骤。
 
-如果此前已通过 GitHub 安装旧的 `dsh-reasoning-effort`，切换到 npm 包前请先卸载旧包；Web 使用 `dsh plugin --profile web remove dsh-reasoning-effort`，桌面端在 **插件** 页面卸载，避免重复加载。
+如果此前已通过 GitHub 安装旧的 `dsh-reasoning-effort`，切换到带作用域的新包前请先卸载旧包；Web 使用 `dsh plugin --profile web remove dsh-reasoning-effort`，桌面端在 **插件** 页面卸载，避免重复加载。
 
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
 dsh --profile web --dump-config
 ```
 
 确认输出中出现 `name: '@ayanehana/dsh-reasoning-effort'`（引号形式可能不同）。已有 npm 安装也使用同一条 `add` 命令更新。
 
-GitHub 安装地址仍为 `github:HanaAyane/dsh-reasoning-effort#v0.9.0`，该历史发行版的包名为 `dsh-reasoning-effort`。开发体验可将 `#v0.9.0` 换成 `#main`，但主分支可能包含未发布改动。
+GitHub 安装地址仍为 `github:HanaAyane/dsh-reasoning-effort#v0.9.1`，本版本包名为 `@ayanehana/dsh-reasoning-effort`。开发体验可将 `#v0.9.1` 换成 `#main`，但主分支可能包含未发布改动。
 
-也可以从 [v0.9.0 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz)。
+也可以从 [v0.9.1 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz)。
 
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
 
 ```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.0。
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.1。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.0
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -101,13 +103,13 @@ dsh --profile web --dump-config
 
 ### DSH 桌面端安装
 
-适用于 **DSH Desktop `0.2.1-rc.2`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
+适用于 **DSH Desktop `0.2.1-rc.2` / `0.2.1-rc.3`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
 
 1. 打开 DSH Desktop，在侧栏进入 **插件** 页面。
 2. 点击 **添加插件**，在 **包名或地址** 中填写：
 
    ```text
-   @ayanehana/dsh-reasoning-effort@0.9.0
+   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
    ```
 
    这里填写的是插件地址，不是 `dsh plugin ...` 命令。
@@ -116,10 +118,10 @@ dsh --profile web --dump-config
 
 若提示「没有匹配的版本」，请先按[安装失败排查](#安装时提示没有匹配的版本)检查日志和安装源；更换插件包地址不一定能解决已有依赖的版本解析问题。
 
-若从 npm 安装失败，也可在 **包名或地址** 中填写 GitHub 历史发行版的插件包地址（包名为 `dsh-reasoning-effort`，切换来源前请先卸载原包）：
+v0.9.1 在 **包名或地址** 中使用以下 Release 插件包地址：
 
 ```text
-https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.0/dsh-reasoning-effort-0.9.0.tgz
+https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
 ```
 
 桌面端使用独立的 `desktop` Profile；安装在 `web` Profile 的插件不会自动出现在桌面端。若终端提示 `profile "desktop" is managed exclusively by the Electron application`，说明当前 CLI 不允许管理 Desktop Profile，请改用上述应用内入口，不要修改 Profile 名称或绕过限制。参见 [DSH Desktop 官方说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.zh.md#installation-ownership)。
@@ -220,7 +222,7 @@ entries:
 2. 找到“外观”下方的 **大肥鱼滑块**。
 3. 关闭开关，再回到模型入口。
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.0/assets/readme/settings.webp" alt="DeepSeek Harness 通用设置中的推理强度滑块和大肥鱼滑块开关" width="100%">
+<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/settings.webp" alt="DeepSeek Harness 通用设置中的推理强度滑块和大肥鱼滑块开关" width="100%">
 
 大肥鱼只替换按钮外观，不改变档位吸附、键盘控制、辐射特效或模型选择。拖动时动画会自动加速；系统启用“减少动态效果”后会停留在稳定帧。
 

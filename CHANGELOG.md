@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.9.1] - 2026-10-28
+
+### Changed
+
+- Show a five-second compatibility hint when enabling the effort slider, without automatic conflict detection or forced selector replacement.
+- Match both settings switches to DSH native dimensions, theme colors, round thumbs, and animation; remove redundant state labels.
+- Add a right-facing Big Fat Fish icon extracted from the existing running animation.
+- Localize the installed plugin description in Chinese and English, with an English fallback.
+- Update bilingual installation and DSH rc.3 support documentation.
+
+Thanks to @oinzc for the feedback in #25.
+
 ## [0.9.0] - 2026-10-19
 
 ### Added
