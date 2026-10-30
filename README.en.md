@@ -42,17 +42,17 @@ See the [v0.9.1 release notes](.github/releases/v0.9.1.md) and [CHANGELOG](CHANG
 
 This plugin targets relatively stable **DSH RC versions** for compatibility work, testing, and bug fixes. **Individual alpha versions are not maintained.** During alpha development, client APIs, dependencies, and plugin loading may undergo frequent breaking changes. Supporting multiple transitional versions increases maintenance costs and makes compatibility difficult to sustain.
 
-The current release is **plugin `v0.9.1`**. It supports DSH `0.2.1-rc.2` and `0.2.1-rc.3` for Web and Desktop profiles; the minimum version remains `0.2.1-rc.2`. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
+The current release is **plugin `v0.9.1`**. It supports DSH `0.2.1-rc.2`, `0.2.1-rc.3`, and `0.2.1-rc.5` for Web and Desktop profiles; the minimum version remains `0.2.1-rc.2`. DSH `0.2.0` RC users should remain on [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1). Desktop renders DSH's Web client but keeps separate plugin installation and activation state. For DSH `0.1.x`, continue using [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3). RC means release candidate; it does not imply automatic compatibility with every past or future RC.
 
 | Item | Current status |
 | --- | --- |
 | Plugin release | [v0.9.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1) |
-| Web | DSH `0.2.1-rc.2` and `0.2.1-rc.3`; use the `web` profile |
-| Desktop | DSH Desktop `0.2.1-rc.2` and `0.2.1-rc.3`; use the `desktop` profile |
+| Web | DSH `0.2.1-rc.2`, `0.2.1-rc.3`, and `0.2.1-rc.5`; use the `web` profile |
+| Desktop | DSH Desktop `0.2.1-rc.2`, `0.2.1-rc.3`, and `0.2.1-rc.5`; use the `desktop` profile |
 | Upgrade notes | Install `v0.9.1`, then restart the corresponding Web Host or desktop app |
 | Alpha versions | No separate adaptations; patch locally or switch to the target RC |
 
-Continue using plugin `v0.9.1` with DSH [`0.2.1-rc.3`](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.3). This support documentation update is based on upstream changes; runtime validation on `rc.3` was not performed for this update.
+Continue using plugin `v0.9.1` with DSH `0.2.1-rc.5`. Based on user feedback from actual use, no compatibility issues were found after this client upgrade, and no additional adaptations are required.
 
 ## Install and update
 
@@ -103,7 +103,7 @@ Open the model control below the composer. Choose **Model** for native search an
 
 ### Install in DSH Desktop
 
-For **DSH Desktop `0.2.1-rc.2` / `0.2.1-rc.3`**, install inside the desktop app. No terminal command registration or prior app exit is required.
+For **DSH Desktop `0.2.1-rc.2` / `0.2.1-rc.3` / `0.2.1-rc.5`**, install inside the desktop app. No terminal command registration or prior app exit is required.
 
 1. Open DSH Desktop and select **Plugins** in the sidebar.
 2. Choose **Add plugin** and enter this in **Package name or address**:
