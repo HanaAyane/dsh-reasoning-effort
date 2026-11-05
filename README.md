@@ -40,19 +40,7 @@
 
 ## 版本支持政策
 
-本插件仅针对相对稳定的 **DSH RC 版本**进行适配、测试和问题修复，**不单独维护 alpha 版本**。alpha 阶段的客户端 API、依赖结构和插件加载机制可能频繁发生破坏性变更；持续兼容多个过渡版本会增加维护成本，也难以保证可靠性。
-
-当前发行版为 **插件 `v0.9.1`**，支持 DSH `0.2.1-rc.2`、`0.2.1-rc.3`、`0.2.1-rc.5` 和 `0.2.2-rc.1`，最低版本仍为 `0.2.1-rc.2`，适用于 Web 和 Desktop Profile。DSH `0.2.0` RC 用户请继续使用 [v0.8.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.8.1)。桌面端使用 DSH 的 Web 客户端界面，但有独立的插件安装与激活状态。DSH `0.1.x` 用户请继续使用 [v0.7.3](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.7.3)。RC 仍属于候选发布版本，不代表所有历史或未来 RC 都自动兼容。
-
-| 项目 | 当前说明 |
-| --- | --- |
-| 插件发行版 | [v0.9.1](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1) |
-| Web | DSH `0.2.1-rc.2`、`0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`；使用 `web` Profile |
-| 桌面端 | DSH Desktop `0.2.1-rc.2`、`0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`；使用 `desktop` Profile |
-| 升级说明 | 安装 `v0.9.1` 后重新启动对应的 Web Host 或桌面应用 |
-| alpha 版本 | 不单独适配，请自行临时修复或切换至目标 RC |
-
-DSH `0.2.2-rc.1` 继续使用插件 `v0.9.1`，安装与更新方式见下文。
+插件 **`v0.9.1` 已兼容最新版 DSH `0.2.2-rc.1`**，支持 Web 和桌面端。仅维护 RC 版本，不单独适配 alpha 版本。
 
 ## 安装与更新
 
@@ -103,7 +91,7 @@ dsh --profile web --dump-config
 
 ### DSH 桌面端安装
 
-适用于 **DSH Desktop `0.2.1-rc.2` / `0.2.1-rc.3` / `0.2.1-rc.5` / `0.2.2-rc.1`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
+适用于 **DSH Desktop `0.2.2-rc.1`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
 
 1. 打开 DSH Desktop，在侧栏进入 **插件** 页面。
 2. 点击 **添加插件**，在 **包名或地址** 中填写：
