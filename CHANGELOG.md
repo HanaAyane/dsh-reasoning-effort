@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.9.2] - 2026-11-09
+
+This maintenance update focuses on interaction performance and bug fixes ahead of the next major update.
+
+### Added
+
+- Remember the last confirmed reasoning effort locally for each provider and model. Restore it when switching back if the current catalog still supports it.
+
+### Fixed
+
+- Keep slider brightness stable during submission and ease the waves, particles, and glow back to their idle state on release.
+- Keep the reasoning pane aligned with the model button from its first visible frame and add a short content transition. Return keyboard focus to the reasoning entry on Escape.
+- Offer a slider with the provider default and the configured effort when the model exposes one level and a separate default. Wait for diagnosis before showing the setup guide.
+
+The next major update will bring character-themed sliders to more model families.
+
 ## [0.9.1] - 2026-10-28
 
 ### Changed

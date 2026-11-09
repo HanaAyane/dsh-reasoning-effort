@@ -25,18 +25,15 @@ Keep native model search, groups, and badges. Open Effort to adjust the plugin s
 
 <img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
 
-[What changed](#whats-new-in-v091) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+[What changed](#whats-new-in-v092) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
-## What's new in v0.9.1
+## What's new in v0.9.2
 
-- **Brief compatibility hint** — show troubleshooting advice for five seconds whenever the effort slider is enabled. Disabling it hides the hint immediately; opening Settings does not trigger it.
-- **Native switch appearance** — match DSH switch dimensions, theme colors, round thumbs, and animation; remove the extra Enabled/Disabled text.
-- **Plugin icon** — use a right-facing Big Fat Fish running frame from the existing eight-frame animation in the installed plugin list.
-- **Localized description** — follow the DSH interface language in Chinese or English, with English as the fallback.
+`v0.9.2` is an interaction performance and bug-fix update ahead of the next major update. Slider effects settle smoothly on release, and the reasoning pane opens at the correct position. Models with one configured effort and a separate default can use both slider stops, and the selector remembers each model's last confirmed effort.
 
-Thanks to [@oinzc](https://github.com/oinzc) for the feedback in [#25](https://github.com/HanaAyane/dsh-reasoning-effort/issues/25). The hint offers troubleshooting advice; it does not detect conflicts or force a replacement selector. A slider may be unmounted during normal use, such as when its menu is closed, so simple detection can produce false alarms while monitoring third-party UI adds maintenance cost.
+The next major update will bring character-themed sliders to more model families.
 
-See the [v0.9.1 release notes](.github/releases/v0.9.1.md) and [CHANGELOG](CHANGELOG.md).
+The `v0.9.2` source is on the main branch. The installation examples below target the published `v0.9.1` release. See the [v0.9.2 notes](.github/releases/v0.9.2.md) and [CHANGELOG](CHANGELOG.md).
 
 ## Version support policy
 
@@ -118,7 +115,7 @@ Desktop uses its own `desktop` profile; plugins installed in the `web` profile d
 
 The slider reads `reasoning.efforts` from the current model in DSH's model directory. The model and route determine the count, names, and order. Levels are not fixed to three steps and can differ between endpoints.
 
-The slider appears when at least two levels are available; otherwise the menu shows a notice. DSH validates and dispatches the selected value, so the plugin cannot bypass model or deployment limits.
+The slider appears when a model offers at least two levels. Starting with `v0.9.2`, a model with one configured level and a separate provider default also gets two slider stops. DSH validates the selection and sends it with the request.
 
 ## Declaring levels for any custom model
 
@@ -233,7 +230,7 @@ Check that:
 1. Check that the running version matches the support table above; Desktop shows its version under **About DeepSeek Harness**.
 2. You restarted the corresponding Web Host or fully quit and reopened the desktop app after installation.
 3. **Settings → General → Reasoning effort selector** is enabled.
-4. The selected model exposes at least two effort levels in the DSH model directory (see the next entry for models without any), and thinking is not disabled by the deployment.
+4. The selected model exposes at least two effort levels. Starting with `v0.9.2`, one configured level plus a separate provider default also qualifies.
 
 ### A model declares no effort levels
 
