@@ -241,8 +241,8 @@ test('runtime adapter restores the original registration on disable and disposal
   assert.ok(notifications >= 4)
 })
 
-for (const reasoning of [undefined, { efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }] }]) {
-test(`unmodified native selector keeps search and opens plugin pane (${reasoning ? 'with levels' : 'no levels'})`, async () => {
+for (const reasoning of [undefined, { efforts: [{ id: 'high', name: 'High' }] }, { efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }] }]) {
+test(`native selector offers the appropriate control for effort count ${reasoning?.efforts.length ?? 0}`, async () => {
   const original = await readFile(resolve(root, 'node_modules/@deepseek-ai/dsh-client-ui-model-selection/lib/client.js'))
   const source = original.toString('utf8')
   const nativeDocument = { querySelector: () => ({}), addEventListener() {}, removeEventListener() {}, body: {}, activeElement: null }
@@ -264,6 +264,7 @@ test(`unmodified native selector keeps search and opens plugin pane (${reasoning
   const initial = { current: { provider: 'custom', model: 'model-0' }, groups: [{ id: 'custom', name: 'Custom', models }], failures: [], pending: null, status: 'ready', error: null }
   const directory = store(initial)
   const adapt = client.makeAdaptationService({ call: async () => ({ ok: true, value: { ...answer([]), model: 'model-0' } }) })
+  const selections = []
   const props = {
     locked: false, available: true, directory, load: () => {}, select: async () => ({ ok: true }), t,
     renderSlot: (_name, _owner, opts) => opts?.fallback,
@@ -272,6 +273,7 @@ test(`unmodified native selector keeps search and opens plugin pane (${reasoning
   // A real directory load publishes snapshots observed by the native parent.
   let loads = 0
   const controller = { store: directory, select: async target => {
+    selections.push(target)
     directory.set({ ...directory.getSnapshot(), current: target })
     return { ok: true }
   }, load: async () => {
@@ -303,6 +305,13 @@ test(`unmodified native selector keeps search and opens plugin pane (${reasoning
   assert.equal(tree.root.findAllByProps({ className: 're-model-row' }).length, 0)
   assert.equal(tree.root.findAllByProps({ className: 're-native-back' }).length, 0)
   if (reasoning) {
+    const single = reasoning.efforts.length === 1
+    if (single) {
+      assert.equal(tree.root.findByProps({ type: 'range' }).props['aria-valuetext'], 'model.defaultEffort')
+      assert.equal(tree.root.findByProps({ className: 're-effort-tick is-selected' }).props.title, 'model.defaultEffort')
+      assert.equal(tree.root.findAllByProps({ className: 're-effort-unavailable' }).length, 0)
+      assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
+    }
     const pane = tree.root.findByProps({ className: 're-native-pane' })
     let blurStopped = false
     pane.props.onBlur({ relatedTarget: null, stopPropagation: () => { blurStopped = true } })
@@ -313,8 +322,16 @@ test(`unmodified native selector keeps search and opens plugin pane (${reasoning
     await act(async () => { tree.root.findByProps({ type: 'range' }).props.onChange({ currentTarget: { value: '1' } }) })
     assert.equal(tree.root.findAllByProps({ className: 're-native-effort' }).length, 1)
     assert.deepEqual(tree.root.findByProps({ className: 're-effort-name' }).children, ['High'])
-    assert.equal(tree.root.findByProps({ className: 're-effort-ticks' }).findAllByType('span').length, reasoning.efforts.length)
+    assert.equal(tree.root.findByProps({ className: 're-effort-ticks' }).findAllByType('span').length, 2)
     assert.equal(tree.root.findByProps({ className: 're-effort-tick is-selected' }).props.title, 'High')
+    if (single) {
+      await act(async () => { tree.root.findByProps({ type: 'range' }).props.onChange({ currentTarget: { value: '0' } }) })
+      assert.equal(tree.root.findByProps({ className: 're-effort-tick is-selected' }).props.title, 'model.defaultEffort')
+      assert.deepEqual(selections, [
+        { provider: 'custom', model: 'model-0', reasoningEffort: 'high' },
+        { provider: 'custom', model: 'model-0' },
+      ])
+    }
   }
   const panel = tree.root.findByProps({ className: 're-native-effort' })
   let stopped = false
@@ -387,5 +404,47 @@ test('embedded pane with levels never flashes tutorial while diagnosis is pendin
   await act(async () => { finish({ ok: true, value: { ...answer(['low', 'high']), userDeclared: true, needsGuide: false } }) })
   assert.equal(tree.root.findAllByType('details').length, 0)
   assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
+  await act(async () => { tree.unmount() })
+})
+
+
+test('embedded pane waits for diagnosis before showing the tutorial', async () => {
+  const requests = []
+  const adapt = client.makeAdaptationService({ call: () => new Promise(resolve => requests.push(resolve)) })
+  const directory = store({ current: { provider: 'custom', model: 'custom-model' },
+    groups: [], failures: [], pending: null, status: 'ready', error: null })
+  const props = { available: true, locked: false, directory, controller: { store: directory, load: async () => {} }, load: () => {}, select: async () => true, adapt, agentTutorial: () => '', t }
+  let tree
+  await act(async () => { tree = TestRenderer.create(React.createElement(client.NativeEffortPanel, props)) })
+  const guides = () => tree.root.findAllByProps({ className: 're-settings-guide' }).length
+  assert.equal(guides(), 0)
+  await act(async () => { requests[0]({ ok: true, value: answer([]) }) })
+  assert.equal(guides(), 0)
+  await act(async () => { adapt.invalidate() })
+  assert.equal(guides(), 0)
+  await act(async () => { requests[1]({ ok: true, value: { ...answer([]), needsGuide: true, reason: 'missing' } }) })
+  assert.equal(guides(), 1)
+  await act(async () => { tree.unmount() })
+})
+
+
+test('single named provider default stays the only choice', async () => {
+  const current = { provider: 'custom', model: 'group' }
+  const initial = { current, groups: [{ id: current.provider, models: [{ id: current.model, reasoning: { defaultEffort: 'high', efforts: [{ id: 'high', name: 'High' }] } }] }],
+    failures: [], pending: null, status: 'ready', error: null }
+  const directory = store(initial)
+  const selections = []
+  const props = { available: true, locked: false, directory, controller: {}, load: () => {}, adapt: null, agentTutorial: () => '', t,
+    select: async target => { selections.push(target); directory.set({ ...initial, current: target }); return true } }
+  let tree
+  await act(async () => { tree = TestRenderer.create(React.createElement(client.NativeEffortPanel, props)) })
+  const option = name => tree.root.findAllByType('button').find(button => button.findAll(node => node.children.includes(name)).length > 0)
+  assert.equal(tree.root.findAllByProps({ className: 're-effort-unavailable' }).length, 0)
+  assert.equal(tree.root.findAllByProps({ className: 're-settings-guide' }).length, 0)
+  assert.equal(tree.root.findAllByProps({ type: 'range' }).length, 0)
+  assert.equal(option('model.defaultEffort'), undefined)
+  assert.equal(option('High').props['aria-pressed'], true)
+  await act(async () => { option('High').props.onClick() })
+  assert.deepEqual(selections, [])
   await act(async () => { tree.unmount() })
 })

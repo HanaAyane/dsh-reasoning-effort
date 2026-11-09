@@ -3,11 +3,9 @@ import type { ModelDirectory, ModelDirectoryState } from '@deepseek-ai/dsh-clien
 import type { ReasoningEffortTranslate } from './locales.js'
 
 export interface EffortLevel {
-  readonly id: string
+  readonly id: string | undefined
   readonly name: string
 }
-
-export type EffortSelection = ModelSelection & { readonly reasoningEffort: string }
 
 export function currentModel(state: ModelDirectoryState) {
   const current = state.current
@@ -15,9 +13,13 @@ export function currentModel(state: ModelDirectoryState) {
     ?.models.find((model) => model.id === current?.model)
 }
 
-export function sliderLevels(state: ModelDirectoryState): readonly EffortLevel[] {
-  const efforts = currentModel(state)?.reasoning?.efforts
-  return efforts !== undefined && efforts.length >= 2 ? efforts : []
+export function sliderLevels(state: ModelDirectoryState, t: ReasoningEffortTranslate): readonly EffortLevel[] {
+  const reasoning = currentModel(state)?.reasoning
+  if (reasoning === undefined) return []
+  if (reasoning.efforts.length === 1 && reasoning.defaultEffort === undefined) {
+    return [{ id: undefined, name: t('model.defaultEffort') }, ...reasoning.efforts]
+  }
+  return reasoning.efforts.length >= 2 ? reasoning.efforts : []
 }
 
 export function effortIndex(levels: readonly EffortLevel[], id: string | undefined): number {
@@ -26,6 +28,11 @@ export function effortIndex(levels: readonly EffortLevel[], id: string | undefin
 
 export function clampIndex(value: number, count: number): number {
   return Math.max(0, Math.min(count - 1, Math.round(value)))
+}
+
+function supportsEffort(state: ModelDirectoryState, effort: string | undefined, t: ReasoningEffortTranslate): boolean {
+  const levels = effort === undefined ? sliderLevels(state, t) : currentModel(state)?.reasoning?.efforts ?? []
+  return effortIndex(levels, effort) >= 0
 }
 
 function sameModel(current: ModelSelection | null, target: ModelSelection): boolean {
@@ -51,7 +58,7 @@ function abortable<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
 /** An RPC acknowledgement can arrive before the durable selection projection. */
 function waitForSelection(
   directory: ModelDirectory,
-  target: EffortSelection,
+  target: ModelSelection,
   signal: AbortSignal,
   t: ReasoningEffortTranslate,
   timeoutMs: number,
@@ -82,8 +89,8 @@ function waitForSelection(
       } else if (state.status === 'error') {
         finish(undefined, new Error(state.error ?? t('effort.unconfirmed')))
       } else if (sameModel(state.current, target) && state.status === 'ready' && state.pending === null) {
-        if (effortIndex(currentModel(state)?.reasoning?.efforts ?? [], target.reasoningEffort) < 0) {
-          finish(undefined, new Error(t('effort.unsupported', { effort: target.reasoningEffort })))
+        if (!supportsEffort(state, target.reasoningEffort, t)) {
+          finish(undefined, new Error(t('effort.unsupported', { effort: target.reasoningEffort ?? t('model.defaultEffort') })))
         } else if (state.current?.reasoningEffort === target.reasoningEffort) {
           finish(state)
         }
@@ -99,7 +106,7 @@ function waitForSelection(
 /** Revalidate a captured route and effort ID, never a position in a new catalog. */
 export async function selectEffort(
   directory: ModelDirectory,
-  target: EffortSelection,
+  target: ModelSelection,
   signal: AbortSignal,
   t: ReasoningEffortTranslate,
   timeoutMs = 5000,
@@ -122,8 +129,8 @@ export async function selectEffort(
     if (state.current?.reasoningEffort !== originalEffort) {
       throw new Error(t('effort.selectionChanged'))
     }
-    if (effortIndex(currentModel(state)?.reasoning?.efforts ?? [], target.reasoningEffort) < 0) {
-      throw new Error(t('effort.unsupported', { effort: target.reasoningEffort }))
+    if (!supportsEffort(state, target.reasoningEffort, t)) {
+      throw new Error(t('effort.unsupported', { effort: target.reasoningEffort ?? t('model.defaultEffort') }))
     }
   }
 

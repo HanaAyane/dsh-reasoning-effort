@@ -449,8 +449,8 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
     (notify) => directory.store.subscribe(notify),
     () => directory.store.getSnapshot(),
   )
-  const levels = sliderLevels(directoryState)
-  const [effort, setEffort] = useState(directoryState.current?.reasoningEffort ?? '')
+  const levels = useMemo(() => sliderLevels(directoryState, t), [directoryState, t])
+  const [effort, setEffort] = useState(directoryState.current?.reasoningEffort)
   const [preview, setPreview] = useState(Math.max(0, effortIndex(levels, directoryState.current?.reasoningEffort)))
   const [committing, setCommitting] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -458,7 +458,7 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
   const chibiThumb = useSyncExternalStore(chibiThumbStore.subscribe, chibiThumbStore.getSnapshot)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const committedRef = useRef(directoryState.current?.reasoningEffort ?? '')
+  const committedRef = useRef(directoryState.current?.reasoningEffort)
   const committingRef = useRef(false)
   const selectionAbortRef = useRef<AbortController | null>(null)
   const previewRef = useRef(preview)
@@ -483,7 +483,7 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
 
   useEffect(() => {
     if (!available || committingRef.current || draggingRef.current) return
-    const next = directoryState.current?.reasoningEffort ?? ''
+    const next = directoryState.current?.reasoningEffort
     const index = Math.max(0, effortIndex(levels, next))
     committedRef.current = next
     previewRef.current = index
@@ -617,12 +617,13 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
   const commit = useCallback(async (raw: number) => {
     if (committingRef.current || busy || directoryState.current === null) return
     const index = clampIndex(raw, levels.length)
-    const next = levels[index]?.id
-    if (next === undefined) return
+    const level = levels[index]
+    if (level === undefined) return
+    const next = level.id
     const target = {
       provider: directoryState.current.provider,
       model: directoryState.current.model,
-      reasoningEffort: next,
+      ...(next === undefined ? {} : { reasoningEffort: next }),
     }
     const operation = new AbortController()
     selectionAbortRef.current = operation
@@ -637,7 +638,7 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
     try {
       const confirmed = await selectEffort(directory, target, operation.signal, t)
       if (selectionAbortRef.current !== operation) return
-      const confirmedIndex = effortIndex(sliderLevels(confirmed), next)
+      const confirmedIndex = effortIndex(sliderLevels(confirmed, t), next)
       committedRef.current = next
       previewRef.current = confirmedIndex
       setEffort(next)
@@ -679,7 +680,7 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
   const showPointerPreview = (raw: number) => {
     previewRef.current = raw
     setPreview(raw)
-    setEffort(levels[clampIndex(raw, levels.length)]?.id ?? '')
+    setEffort(levels[clampIndex(raw, levels.length)]?.id)
   }
 
   const beginDragging = (input: HTMLInputElement, pointerId: number, clientX: number) => {
@@ -839,7 +840,7 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
         </div>
         <div className="re-effort-ticks" aria-hidden="true">
           {levels.map((level, index) => (
-            <span key={level.id} className={`re-effort-tick${index === selectedIndex ? ' is-selected' : ''}`}
+            <span key={level.id === undefined ? 'default' : `effort:${level.id}`} className={`re-effort-tick${index === selectedIndex ? ' is-selected' : ''}`}
               style={{ left: `${index / (count - 1) * 100}%` }} title={level.name}>·</span>
           ))}
         </div>
@@ -871,9 +872,7 @@ function AdvancedModelSelect({
   const revision = useSyncExternalStore(adapt?.subscribe ?? noGuidanceSubscription, adapt?.getSnapshot ?? noGuidanceRevision)
   const [guidanceResult, setGuidanceResult] = useState<{ value: AdaptGuidance; revision: number } | null>(null)
   const [guidanceBusy, setGuidanceBusy] = useState(false)
-  // A native effort pane mounts on every opening. Models with usable levels
-  // must not briefly show the generic tutorial before diagnosis completes.
-  const [showCustomGuidance, setShowCustomGuidance] = useState(() => !embedded || sliderLevels(state).length < 2)
+  const [showCustomGuidance, setShowCustomGuidance] = useState(true)
   const [guidanceFailed, setGuidanceFailed] = useState(false)
   const [copied, setCopied] = useState(false)
   const [agentCopied, setAgentCopied] = useState(false)
@@ -885,7 +884,10 @@ function AdvancedModelSelect({
     return positionModelMenu(rootRef.current, menuRef.current)
   }, [open])
   const choice = currentModel(state)
-  const levels = sliderLevels(state)
+  const reasoning = choice?.reasoning
+  const efforts = reasoning?.efforts ?? []
+  const hasSlider = sliderLevels(state, t).length >= 2
+  const onlyEffort = !hasSlider && efforts.length === 1 ? efforts[0] : undefined
   const savedEffort = state.current?.reasoningEffort
   const effortName = savedEffort === undefined
     ? t('model.defaultEffort')
@@ -898,9 +900,9 @@ function AdvancedModelSelect({
   const guidance = guidanceResult?.revision === revision && guidanceResult.value.provider === provider && guidanceResult.value.model === modelId
     ? guidanceResult.value
     : null
-  // Keep the generic teaching and disclosure mounted while a new diagnosis runs.
-  // Only a current result may render model-specific configuration or copy actions.
-  const showGuidance = guidance?.needsGuide ?? showCustomGuidance
+  // A newly opened native pane waits for diagnosis before showing the tutorial.
+  // The fallback menu keeps its generic guidance visible during a refresh.
+  const showGuidance = efforts.length === 0 && (guidance?.needsGuide ?? (!embedded && showCustomGuidance))
   const advancedBodyRef = useRef<HTMLDivElement>(null)
   const [advancedHeight, setAdvancedHeight] = useState(0)
   useLayoutEffect(() => {
@@ -999,10 +1001,22 @@ function AdvancedModelSelect({
     if (accepted) setModelsOpen(false)
   }
 
+  const chooseSingleEffort = (effort: string) => {
+    const live = directory.getSnapshot()
+    const current = live.current
+    if (locked || live.status === 'loading' || live.status === 'selecting' || live.pending !== null) return
+    if (current === null || current.provider !== provider || current.model !== modelId) return
+    const reasoning = currentModel(live)?.reasoning
+    if (reasoning?.efforts.length !== 1 || reasoning.efforts[0]?.id !== effort) return
+    if ((current.reasoningEffort ?? reasoning.defaultEffort) === effort) return
+    void select({ provider: current.provider, model: current.model, reasoningEffort: effort })
+  }
+
+  const onlyEffortSelected = onlyEffort !== undefined && (savedEffort ?? reasoning?.defaultEffort) === onlyEffort.id
   const effortPanel = (
     <>
-      {levels.length < 2 ? (
-        <div className="re-effort-unavailable">{t('effort.unavailable')}</div>
+      {efforts.length === 0 ? (
+        <div className="re-effort-unavailable">{t(embedded && state.status === 'loading' ? 'guidance.checking' : 'effort.unavailable')}</div>
       ) : null}
       {showGuidance ? (
         <div className="re-settings-guide">
@@ -1011,9 +1025,19 @@ function AdvancedModelSelect({
           <div>{t('guidance.settings.note')}</div>
         </div>
       ) : null}
-      {levels.length >= 2 ? (
+      {hasSlider ? (
         <div className="re-advanced">
           <EffortSlider directory={controller} t={t} locked={locked} />
+        </div>
+      ) : null}
+      {onlyEffort !== undefined ? (
+        <div role="group" aria-label={t('effort.label')}>
+          <button type="button" className="re-model-option" aria-pressed={onlyEffortSelected}
+            disabled={busy || locked} onClick={() => chooseSingleEffort(onlyEffort.id)}>
+            <span className="re-model-option-name">{onlyEffort.name}</span>
+            <span className="re-model-check" aria-hidden="true">{onlyEffortSelected ? '✓' : ''}</span>
+          </button>
+          {state.error === null ? null : <div className="re-model-error" role="status">{state.error}</div>}
         </div>
       ) : null}
       {showGuidance ? (
