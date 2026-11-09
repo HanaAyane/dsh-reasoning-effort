@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.9.1](https://img.shields.io/badge/release-0.9.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1)
+[![v0.9.2](https://img.shields.io/badge/release-0.9.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Releases 附件累计下载次数](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
@@ -33,11 +33,11 @@
 
 下一次大更新将为更多大模型家族适配各自的模型娘滑块。
 
-`v0.9.2` 的代码位于主分支，下方安装示例对应已发布的 `v0.9.1`。完整改动见 [v0.9.2 更新说明](.github/releases/v0.9.2.md) 和 [CHANGELOG](CHANGELOG.md)。
+`v0.9.2` 已在 GitHub 发布。完整改动见 [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) 和 [CHANGELOG](CHANGELOG.md)。
 
 ## 版本支持政策
 
-插件 **`v0.9.1` 已兼容最新版 DSH `0.2.2-rc.1`**，支持 Web 和桌面端。仅维护 RC 版本，不单独适配 alpha 版本。
+插件 **`v0.9.2` 兼容 DSH `0.2.2-rc.1`**，支持 Web 和桌面端。仅维护 RC 版本，不单独适配 alpha 版本。
 
 ## 安装与更新
 
@@ -45,32 +45,28 @@
 
 ### Web：安装固定发行版
 
-推荐从 npm 安装官方包 `@ayanehana/dsh-reasoning-effort@0.9.1`。无作用域的同名包由其他维护者发布。
-
-[npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [下载 v0.9.1 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz)。桌面端可直接使用下方的包名安装步骤。
+GitHub 提供 [v0.9.2 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz)。npm 当前可安装 `@ayanehana/dsh-reasoning-effort@0.9.1`。无作用域的同名包由其他维护者发布。 [npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
 
 如果此前已通过 GitHub 安装旧的 `dsh-reasoning-effort`，切换到带作用域的新包前请先卸载旧包；Web 使用 `dsh plugin --profile web remove dsh-reasoning-effort`，桌面端在 **插件** 页面卸载，避免重复加载。
 
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
 dsh --profile web --dump-config
 ```
 
-确认输出中出现 `name: '@ayanehana/dsh-reasoning-effort'`（引号形式可能不同）。已有 npm 安装也使用同一条 `add` 命令更新。
+确认输出中出现 `name: '@ayanehana/dsh-reasoning-effort'`（引号形式可能不同）。
 
-GitHub 安装地址仍为 `github:HanaAyane/dsh-reasoning-effort#v0.9.1`，本版本包名为 `@ayanehana/dsh-reasoning-effort`。开发体验可将 `#v0.9.1` 换成 `#main`，但主分支可能包含未发布改动。
-
-也可以从 [v0.9.1 Release 下载插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz)。
+也可使用 GitHub 标签地址 `github:HanaAyane/dsh-reasoning-effort#v0.9.2`。开发体验可用 `#main`，主分支可能包含未发布改动。
 
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
 
 ```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.1。
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.2。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -91,23 +87,16 @@ dsh --profile web --dump-config
 适用于 **DSH Desktop `0.2.2-rc.1`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
 
 1. 打开 DSH Desktop，在侧栏进入 **插件** 页面。
-2. 点击 **添加插件**，在 **包名或地址** 中填写：
+2. 点击 **添加插件**，在 **包名或地址** 中填入 v0.9.2 插件包地址。
 
    ```text
-   @ayanehana/dsh-reasoning-effort@0.9.1
+   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
    ```
 
-   这里填写的是插件包名或地址，不是 `dsh plugin ...` 命令。
 3. 等待页面解析插件信息，确认来源和版本后安装。
 4. 安装完成后，在 **已安装插件** 中确认 `@ayanehana/dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。
 
 若提示「没有匹配的版本」，请先按[安装失败排查](#安装时提示没有匹配的版本)检查日志和安装源；更换插件包地址不一定能解决已有依赖的版本解析问题。
-
-也可在 **包名或地址** 中使用以下 Release 插件包地址：
-
-```text
-https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
-```
 
 桌面端使用独立的 `desktop` Profile；安装在 `web` Profile 的插件不会自动出现在桌面端。若终端提示 `profile "desktop" is managed exclusively by the Electron application`，说明当前 CLI 不允许管理 Desktop Profile，请改用上述应用内入口，不要修改 Profile 名称或绕过限制。参见 [DSH Desktop 官方说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.zh.md#installation-ownership)。
 

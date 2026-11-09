@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.9.1](https://img.shields.io/badge/release-0.9.1-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.1)
+[![v0.9.2](https://img.shields.io/badge/release-0.9.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
@@ -33,11 +33,11 @@ Keep native model search, groups, and badges. Open Effort to adjust the plugin s
 
 The next major update will bring character-themed sliders to more model families.
 
-The `v0.9.2` source is on the main branch. The installation examples below target the published `v0.9.1` release. See the [v0.9.2 notes](.github/releases/v0.9.2.md) and [CHANGELOG](CHANGELOG.md).
+`v0.9.2` is available on GitHub. See the full list of changes in the [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) and [CHANGELOG](CHANGELOG.md).
 
 ## Version support policy
 
-Plugin **`v0.9.1` is compatible with the latest DSH `0.2.2-rc.1`**, supporting both Web and Desktop. Only RC versions are maintained; individual alpha versions are not supported.
+Plugin **`v0.9.2` is compatible with DSH `0.2.2-rc.1`** on Web and Desktop. Maintenance targets RC versions.
 
 ## Install and update
 
@@ -45,32 +45,28 @@ The download badges separately show total downloads of GitHub release assets and
 
 ### Web: install a pinned release
 
-Install the official npm package `@ayanehana/dsh-reasoning-effort@0.9.1`. The unscoped package belongs to another maintainer.
-
-[npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Download the v0.9.1 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz). For Desktop, use the package-name installation steps below.
+GitHub provides the [v0.9.2 plugin package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz). npm currently provides `@ayanehana/dsh-reasoning-effort@0.9.1`. The unscoped package belongs to another maintainer. [npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
 
 If you previously installed the old `dsh-reasoning-effort` package from GitHub, uninstall it before switching to the scoped package to avoid loading both copies. For Web, run `dsh plugin --profile web remove dsh-reasoning-effort`; for Desktop, uninstall it from the **Plugins** page.
 
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
 dsh --profile web --dump-config
 ```
 
-Confirm that the output includes `name: '@ayanehana/dsh-reasoning-effort'` (quoting may vary). Use the same `add` command to update an existing npm installation.
+Confirm that the output includes `name: '@ayanehana/dsh-reasoning-effort'` (quoting may vary).
 
-The GitHub address remains `github:HanaAyane/dsh-reasoning-effort#v0.9.1`; this release uses the package name `@ayanehana/dsh-reasoning-effort`. To try development changes, replace `#v0.9.1` with `#main`; the main branch may contain unreleased changes.
-
-You can also [download the v0.9.1 package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz).
+You can also install from the GitHub tag `github:HanaAyane/dsh-reasoning-effort#v0.9.2`. To try development changes, use `#main`, which may contain unreleased changes.
 
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
 
 ```text
-Install dsh-reasoning-effort v0.9.1 for the DeepSeek Harness web profile.
+Install dsh-reasoning-effort v0.9.2 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.1
+dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -91,23 +87,16 @@ Open the model control below the composer. Choose **Model** for native search an
 For **DSH Desktop `0.2.2-rc.1`**, install inside the desktop app. No terminal command registration or prior app exit is required.
 
 1. Open DSH Desktop and select **Plugins** in the sidebar.
-2. Choose **Add plugin** and enter this in **Package name or address**:
+2. Choose **Add plugin** and enter the v0.9.2 package URL in **Package name or address**.
 
    ```text
-   @ayanehana/dsh-reasoning-effort@0.9.1
+   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
    ```
 
-   Enter the package name or address, not a `dsh plugin ...` command.
 3. Wait for the plugin information to load, verify the source and version, and install.
 4. Confirm that `@ayanehana/dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.
 
 If installation reports “No matching version”, first [check the installation log and registry](#installation-reports-no-matching-version). Changing the plugin package URL may not resolve version errors in existing dependencies.
-
-Alternatively, use this release package URL in **Package name or address**:
-
-```text
-https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.1/dsh-reasoning-effort-0.9.1.tgz
-```
 
 Desktop uses its own `desktop` profile; plugins installed in the `web` profile do not carry over. If the terminal reports `profile "desktop" is managed exclusively by the Electron application`, that CLI is not allowed to manage the Desktop profile. Use the in-app installer above instead of changing the profile name or bypassing the restriction. See the [official Desktop documentation](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.2/apps/desktop/README.md#installation-ownership).
 
