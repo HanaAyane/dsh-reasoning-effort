@@ -33,7 +33,7 @@
 
 下一次大更新将为更多大模型家族适配各自的模型娘滑块。
 
-`v0.9.2` 已在 GitHub 发布。完整改动见 [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) 和 [CHANGELOG](CHANGELOG.md)。
+`v0.9.2` 已在 GitHub 和 npm 发布。完整改动见 [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) 和 [CHANGELOG](CHANGELOG.md)。
 
 ## 版本支持政策
 
@@ -45,20 +45,20 @@
 
 ### Web：安装固定发行版
 
-GitHub 提供 [v0.9.2 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz)。npm 当前可安装 `@ayanehana/dsh-reasoning-effort@0.9.1`。无作用域的同名包由其他维护者发布。 [npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
+推荐安装官方 npm 包 `@ayanehana/dsh-reasoning-effort@0.9.2`。无作用域的同名包由其他维护者发布。 [npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort/v/0.9.2) · [GitHub 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz)
 
 如果此前已通过 GitHub 安装旧的 `dsh-reasoning-effort`，切换到带作用域的新包前请先卸载旧包；Web 使用 `dsh plugin --profile web remove dsh-reasoning-effort`，桌面端在 **插件** 页面卸载，避免重复加载。
 
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
 dsh --profile web --dump-config
 ```
 
 确认输出中出现 `name: '@ayanehana/dsh-reasoning-effort'`（引号形式可能不同）。
 
-也可使用 GitHub 标签地址 `github:HanaAyane/dsh-reasoning-effort#v0.9.2`。开发体验可用 `#main`，主分支可能包含未发布改动。
+也可将安装命令中的包名换成 GitHub 插件包的下载地址，或使用 GitHub 标签地址 `github:HanaAyane/dsh-reasoning-effort#v0.9.2`。开发体验可用 `#main`，主分支可能包含未发布改动。
 
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
@@ -66,7 +66,7 @@ dsh --profile web --dump-config
 ```text
 请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.2。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -87,12 +87,11 @@ dsh --profile web --dump-config
 适用于 **DSH Desktop `0.2.2-rc.1`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
 
 1. 打开 DSH Desktop，在侧栏进入 **插件** 页面。
-2. 点击 **添加插件**，在 **包名或地址** 中填入 v0.9.2 插件包地址。
+2. 点击 **添加插件**，在 **包名或地址** 中填入以下包名，也可使用 GitHub 插件包的下载地址。
 
    ```text
-   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
+   @ayanehana/dsh-reasoning-effort@0.9.2
    ```
-
 3. 等待页面解析插件信息，确认来源和版本后安装。
 4. 安装完成后，在 **已安装插件** 中确认 `@ayanehana/dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。
 

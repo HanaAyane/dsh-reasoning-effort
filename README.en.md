@@ -33,7 +33,7 @@ Keep native model search, groups, and badges. Open Effort to adjust the plugin s
 
 The next major update will bring character-themed sliders to more model families.
 
-`v0.9.2` is available on GitHub. See the full list of changes in the [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) and [CHANGELOG](CHANGELOG.md).
+`v0.9.2` is available on GitHub and npm. See the full list of changes in the [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) and [CHANGELOG](CHANGELOG.md).
 
 ## Version support policy
 
@@ -45,20 +45,20 @@ The download badges separately show total downloads of GitHub release assets and
 
 ### Web: install a pinned release
 
-GitHub provides the [v0.9.2 plugin package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz). npm currently provides `@ayanehana/dsh-reasoning-effort@0.9.1`. The unscoped package belongs to another maintainer. [npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
+Install the official npm package `@ayanehana/dsh-reasoning-effort@0.9.2`. The unscoped package belongs to another maintainer. [npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort/v/0.9.2) · [GitHub package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz)
 
 If you previously installed the old `dsh-reasoning-effort` package from GitHub, uninstall it before switching to the scoped package to avoid loading both copies. For Web, run `dsh plugin --profile web remove dsh-reasoning-effort`; for Desktop, uninstall it from the **Plugins** page.
 
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
 dsh --profile web --dump-config
 ```
 
 Confirm that the output includes `name: '@ayanehana/dsh-reasoning-effort'` (quoting may vary).
 
-You can also install from the GitHub tag `github:HanaAyane/dsh-reasoning-effort#v0.9.2`. To try development changes, use `#main`, which may contain unreleased changes.
+The install command also accepts the GitHub package URL or the tag `github:HanaAyane/dsh-reasoning-effort#v0.9.2`. To try development changes, use `#main`, which may contain unreleased changes.
 
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
@@ -66,7 +66,7 @@ You can also install from the GitHub tag `github:HanaAyane/dsh-reasoning-effort#
 ```text
 Install dsh-reasoning-effort v0.9.2 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -87,12 +87,11 @@ Open the model control below the composer. Choose **Model** for native search an
 For **DSH Desktop `0.2.2-rc.1`**, install inside the desktop app. No terminal command registration or prior app exit is required.
 
 1. Open DSH Desktop and select **Plugins** in the sidebar.
-2. Choose **Add plugin** and enter the v0.9.2 package URL in **Package name or address**.
+2. Choose **Add plugin** and enter the npm package below or the GitHub package URL in **Package name or address**.
 
    ```text
-   https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz
+   @ayanehana/dsh-reasoning-effort@0.9.2
    ```
-
 3. Wait for the plugin information to load, verify the source and version, and install.
 4. Confirm that `@ayanehana/dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.
 
