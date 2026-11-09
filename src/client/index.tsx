@@ -333,22 +333,23 @@ const chibiThumbStore = {
   },
 }
 
-interface RadiationState {
+interface RadiationFrame {
   progress: number
-  dragging: boolean
+  time: number
+  waveTime: number
+  particleDistance: number
+  dragAmount: number
 }
 
 function drawRadiation(
   context: CanvasRenderingContext2D,
   width: number,
   height: number,
-  time: number,
-  state: RadiationState,
+  { progress, time, waveTime, particleDistance, dragAmount }: RadiationFrame,
 ): void {
-  const origin = state.progress * width
+  const origin = progress * width
   const isDark = document.body.hasAttribute('data-ds-dark-theme')
   const cell = 4
-  const speed = state.dragging ? 2.8 : 1
 
   context.clearRect(0, 0, width, height)
   if (origin <= 0) return
@@ -361,9 +362,9 @@ function drawRadiation(
   for (let x = 0; x < origin; x += cell) {
     const delta = x + cell * 0.5 - origin
     const distance = Math.abs(delta)
-    const phaseA = distance / 10 - time * 0.0074 * speed
-    const phaseB = distance / 23 - time * 0.0041 * speed + 1.7
-    const phaseC = distance / 40 - time * 0.0022 * speed + 3.4
+    const phaseA = distance / 10 - waveTime * 0.0074
+    const phaseB = distance / 23 - waveTime * 0.0041 + 1.7
+    const phaseC = distance / 40 - waveTime * 0.0022 + 3.4
     const sinA = Math.max(0, Math.sin(phaseA))
     const sinB = Math.max(0, Math.sin(phaseB))
     const sinC = Math.max(0, Math.sin(phaseC))
@@ -419,11 +420,11 @@ function drawRadiation(
   }
 
   for (let i = 0; i < 14; i += 1) {
-    const travel = (time * (state.dragging ? 0.16 : 0.065) * (0.78 + (i % 5) * 0.09) + i * 23) % Math.max(30, origin + 64)
+    const travel = (particleDistance * (0.78 + (i % 5) * 0.09) + i * 23) % Math.max(30, origin + 64)
     const particleX = origin - travel
     if (particleX < -24 || particleX > width + 16) continue
     const particleY = 3 + ((i * 13 + Math.sin(time * 0.003 + i) * 5) % Math.max(7, height - 6))
-    const length = 4 + (i % 4) * 4 + (state.dragging ? 6 : 0)
+    const length = 4 + (i % 4) * 4 + dragAmount * 6
     const alpha = 0.28 + (i % 5) * 0.1
     const streak = context.createLinearGradient(particleX, 0, particleX + length, 0)
     streak.addColorStop(0, isDark ? 'rgba(72,118,255,0)' : 'rgba(24,94,184,0)')
@@ -474,7 +475,7 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
   const globalPointerMoveRef = useRef<((event: PointerEvent) => void) | null>(null)
   const globalPointerEndRef = useRef<((event: PointerEvent) => void) | null>(null)
   const globalPointerCancelRef = useRef<((event: PointerEvent) => void) | null>(null)
-  const radiationRef = useRef<RadiationState>({ progress: 0, dragging: false })
+  const radiationRef = useRef({ progress: 0, dragging: false })
   const redrawRef = useRef<(() => void) | null>(null)
   const available = directoryState.current !== null && levels.length >= 2
   const busy = locked || committing || directoryState.status === 'selecting' || directoryState.status === 'loading' || directoryState.pending !== null
@@ -514,7 +515,6 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
 
   useEffect(() => {
     radiationRef.current.dragging = dragging
-    redrawRef.current?.()
   }, [dragging])
 
   useEffect(() => {
@@ -527,6 +527,11 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
     let width = 1
     let height = 1
     let frame = 0
+    let lastDraw = performance.now()
+    let time = 0
+    let waveTime = 0
+    let particleDistance = 0
+    let dragAmount = 0
 
     const resize = () => {
       const bounds = canvas.getBoundingClientRect()
@@ -538,12 +543,23 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
       context.setTransform(ratio, 0, 0, ratio, 0, 0)
     }
 
-    const draw = (time = performance.now()) => {
-      drawRadiation(context, width, height, time, radiationRef.current)
+    const draw = () => {
+      const now = performance.now()
+      // Bound the step after suspension and preserve the phase when speed changes.
+      const elapsed = reducedMotion.matches ? 0 : Math.min(now - lastDraw, 50)
+      lastDraw = now
+      const { progress, dragging } = radiationRef.current
+      const nextDragAmount = Math.max(0, Math.min(1, dragAmount + (dragging ? elapsed : -elapsed) / 150))
+      const averageDragAmount = (dragAmount + nextDragAmount) / 2
+      time += elapsed
+      waveTime += elapsed * (1 + 1.8 * averageDragAmount)
+      particleDistance += elapsed * (0.065 + 0.095 * averageDragAmount)
+      dragAmount = nextDragAmount
+      drawRadiation(context, width, height, { progress, time, waveTime, particleDistance, dragAmount })
     }
 
-    const loop = (time: number) => {
-      draw(time)
+    const loop = () => {
+      draw()
       frame = window.requestAnimationFrame(loop)
     }
 
@@ -770,7 +786,7 @@ function EffortSlider({ directory, t, locked = false }: { directory: ModelDirect
     <>
       {notice === null ? null : <div className="re-model-status" role="status">{notice}</div>}
       <div
-        className={`re-effort${chibiThumb ? ' is-chibi' : ''}${dragging ? ' is-dragging' : ''}${busy ? ' is-busy' : ''}${error === null ? '' : ' is-error'}`}
+        className={`re-effort${chibiThumb ? ' is-chibi' : ''}${dragging ? ' is-dragging' : ''}${error === null ? '' : ' is-error'}`}
         title={title}
       >
         <div

@@ -137,7 +137,7 @@ export const CSS = `
     0 0 14px rgba(121,82,255,.48),
     0 2px 7px rgba(0,0,0,.3);
   transform: translate(-50%, -50%);
-  transition: left 190ms cubic-bezier(.22,1,.36,1), transform 160ms ease, box-shadow 180ms ease;
+  transition: left 190ms cubic-bezier(.22,1,.36,1), transform 160ms ease, box-shadow 180ms ease, filter 140ms ease;
   pointer-events: none;
 }
 .re-effort.is-chibi { padding-top: 12px; }
@@ -162,6 +162,7 @@ export const CSS = `
 }
 .re-effort.is-chibi.is-dragging .re-effort-knob {
   animation-duration: 420ms;
+  transition: filter 140ms ease;
   filter:
     drop-shadow(0 2px 1px rgba(0, 0, 0, .28))
     drop-shadow(0 0 8px rgba(87, 137, 255, .68));
@@ -186,7 +187,7 @@ export const CSS = `
 }
 .re-effort.is-dragging .re-effort-flare {
   filter: blur(1.5px) saturate(1.6) brightness(1.42);
-  transition: none;
+  transition: filter 140ms ease;
 }
 .re-effort.is-dragging .re-effort-knob {
   transform: translate(-50%, -50%) scale(1.07);
@@ -211,7 +212,6 @@ export const CSS = `
   outline: 1px solid var(--dsw-alias-state-error-secondary);
   outline-offset: 2px;
 }
-.re-effort.is-busy { opacity: .72; }
 .re-effort-sr {
   position: absolute;
   width: 1px;
@@ -309,7 +309,14 @@ export const CSS = `
   box-shadow: var(--dsw-elevation-prominent, 0 14px 42px rgba(18, 24, 42, .18), 0 3px 10px rgba(18, 24, 42, .08));
   animation: re-menu-in 150ms cubic-bezier(.22,1,.36,1);
 }
-.re-native-pane { outline: none; }
+.re-native-pane {
+  outline: none;
+  animation: re-native-pane-in 150ms cubic-bezier(.22,1,.36,1);
+}
+@keyframes re-native-pane-in {
+  from { opacity: .65; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .re-native-effort {
   width: min(312px, calc(100vw - 40px));
   max-height: min(312px, calc(100vh - 144px));
@@ -715,9 +722,13 @@ body[data-ds-dark-theme] .re-adapt-panel {
 @media (prefers-reduced-motion: reduce) {
   .re-effort-slider[data-top] .re-effort-track { animation: none; }
   .re-effort-knob,
+  .re-effort.is-chibi.is-dragging .re-effort-knob,
+  .re-effort-canvas,
   .re-effort-flare,
+  .re-effort.is-dragging .re-effort-flare,
   body:not([data-ds-dark-theme]) .re-effort-track::before { transition: none; }
-  .re-model-menu { animation: none; }
+  .re-model-menu,
+  .re-native-pane { animation: none; }
   .re-effort.is-chibi .re-effort-knob { animation: none; }
 }
 `

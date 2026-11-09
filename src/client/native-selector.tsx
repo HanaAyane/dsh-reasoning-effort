@@ -1,5 +1,6 @@
 import { cloneElement, isValidElement, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, ReactElement, ReactNode, ReactPortal } from 'react'
+import { positionNativeModelMenu } from './menu-position.js'
 
 // DSH 0.2.1-rc.2 has no effort-pane extension point. Keep this small adapter
 // isolated: the native registration retains its inject, locale, child slots,
@@ -26,6 +27,7 @@ export function wrapNativeSelector(Native: (props: NativeProps) => ReactNode, re
   return function NativeReasoningSelector(props: NativeProps) {
     const [effort, setEffort] = useState(false)
     const panelRef = useRef<HTMLDivElement>(null)
+    const menuRef = useRef<HTMLElement | null>(null)
     // Always invoke the same native function, including all its hooks.
     const native = Native(props)
     let menuOpen = false
@@ -51,9 +53,10 @@ export function wrapNativeSelector(Native: (props: NativeProps) => ReactNode, re
       if (!isValidElement<{ children: ReactNode[] }>(root) || !Array.isArray(root.props.children)) return element
       const [modelRow, effortRow] = root.props.children
       if (!isValidElement<ElementProps>(modelRow)) return element
+      const entry = { 'data-re-effort-entry': '', onClick: () => setEffort(true) }
       const row = isValidElement<ElementProps>(effortRow)
-        ? cloneElement(effortRow, { onClick: () => setEffort(true) })
-        : cloneElement(modelRow, { key: 'reasoning-effort', ref: null, disabled: props.locked, onClick: () => setEffort(true) } as ElementProps,
+        ? cloneElement(effortRow, entry)
+        : cloneElement(modelRow, { ...entry, key: 'reasoning-effort', ref: null, disabled: props.locked } as ElementProps,
             <span>{props.t('menu.effort')}</span>, <span aria-hidden="true">›</span>)
       return cloneElement(element, {
         onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
@@ -67,8 +70,17 @@ export function wrapNativeSelector(Native: (props: NativeProps) => ReactNode, re
       }, cloneElement(root, {}, modelRow, row), panes[1], panes[2])
     })
     useLayoutEffect(() => {
-      if (!menuOpen) setEffort(false)
-      else if (effort) panelRef.current?.focus()
+      if (!menuOpen) {
+        menuRef.current = null
+        setEffort(false)
+        return
+      }
+      const panel = panelRef.current
+      const menu = panel?.closest<HTMLElement>('[id][aria-label]') ?? menuRef.current
+      menuRef.current = panel ? menu : null
+      if (menu) positionNativeModelMenu(menu)
+      if (panel) panel.focus({ preventScroll: true })
+      else menu?.querySelector<HTMLElement>('[data-re-effort-entry]')?.focus({ preventScroll: true })
     }, [menuOpen, effort])
     return output
   }

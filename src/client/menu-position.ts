@@ -39,3 +39,39 @@ export function positionModelMenu(root: HTMLElement, menu: HTMLElement): () => v
     viewport?.removeEventListener('scroll', update)
   }
 }
+
+/** Match the native menu's placement before its size observer handles the pane swap. */
+export function positionNativeModelMenu(menu: HTMLElement): void {
+  const { ownerDocument, style } = menu
+  const view = ownerDocument.defaultView
+  if (!view || !menu.id || !style.left || !style.top || style.visibility === 'hidden') return
+  const trigger = ownerDocument.querySelector<HTMLButtonElement>(`button[aria-controls="${CSS.escape(menu.id)}"]`)
+  if (!trigger) return
+
+  const anchor = trigger.getBoundingClientRect()
+  const margin = 12
+  const gap = 8
+  // Newer native menus use the shared anchored-position hook and desktop frame inset.
+  const usesAnchoredPosition = style.getPropertyValue('--dsh-anchored-max-height') !== ''
+  const viewport = usesAnchoredPosition ? view.visualViewport : null
+  const viewportLeft = viewport?.offsetLeft ?? 0
+  const viewportTop = viewport?.offsetTop ?? 0
+  const root = ownerDocument.documentElement
+  const width = viewport?.width ?? (usesAnchoredPosition ? root.clientWidth || view.innerWidth : view.innerWidth)
+  const height = viewport?.height ?? (usesAnchoredPosition ? root.clientHeight || view.innerHeight : view.innerHeight)
+  const clearance = usesAnchoredPosition
+    ? Number.parseFloat(view.getComputedStyle(root).getPropertyValue('--dsh-frame-top-clearance'))
+    : NaN
+  const frameMargin = (root.hasAttribute('data-fullscreen') ? 0 : clearance) + 20
+  const topMargin = Number.isNaN(clearance)
+    ? margin
+    : Math.max(margin, Math.min(frameMargin, anchor.top >= 0 ? anchor.bottom + gap : Infinity))
+
+  const menuWidth = menu.offsetWidth
+  const menuHeight = menu.offsetHeight
+  const offsetForFixedPosition = viewport != null && CSS.supports('-webkit-backdrop-filter', 'none')
+  const left = anchor.right - menuWidth + (offsetForFixedPosition ? viewportLeft : 0)
+  const top = anchor.top - gap - menuHeight + (offsetForFixedPosition ? viewportTop : 0)
+  style.left = `${Math.max(viewportLeft + margin, Math.min(left, viewportLeft + width - margin - menuWidth))}px`
+  style.top = `${Math.max(viewportTop + topMargin, Math.min(top, viewportTop + height - margin - menuHeight))}px`
+}
