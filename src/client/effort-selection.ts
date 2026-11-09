@@ -7,10 +7,16 @@ export interface EffortLevel {
   readonly name: string
 }
 
+const EFFORT_MEMORY_PREFIX = 'dsh-reasoning-effort.last-selection:'
+
+function catalogModel(state: ModelDirectoryState, selection: ModelSelection) {
+  return state.groups.find((group) => group.id === selection.provider)
+    ?.models.find((model) => model.id === selection.model)
+}
+
 export function currentModel(state: ModelDirectoryState) {
   const current = state.current
-  return state.groups.find((group) => group.id === current?.provider)
-    ?.models.find((model) => model.id === current?.model)
+  return current === null ? undefined : catalogModel(state, current)
 }
 
 export function sliderLevels(state: ModelDirectoryState, t: ReasoningEffortTranslate): readonly EffortLevel[] {
@@ -37,6 +43,55 @@ function supportsEffort(state: ModelDirectoryState, effort: string | undefined, 
 
 function sameModel(current: ModelSelection | null, target: ModelSelection): boolean {
   return current?.provider === target.provider && current.model === target.model
+}
+
+function effortMemoryKey({ provider, model }: ModelSelection): string {
+  return EFFORT_MEMORY_PREFIX + JSON.stringify([provider, model])
+}
+
+function readRememberedEffort(selection: ModelSelection): string | null | undefined {
+  try {
+    const stored = window.localStorage.getItem(effortMemoryKey(selection))
+    if (stored === null) return undefined
+    const effort: unknown = JSON.parse(stored)
+    return effort === null || typeof effort === 'string' ? effort : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function rememberEffort(selection: ModelSelection): void {
+  try {
+    // Null is an explicit return to the provider default. A missing key is unlearned.
+    window.localStorage.setItem(effortMemoryKey(selection), JSON.stringify(selection.reasoningEffort ?? null))
+  } catch {
+    // Storage restrictions must not affect model selection.
+  }
+}
+
+/** Apply a remembered effort only to an actual model switch and a still-valid route. */
+export function restoreRememberedEffort(state: ModelDirectoryState, selection: ModelSelection): ModelSelection {
+  if (sameModel(state.current, selection)) return selection
+
+  // Seed existing sessions from an already-confirmed choice when there is no memory.
+  const previous = state.current
+  if (state.status === 'ready' && state.pending === null && previous?.reasoningEffort !== undefined &&
+    effortIndex(currentModel(state)?.reasoning?.efforts ?? [], previous.reasoningEffort) >= 0 &&
+    readRememberedEffort(previous) === undefined) {
+    rememberEffort(previous)
+  }
+
+  const remembered = readRememberedEffort(selection)
+  if (remembered === undefined) return selection
+  const reasoning = catalogModel(state, selection)?.reasoning
+  if (remembered === null) {
+    return reasoning !== undefined && reasoning.defaultEffort === undefined && reasoning.efforts.length > 0
+      ? { provider: selection.provider, model: selection.model }
+      : selection
+  }
+  return effortIndex(reasoning?.efforts ?? [], remembered) >= 0
+    ? { ...selection, reasoningEffort: remembered }
+    : selection
 }
 
 /** Stop waiting locally; the directory API cannot cancel an already-sent RPC. */
@@ -137,5 +192,7 @@ export async function selectEffort(
   const result = await abortable(directory.select(target), signal)
   signal.throwIfAborted()
   if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`)
-  return waitForSelection(directory, target, signal, t, timeoutMs)
+  const confirmed = await waitForSelection(directory, target, signal, t, timeoutMs)
+  rememberEffort(target)
+  return confirmed
 }

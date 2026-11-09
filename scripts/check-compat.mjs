@@ -21,9 +21,14 @@ async function compile(name, entry, extra = '') {
   })
   return import(pathToFileURL(outfile))
 }
-globalThis.window = { localStorage: { getItem: () => null }, addEventListener() {}, removeEventListener() {} }
+const storage = new Map()
+globalThis.window = {
+  localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
+  addEventListener() {}, removeEventListener() {},
+}
 const host = await compile('host', 'src/index.ts')
 const nativeAdapter = await compile('native-selector', 'src/client/native-selector.tsx')
+const effortSelection = await compile('effort-selection', 'src/client/effort-selection.ts')
 const client = await compile('client', 'src/client/index.tsx', '\nexport { AdvancedModelSelect, NativeEffortPanel, makeAdaptationService, wrapNativeSelector, enabledStore };')
 
 async function diagnose(declaration, levels, model = 'custom-model') {
@@ -243,6 +248,7 @@ test('runtime adapter restores the original registration on disable and disposal
 
 for (const reasoning of [undefined, { efforts: [{ id: 'high', name: 'High' }] }, { efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }] }]) {
 test(`native selector offers the appropriate control for effort count ${reasoning?.efforts.length ?? 0}`, async () => {
+  storage.clear()
   const original = await readFile(resolve(root, 'node_modules/@deepseek-ai/dsh-client-ui-model-selection/lib/client.js'))
   const source = original.toString('utf8')
   const nativeDocument = { querySelector: () => ({}), addEventListener() {}, removeEventListener() {}, body: {}, activeElement: null }
@@ -265,8 +271,14 @@ test(`native selector offers the appropriate control for effort count ${reasonin
   const directory = store(initial)
   const adapt = client.makeAdaptationService({ call: async () => ({ ok: true, value: { ...answer([]), model: 'model-0' } }) })
   const selections = []
+  const modelSwitches = []
   const props = {
-    locked: false, available: true, directory, load: () => {}, select: async () => ({ ok: true }), t,
+    locked: false, available: true, directory, load: () => {}, t,
+    select: async target => {
+      modelSwitches.push({ ...target })
+      directory.set({ ...directory.getSnapshot(), current: target })
+      return { ok: true }
+    },
     renderSlot: (_name, _owner, opts) => opts?.fallback,
   }
   // Exercise production registration/injection, not just the tree adapter.
@@ -331,6 +343,7 @@ test(`native selector offers the appropriate control for effort count ${reasonin
         { provider: 'custom', model: 'model-0', reasoningEffort: 'high' },
         { provider: 'custom', model: 'model-0' },
       ])
+      await act(async () => { tree.root.findByProps({ type: 'range' }).props.onChange({ currentTarget: { value: '1' } }) })
     }
   }
   const panel = tree.root.findByProps({ className: 're-native-effort' })
@@ -346,10 +359,51 @@ test(`native selector offers the appropriate control for effort count ${reasonin
   const search = tree.root.findByProps({ role: 'searchbox' })
   await act(async () => { search.props.onChange({ currentTarget: { value: 'Model 3' }, target: { value: 'Model 3' } }) })
   assert.equal(tree.root.findAllByProps({ role: 'menuitemradio' }).length, 1)
+  if (reasoning) {
+    await act(async () => { tree.root.findByProps({ role: 'menuitemradio' }).props.onClick() })
+    await act(async () => { search.props.onChange({ currentTarget: { value: 'Model 0' }, target: { value: 'Model 0' } }) })
+    await act(async () => { tree.root.findByProps({ role: 'menuitemradio' }).props.onClick() })
+    assert.deepEqual(modelSwitches, [
+      { provider: 'custom', model: 'model-3' },
+      { provider: 'custom', model: 'model-0', reasoningEffort: 'high' },
+    ])
+  }
   await act(async () => { tree.unmount() })
   dispose()
 })
 }
+
+test('effort memory validates provider, catalog and explicit defaults', async () => {
+  storage.clear()
+  const route = { provider: 'custom', model: 'same-id' }
+  const otherProvider = { ...route, provider: 'other' }
+  const high = { id: 'high', name: 'High' }
+  const low = { id: 'low', name: 'Low' }
+  const initial = { current: route, status: 'ready', error: null, failures: [], pending: null,
+    groups: [route, otherProvider].map(({ provider, model }) => ({ id: provider,
+      models: [{ id: model, reasoning: { efforts: [high] } }] })) }
+  const directory = store(initial)
+  const controller = { store: directory, load: async () => directory.getSnapshot(),
+    select: async target => { directory.set({ ...initial, current: target }); return { ok: true } } }
+  const signal = new AbortController().signal
+  const highSelection = { ...route, reasoningEffort: 'high' }
+  await effortSelection.selectEffort(controller, highSelection, signal, t)
+  const restore = effortSelection.restoreRememberedEffort
+  const away = { ...initial, current: otherProvider }
+  assert.deepEqual(restore(away, route), highSelection)
+  assert.deepEqual(restore(directory.getSnapshot(), otherProvider), otherProvider)
+  assert.deepEqual(restore(directory.getSnapshot(), route), route, 'do not override a same-model change')
+  const changedCatalog = { ...away, groups: [{ id: route.provider,
+    models: [{ id: route.model, reasoning: { defaultEffort: 'low', efforts: [low] } }] }] }
+  const newDefault = { ...route, reasoningEffort: 'low' }
+  assert.deepEqual(restore(changedCatalog, newDefault), newDefault)
+
+  await effortSelection.selectEffort(controller, route, signal, t)
+  assert.deepEqual(restore(away, route), route, 'explicit Default replaces a remembered effort')
+  await assert.rejects(effortSelection.selectEffort({ ...controller,
+    select: async () => ({ ok: false, error: { code: 'rejected', message: 'test rejection' } }) }, highSelection, signal, t))
+  assert.deepEqual(restore(away, route), route, 'failed selection does not overwrite Default')
+})
 
 
 test('embedded slider selects the current route and respects the native lock', async () => {

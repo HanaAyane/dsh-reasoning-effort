@@ -9,5 +9,7 @@ export declare function currentModel(state: ModelDirectoryState): import("@deeps
 export declare function sliderLevels(state: ModelDirectoryState, t: ReasoningEffortTranslate): readonly EffortLevel[];
 export declare function effortIndex(levels: readonly EffortLevel[], id: string | undefined): number;
 export declare function clampIndex(value: number, count: number): number;
+/** Apply a remembered effort only to an actual model switch and a still-valid route. */
+export declare function restoreRememberedEffort(state: ModelDirectoryState, selection: ModelSelection): ModelSelection;
 /** Revalidate a captured route and effort ID, never a position in a new catalog. */
 export declare function selectEffort(directory: ModelDirectory, target: ModelSelection, signal: AbortSignal, t: ReasoningEffortTranslate, timeoutMs?: number): Promise<ModelDirectoryState>;

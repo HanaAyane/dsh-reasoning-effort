@@ -40,6 +40,7 @@ import {
   clampIndex,
   currentModel,
   effortIndex,
+  restoreRememberedEffort,
   selectEffort,
   sliderLevels,
 } from './effort-selection.js'
@@ -993,11 +994,11 @@ function AdvancedModelSelect({
       setModelsOpen(false)
       return
     }
-    const accepted = await select({
+    const accepted = await select(restoreRememberedEffort(live, {
       provider,
       model,
       ...(defaultEffort === undefined ? {} : { reasoningEffort: defaultEffort }),
-    })
+    }))
     if (accepted) setModelsOpen(false)
   }
 

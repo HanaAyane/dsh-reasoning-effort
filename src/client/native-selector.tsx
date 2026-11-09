@@ -1,11 +1,20 @@
-import { cloneElement, isValidElement, useLayoutEffect, useRef, useState } from 'react'
+import { cloneElement, isValidElement, useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, ReactElement, ReactNode, ReactPortal } from 'react'
+import type { ModelSelection } from '@deepseek-ai/dsh-api-session-controller/types'
+import type { ModelDirectory } from '@deepseek-ai/dsh-client-ui-model-selection/client'
+import { restoreRememberedEffort } from './effort-selection.js'
 import { positionNativeModelMenu } from './menu-position.js'
 
 // DSH 0.2.1-rc.2 has no effort-pane extension point. Keep this small adapter
 // isolated: the native registration retains its inject, locale, child slots,
 // model search, selection, labels and portal positioning.
-type NativeProps = { t: (key: string) => string; locked: boolean; [key: string]: unknown }
+type NativeProps = {
+  t: (key: string) => string
+  locked: boolean
+  directory: ModelDirectory['store']
+  select: (selection: ModelSelection) => Promise<Awaited<ReturnType<ModelDirectory['select']>> | undefined>
+  [key: string]: unknown
+}
 type ElementProps = { children?: ReactNode; [key: string]: unknown }
 
 export function mapNativeTree(node: ReactNode, transform: (element: ReactElement<ElementProps>) => ReactNode): ReactNode {
@@ -28,8 +37,11 @@ export function wrapNativeSelector(Native: (props: NativeProps) => ReactNode, re
     const [effort, setEffort] = useState(false)
     const panelRef = useRef<HTMLDivElement>(null)
     const menuRef = useRef<HTMLElement | null>(null)
+    const { directory, select } = props
+    const selectModel = useCallback((selection: ModelSelection) =>
+      select(restoreRememberedEffort(directory.getSnapshot(), selection)), [directory, select])
     // Always invoke the same native function, including all its hooks.
-    const native = Native(props)
+    const native = Native({ ...props, select: selectModel })
     let menuOpen = false
     const output = mapNativeTree(native, element => {
       if (element.props['aria-label'] !== props.t('menu.aria') || !Array.isArray(element.props.children)) return element
