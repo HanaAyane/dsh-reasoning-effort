@@ -430,6 +430,38 @@ test('embedded slider selects the current route and respects the native lock', a
 })
 
 
+test('native model options remain usable with or without a native effort row', async () => {
+  for (const hasEffort of [true, false]) {
+    let toggles = 0
+    const options = React.createElement('button', { type: 'button', role: 'switch', onClick: () => { toggles++ } }, 'Enable agent teamwork')
+    const extraPane = React.createElement('aside', { 'data-native-pane': '' })
+    const Native = () => React.createElement('div', { 'aria-label': 'menu.aria' },
+      React.createElement(React.Fragment, null,
+        React.createElement('button', { role: 'menuitem' }, 'menu.model'),
+        hasEffort && React.createElement('button', { role: 'menuitem' }, 'menu.effort'),
+        options),
+      false,
+      false,
+      ...(!hasEffort ? [extraPane] : []))
+    const Wrapped = nativeAdapter.wrapNativeSelector(Native, () => 'Effort panel')
+    const props = { t, locked: false, directory: store({}), select: async () => undefined }
+    let tree
+    await act(async () => { tree = TestRenderer.create(React.createElement(Wrapped, props)) })
+    const toggle = () => tree.root.findByProps({ role: 'switch' })
+    assert.equal(toggle().children[0], 'Enable agent teamwork')
+    assert.equal(tree.root.findAllByProps({ 'data-native-pane': '' }).length, hasEffort ? 0 : 1)
+    await act(async () => { toggle().props.onClick() })
+    assert.equal(toggles, 1)
+    await act(async () => { tree.root.findByProps({ 'data-re-effort-entry': '' }).props.onClick() })
+    const pane = tree.root.findByProps({ className: 're-native-pane' })
+    assert.deepEqual(pane.children, ['Effort panel'])
+    await act(async () => { pane.props.onKeyDown({ key: 'Escape', preventDefault() {}, stopPropagation() {} }) })
+    assert.equal(toggle().children[0], 'Enable agent teamwork')
+    await act(async () => { tree.unmount() })
+  }
+})
+
+
 test('portal traversal retains the original target and key while replacing menu children', () => {
   const target = { nodeType: 1 }
   const portal = { $$typeof: Symbol.for('react.portal'), key: 'native-menu', containerInfo: target, implementation: null,

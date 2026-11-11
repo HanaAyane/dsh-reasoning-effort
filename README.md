@@ -8,7 +8,7 @@
 
 [English](README.en.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [最新发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [反馈问题](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.9.2](https://img.shields.io/badge/release-0.9.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2)
+[![v0.9.3](https://img.shields.io/badge/release-0.9.3-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.3)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#版本支持政策)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Releases 附件累计下载次数](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
@@ -25,19 +25,19 @@
 
 <img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="插件滑块在 DSH 深色与浅色主题中的实际截图" width="100%">
 
-[本次更新](#v092-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
+[本次更新](#v093-更新内容) · [安装与更新](#安装与更新) · [桌面端安装](#dsh-桌面端安装) · [版本支持](#版本支持政策) · [外观设置](#大肥鱼滑块) · [常见问题](#常见问题)
 
-## v0.9.2 更新内容
+## v0.9.3 更新内容
 
-`v0.9.2` 是下一次大更新前的交互性能与 Bug 修复版。滑块松手后光效平滑回落，推理面板从正确位置入场。单档模型可通过滑块在独立默认选项和配置档位之间切换，模型选择器也会记住每个模型上次成功提交的档位。
+启用推理强度滑块后，模型菜单会保留 Agent Teams 开关和其他原生选项。 [Issue #27](https://github.com/HanaAyane/dsh-reasoning-effort/issues/27)
 
 下一次大更新将为更多大模型家族适配各自的模型娘滑块。
 
-`v0.9.2` 已在 GitHub 和 npm 发布。完整改动见 [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) 和 [CHANGELOG](CHANGELOG.md)。
+完整改动见 [v0.9.3 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.3) 和 [CHANGELOG](CHANGELOG.md)。
 
 ## 版本支持政策
 
-插件 **`v0.9.2` 兼容 DSH `0.2.2-rc.1`**，支持 Web 和桌面端。仅维护 RC 版本，不单独适配 alpha 版本。
+插件 **`v0.9.3` 支持 DSH `0.2.2-rc.2`**。兼容性维护以 DSH RC 版本为目标。
 
 ## 安装与更新
 
@@ -45,28 +45,26 @@
 
 ### Web：安装固定发行版
 
-推荐安装官方 npm 包 `@ayanehana/dsh-reasoning-effort@0.9.2`。无作用域的同名包由其他维护者发布。 [npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort/v/0.9.2) · [GitHub 插件包](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz)
+推荐安装官方 npm 包 `@ayanehana/dsh-reasoning-effort@0.9.3`。无作用域的同名包由其他维护者发布。 [npm 包页面](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort/v/0.9.3)
 
 如果此前已通过 GitHub 安装旧的 `dsh-reasoning-effort`，切换到带作用域的新包前请先卸载旧包；Web 使用 `dsh plugin --profile web remove dsh-reasoning-effort`，桌面端在 **插件** 页面卸载，避免重复加载。
 
 在你启动 DSH 时使用的终端环境执行：
 
 ```powershell
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.3
 dsh --profile web --dump-config
 ```
 
 确认输出中出现 `name: '@ayanehana/dsh-reasoning-effort'`（引号形式可能不同）。
 
-也可将安装命令中的包名换成 GitHub 插件包的下载地址，或使用 GitHub 标签地址 `github:HanaAyane/dsh-reasoning-effort#v0.9.2`。开发体验可用 `#main`，主分支可能包含未发布改动。
-
 <details>
 <summary>让 Agent 帮你安装：复制这段提示词</summary>
 
 ```text
-请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.2。
+请为 DeepSeek Harness 的 web Profile 安装 dsh-reasoning-effort v0.9.3。
 只执行下面两条命令，不要修改其他 Profile：
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.3
 dsh --profile web --dump-config
 确认配置中出现 dsh-reasoning-effort 后告诉我结果。
 不要关闭或重启正在运行的 DSH；提醒我手动重启 Web Host 并刷新页面。
@@ -84,13 +82,13 @@ dsh --profile web --dump-config
 
 ### DSH 桌面端安装
 
-适用于 **DSH Desktop `0.2.2-rc.1`**。请在桌面应用内安装，无需安装终端命令，也无需预先退出应用。
+请在 DSH Desktop 应用内安装，无需安装终端命令，也无需预先退出应用。
 
 1. 打开 DSH Desktop，在侧栏进入 **插件** 页面。
-2. 点击 **添加插件**，在 **包名或地址** 中填入以下包名，也可使用 GitHub 插件包的下载地址。
+2. 点击 **添加插件**，在 **包名或地址** 中填入以下包名。
 
    ```text
-   @ayanehana/dsh-reasoning-effort@0.9.2
+   @ayanehana/dsh-reasoning-effort@0.9.3
    ```
 3. 等待页面解析插件信息，确认来源和版本后安装。
 4. 安装完成后，在 **已安装插件** 中确认 `@ayanehana/dsh-reasoning-effort` 已启用，并按界面提示重新加载或重启应用。

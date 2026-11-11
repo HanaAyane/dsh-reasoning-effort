@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.9.3] - 2026-11-12
+
+### Fixed
+
+- Support DSH `0.2.2-rc.2` and preserve the Agent Teams toggle and other native model menu options when the reasoning slider is enabled ([#27](https://github.com/HanaAyane/dsh-reasoning-effort/issues/27)).
+
 ## [0.9.2] - 2026-11-09
 
 This maintenance update focuses on interaction performance and bug fixes ahead of the next major update.

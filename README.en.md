@@ -8,7 +8,7 @@
 
 [中文首页](README.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[![v0.9.2](https://img.shields.io/badge/release-0.9.2-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2)
+[![v0.9.3](https://img.shields.io/badge/release-0.9.3-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.3)
 [![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
 [![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
 [![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
@@ -25,19 +25,19 @@ Keep native model search, groups, and badges. Open Effort to adjust the plugin s
 
 <img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
 
-[What changed](#whats-new-in-v092) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
+[What changed](#whats-new-in-v093) · [Install and update](#install-and-update) · [Desktop installation](#install-in-dsh-desktop) · [Version support](#version-support-policy) · [Appearance](#the-big-fat-fish-slider) · [Troubleshooting](#troubleshooting)
 
-## What's new in v0.9.2
+## What's new in v0.9.3
 
-`v0.9.2` is an interaction performance and bug-fix update ahead of the next major update. Slider effects settle smoothly on release, and the reasoning pane opens at the correct position. Models with one configured effort and a separate default can use both slider stops, and the selector remembers each model's last confirmed effort.
+The model menu keeps the Agent Teams toggle and other native options when the reasoning-effort slider is enabled. [Issue #27](https://github.com/HanaAyane/dsh-reasoning-effort/issues/27)
 
 The next major update will bring character-themed sliders to more model families.
 
-`v0.9.2` is available on GitHub and npm. See the full list of changes in the [v0.9.2 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.2) and [CHANGELOG](CHANGELOG.md).
+See the full list of changes in the [v0.9.3 Release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.3) and [CHANGELOG](CHANGELOG.md).
 
 ## Version support policy
 
-Plugin **`v0.9.2` is compatible with DSH `0.2.2-rc.1`** on Web and Desktop. Maintenance targets RC versions.
+Plugin **`v0.9.3` supports DSH `0.2.2-rc.2`**. Compatibility maintenance targets DSH RC versions.
 
 ## Install and update
 
@@ -45,28 +45,26 @@ The download badges separately show total downloads of GitHub release assets and
 
 ### Web: install a pinned release
 
-Install the official npm package `@ayanehana/dsh-reasoning-effort@0.9.2`. The unscoped package belongs to another maintainer. [npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort/v/0.9.2) · [GitHub package](https://github.com/HanaAyane/dsh-reasoning-effort/releases/download/v0.9.2/dsh-reasoning-effort-0.9.2.tgz)
+Install the official npm package `@ayanehana/dsh-reasoning-effort@0.9.3`. The unscoped package belongs to another maintainer. [npm package page](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort/v/0.9.3)
 
 If you previously installed the old `dsh-reasoning-effort` package from GitHub, uninstall it before switching to the scoped package to avoid loading both copies. For Web, run `dsh plugin --profile web remove dsh-reasoning-effort`; for Desktop, uninstall it from the **Plugins** page.
 
 Run these commands in the terminal environment you use to start DSH:
 
 ```powershell
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.3
 dsh --profile web --dump-config
 ```
 
 Confirm that the output includes `name: '@ayanehana/dsh-reasoning-effort'` (quoting may vary).
 
-The install command also accepts the GitHub package URL or the tag `github:HanaAyane/dsh-reasoning-effort#v0.9.2`. To try development changes, use `#main`, which may contain unreleased changes.
-
 <details>
 <summary>Ask an agent to install it: copy this prompt</summary>
 
 ```text
-Install dsh-reasoning-effort v0.9.2 for the DeepSeek Harness web profile.
+Install dsh-reasoning-effort v0.9.3 for the DeepSeek Harness web profile.
 Run only these two commands and do not change any other profile:
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.2
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.3
 dsh --profile web --dump-config
 Confirm that dsh-reasoning-effort appears in the configuration and report the result.
 Do not stop or restart the running DSH process. Remind me to restart the Web Host and refresh the page manually.
@@ -84,13 +82,13 @@ Open the model control below the composer. Choose **Model** for native search an
 
 ### Install in DSH Desktop
 
-For **DSH Desktop `0.2.2-rc.1`**, install inside the desktop app. No terminal command registration or prior app exit is required.
+Install from within the DSH Desktop app. No terminal command registration or prior app exit is required.
 
 1. Open DSH Desktop and select **Plugins** in the sidebar.
-2. Choose **Add plugin** and enter the npm package below or the GitHub package URL in **Package name or address**.
+2. Choose **Add plugin** and enter the npm package below in **Package name or address**.
 
    ```text
-   @ayanehana/dsh-reasoning-effort@0.9.2
+   @ayanehana/dsh-reasoning-effort@0.9.3
    ```
 3. Wait for the plugin information to load, verify the source and version, and install.
 4. Confirm that `@ayanehana/dsh-reasoning-effort` is enabled under **Installed plugins**, then reload or restart as directed.

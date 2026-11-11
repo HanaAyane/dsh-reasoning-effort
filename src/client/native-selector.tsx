@@ -45,8 +45,7 @@ export function wrapNativeSelector(Native: (props: NativeProps) => ReactNode, re
     let menuOpen = false
     const output = mapNativeTree(native, element => {
       if (element.props['aria-label'] !== props.t('menu.aria') || !Array.isArray(element.props.children)) return element
-      const panes = element.props.children
-      if (panes.length !== 3) return element
+      const [root, ...otherPanes] = element.props.children
       menuOpen = true
       if (effort) return cloneElement(element, { role: 'group' },
         <div className="re-native-pane" ref={panelRef} tabIndex={-1} onBlur={event => {
@@ -61,10 +60,10 @@ export function wrapNativeSelector(Native: (props: NativeProps) => ReactNode, re
         }}>
           {renderPanel(props)}
         </div>)
-      const root = panes[0]
       if (!isValidElement<{ children: ReactNode[] }>(root) || !Array.isArray(root.props.children)) return element
-      const [modelRow, effortRow] = root.props.children
-      if (!isValidElement<ElementProps>(modelRow)) return element
+      // The native menu keeps the effort position even when it renders nothing.
+      const [modelRow, effortRow, ...options] = root.props.children
+      if (!isValidElement<ElementProps>(modelRow) || modelRow.props.role !== 'menuitem') return element
       const entry = { 'data-re-effort-entry': '', onClick: () => setEffort(true) }
       const row = isValidElement<ElementProps>(effortRow)
         ? cloneElement(effortRow, entry)
@@ -79,7 +78,7 @@ export function wrapNativeSelector(Native: (props: NativeProps) => ReactNode, re
           const index = rows.indexOf(event.target as HTMLButtonElement)
           rows[(index + (event.key === 'ArrowDown' ? 1 : rows.length - 1) + rows.length) % rows.length]?.focus()
         },
-      }, cloneElement(root, {}, modelRow, row), panes[1], panes[2])
+      }, cloneElement(root, {}, modelRow, row, ...options), ...otherPanes)
     })
     useLayoutEffect(() => {
       if (!menuOpen) {
