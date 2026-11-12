@@ -1,4 +1,4 @@
-/** Locale dictionaries for the reasoning-effort model control and settings rows. */
+/** Locale dictionaries for the reasoning-effort model control and settings page. */
 /** Namespace registered with DSH's client locale service. */
 export declare const NS = "reasoning-effort";
 /** Simplified Chinese dictionary and key-set source of truth. */
@@ -79,9 +79,22 @@ export declare const zh: {
     'settings.effort.description': string;
     'settings.effort.aria': string;
     'settings.effort.compatibility': string;
-    'settings.chibi.title': string;
-    'settings.chibi.description': string;
-    'settings.chibi.aria': string;
+    'settings.preview.title': string;
+    'settings.preview.hint': string;
+    'settings.runner.title': string;
+    'settings.runner.description': string;
+    'settings.runner.auto': string;
+    'settings.runner.off': string;
+    'settings.runner.deepseek': string;
+    'settings.runner.deepseek-winter': string;
+    'settings.runner.openai': string;
+    'settings.runner.claude': string;
+    'settings.runner.gemini': string;
+    'settings.runner.grok': string;
+    'settings.runner.kimi': string;
+    'settings.runner.glm': string;
+    'settings.runner.qwen': string;
+    'settings.runner.minimax': string;
     'settings.enabled': string;
     'settings.disabled': string;
 };
@@ -165,9 +178,22 @@ export declare const en: {
     'settings.effort.description': string;
     'settings.effort.aria': string;
     'settings.effort.compatibility': string;
-    'settings.chibi.title': string;
-    'settings.chibi.description': string;
-    'settings.chibi.aria': string;
+    'settings.preview.title': string;
+    'settings.preview.hint': string;
+    'settings.runner.title': string;
+    'settings.runner.description': string;
+    'settings.runner.auto': string;
+    'settings.runner.off': string;
+    'settings.runner.deepseek': string;
+    'settings.runner.deepseek-winter': string;
+    'settings.runner.openai': string;
+    'settings.runner.claude': string;
+    'settings.runner.gemini': string;
+    'settings.runner.grok': string;
+    'settings.runner.kimi': string;
+    'settings.runner.glm': string;
+    'settings.runner.qwen': string;
+    'settings.runner.minimax': string;
     'settings.enabled': string;
     'settings.disabled': string;
 };

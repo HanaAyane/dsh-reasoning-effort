@@ -7,21 +7,22 @@ Approved on 2026-08-15 for the DeepSeek Harness integration.
 - Level count, names and order come from the current model directory; there is no fixed three-level set.
 - The thumb follows the pointer continuously and snaps to a value on release.
 - Radiation, waves, crests, particles, and the trailing flare are clipped to the left side of the thumb.
+- The runner sets the track and particle colors. The plain slider uses the current model family's colors.
+- Dragging extends the streaks behind the thumb. They fade on release. Reduced-motion mode keeps the track effects static.
 - No rotating animation.
 - The thumb fill is pure white in every theme.
 
 ## Dark theme
 
-- Blue, violet, and near-black track.
-- Pixel radiation uses electric blue through violet highlights.
+- The full track shows the active theme's dark gradient.
+- Pixel radiation uses highlights from the same family.
 - `max` may increase bloom and pulse intensity without rotating the thumb.
 
 ## Light theme
 
-- White and blue track.
-- The filled region ends at the thumb; the unfilled region stays pale blue-white.
-- `high` ends in a medium blue and `max` ends in a visibly deeper blue.
-- Radiation remains blue and readable on a light surface.
+- The unfilled track uses the active theme's light base color.
+- The filled region ends at the thumb and uses a stronger gradient at the highest effort level.
+- Radiation uses the active theme's light-mode palette.
 
 ## DSH adaptation
 
@@ -31,11 +32,11 @@ Approved on 2026-08-15 for the DeepSeek Harness integration.
 - Prefer DSH `--dsw-*` design tokens for surrounding labels, borders, and focus treatment.
 - Read and write `reasoningEffort` through the current session's model selection (`sessions.models` / `sessions.selectModel`), never through the global provider settings namespace.
 
-## Experimental chibi thumb
+## Slider appearance
 
-- Enabled by default and controlled by a separate switch below the main plugin switch.
-- Replace only the white thumb; keep the approved track, radiation, snapping, and model-selection behavior.
-- Play eight frames in reading order: top row left-to-right, then bottom row left-to-right.
+- The appearance setting defaults to Follow model. It also offers a fixed runner and a plain thumb.
+- The settings preview uses local sample levels and shares the live slider's appearance and animations.
+- Play each horizontal sprite strip from left to right using its configured frame count. Both Big Fat Fish outfits share the DeepSeek track and particle palette.
 - Use a 720 ms loop at rest and a 420 ms loop while dragging.
 - Keep the full character visible at both track endpoints and preserve reduced-motion behavior by freezing the animation.
 

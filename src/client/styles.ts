@@ -7,9 +7,16 @@
  *
  * @module dsh-reasoning-effort/client/styles
  */
-import chibiRunnerSprite from '../../assets/chibi-runner-strip.png'
+import { RUNNER_LOOP_MS, runnerIds, runnerSprites } from './runners.js'
+import { trackThemeCSS } from './track-themes.js'
 
 export const CSS = `
+${trackThemeCSS}
+${runnerIds.map(id => `
+[data-re-runner="${id}"] {
+  --re-runner-image: url("${runnerSprites[id].image}");
+  --re-runner-frames: ${runnerSprites[id].frames};
+}`).join('\n')}
 .re-effort {
   display: flex;
   flex-direction: column;
@@ -53,9 +60,9 @@ export const CSS = `
   inset: 0;
   overflow: hidden;
   border-radius: inherit;
-  background: linear-gradient(100deg, #03040a 0%, #071126 22%, #101d4c 45%, #302262 70%, #5d35a0 100%);
+  background: var(--re-track-dark);
   box-shadow:
-    inset 0 1px 0 rgba(189, 199, 255, .15),
+    inset 0 1px 0 color-mix(in srgb, var(--re-track-accent) 24%, transparent),
     inset 0 -1px 0 rgba(0, 0, 0, .55),
     0 3px 10px rgba(12, 17, 55, .34);
 }
@@ -64,8 +71,8 @@ export const CSS = `
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 18% 45%, rgba(82, 130, 255, .12), transparent 24%),
-    linear-gradient(90deg, rgba(0, 0, 0, .28), transparent 42%, rgba(168, 113, 255, .12));
+    radial-gradient(circle at 18% 45%, color-mix(in srgb, var(--re-track-accent) 14%, transparent), transparent 24%),
+    linear-gradient(90deg, rgba(0, 0, 0, .28), transparent 42%, color-mix(in srgb, var(--re-track-accent) 14%, transparent));
   pointer-events: none;
 }
 .re-effort-fx {
@@ -95,7 +102,10 @@ export const CSS = `
   width: 78px;
   height: 46px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.96) 0 4%, rgba(188,189,255,.8) 11%, rgba(106,87,255,.5) 28%, rgba(105,31,255,.2) 49%, transparent 74%);
+  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.96) 0 4%,
+    color-mix(in srgb, var(--re-track-accent), white) 11%,
+    color-mix(in srgb, var(--re-track-accent) 50%, transparent) 28%,
+    color-mix(in srgb, var(--re-track-accent) 20%, transparent) 49%, transparent 74%);
   filter: blur(2px) saturate(1.25);
   mix-blend-mode: screen;
   transform: translate(-100%, -50%);
@@ -113,14 +123,15 @@ export const CSS = `
 .re-effort-flare::before {
   width: 52px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(100,160,255,.42), #f1ecff, rgba(193,82,255,.65), transparent);
-  box-shadow: 0 0 7px #9b7cff, 0 0 13px rgba(72,132,255,.64);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--re-track-accent) 42%, transparent),
+    #fff, color-mix(in srgb, var(--re-track-accent) 65%, transparent), transparent);
+  box-shadow: 0 0 7px var(--re-track-accent);
 }
 .re-effort-flare::after {
   width: 1px;
   height: 20px;
-  background: linear-gradient(180deg, transparent, rgba(196,190,255,.84), transparent);
-  box-shadow: 0 0 7px #9c7cff;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--re-track-accent), white), transparent);
+  box-shadow: 0 0 7px var(--re-track-accent);
 }
 .re-effort-knob {
   position: absolute;
@@ -149,19 +160,18 @@ export const CSS = `
   border: 0;
   border-radius: 8px;
   background-color: transparent;
-  background-image: url("${chibiRunnerSprite}");
+  background-image: var(--re-runner-image);
   background-repeat: no-repeat;
   background-position: 0 0;
-  background-size: 800% 100%;
+  background-size: calc(var(--re-runner-frames) * 100%) 100%;
   box-shadow: none !important;
   filter:
     drop-shadow(0 1px 1px rgba(0, 0, 0, .28))
     drop-shadow(0 0 5px rgba(92, 105, 255, .34));
-  animation: re-chibi-run 720ms step-end infinite;
+  animation: re-runner-cycle ${RUNNER_LOOP_MS}ms steps(var(--re-runner-frames), jump-none) infinite;
   transform-origin: 50% 68%;
 }
 .re-effort.is-chibi.is-dragging .re-effort-knob {
-  animation-duration: 420ms;
   transition: filter 140ms ease;
   filter:
     drop-shadow(0 2px 1px rgba(0, 0, 0, .28))
@@ -450,6 +460,84 @@ export const CSS = `
 }
 .re-setting-switch[aria-checked='false'] .re-setting-switch-knob { background: var(--dsw-alias-switch-thumb); }
 .re-setting-switch[aria-checked='true'] .re-setting-switch-knob { transform: translateX(16px); }
+.re-settings-preview {
+  margin-top: 16px;
+  padding: 12px 16px 10px;
+  border: 1px solid var(--dsw-alias-border-l2, rgba(121,126,145,.18));
+  border-radius: 12px;
+}
+.re-settings-preview .re-effort { margin-top: 12px; }
+.re-settings-preview .re-effort-slider:has(.re-effort-input:focus-visible) {
+  outline: 2px solid var(--dsw-focus-ring-color, #4d70ff);
+  outline-offset: 3px;
+}
+.re-runner-picker {
+  min-inline-size: 0;
+  border: 0;
+  margin: 20px 0 0;
+  padding: 0;
+}
+.re-runner-picker legend {
+  padding: 0;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+.re-runner-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.re-runner-option {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  cursor: pointer;
+}
+.re-runner-option:nth-child(-n+2) { grid-column: span 2; }
+.re-runner-option input {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  margin: 0;
+  accent-color: var(--dsw-alias-brand-primary, #4d70ff);
+  cursor: inherit;
+}
+.re-runner-option-body {
+  display: grid;
+  flex: 1 1 0;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 6px 8px;
+  border: 1px solid var(--dsw-alias-border-l2, rgba(121,126,145,.18));
+  border-radius: 10px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.re-runner-option:nth-child(-n+2) .re-runner-option-body { padding: 10px 26px; }
+.re-runner-option input:checked + .re-runner-option-body {
+  border-color: var(--dsw-alias-brand-primary, #4d70ff);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d70ff) 8%, transparent);
+}
+.re-runner-option input:focus-visible + .re-runner-option-body {
+  outline: 2px solid var(--dsw-focus-ring-color, #4d70ff);
+  outline-offset: 2px;
+}
+.re-runner-preview {
+  width: 40px;
+  height: 55px;
+  background: var(--re-runner-image) 0 0 / calc(var(--re-runner-frames) * 100%) 100% no-repeat;
+}
+@media (max-width: 680px) {
+  .re-runner-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .re-runner-option:nth-child(-n+2) { grid-column: auto; }
+}
 body[data-ds-dark-theme] .re-model-menu {
   color: var(--dsw-alias-label-primary, #f2f4f8);
   background: var(--dsw-specific-menu, var(--dsw-alias-bg-layer-3, #202126));
@@ -465,11 +553,11 @@ body:not([data-ds-dark-theme]) .re-effort-slider {
   filter: none;
 }
 body:not([data-ds-dark-theme]) .re-effort-track {
-  background: var(--dsw-static-blue-75, #e5f0ff);
+  background: var(--re-track-light);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.9),
-    inset 0 0 0 1px rgba(80,133,194,.14),
-    0 3px 10px rgba(48,101,165,.13);
+    inset 0 0 0 1px color-mix(in srgb, var(--re-track-accent) 16%, transparent),
+    0 3px 10px color-mix(in srgb, var(--re-track-accent) 13%, transparent);
 }
 body:not([data-ds-dark-theme]) .re-effort-track::before {
   content: "";
@@ -478,34 +566,39 @@ body:not([data-ds-dark-theme]) .re-effort-track::before {
   inset: 0 auto 0 0;
   width: var(--re-progress);
   border-radius: inherit;
-  background: linear-gradient(90deg, #fff 0%, #e2f0ff 20%, #a8d0fb 57%, #438fdf 100%);
+  background: var(--re-track-fill);
   transition: width 190ms cubic-bezier(.22,1,.36,1);
 }
 body:not([data-ds-dark-theme]) .re-effort-slider[data-top] .re-effort-track::before {
-  background: linear-gradient(90deg, #fff 0%, #d7eaff 18%, #75afea 54%, #0751ad 100%);
+  background: var(--re-track-peak);
 }
 body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-track::before {
   transition: none;
 }
 body:not([data-ds-dark-theme]) .re-effort-track::after {
   z-index: 1;
-  background: linear-gradient(90deg, rgba(255,255,255,.48), transparent 34%, rgba(23,101,201,.07));
+  background: linear-gradient(90deg, rgba(255,255,255,.48), transparent 34%,
+    color-mix(in srgb, var(--re-track-accent) 9%, transparent));
 }
 body:not([data-ds-dark-theme]) .re-effort-canvas {
   opacity: .78;
   mix-blend-mode: multiply;
 }
 body:not([data-ds-dark-theme]) .re-effort-flare {
-  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.98) 0 5%, rgba(204,231,255,.88) 13%, rgba(91,162,241,.48) 31%, rgba(37,111,207,.16) 53%, transparent 75%);
+  background: radial-gradient(ellipse at 100% 50%, rgba(255,255,255,.98) 0 5%,
+    color-mix(in srgb, var(--re-track-accent) 30%, white) 13%,
+    color-mix(in srgb, var(--re-track-accent) 48%, transparent) 31%,
+    color-mix(in srgb, var(--re-track-accent) 16%, transparent) 53%, transparent 75%);
   filter: blur(2px) saturate(1.12);
 }
 body:not([data-ds-dark-theme]) .re-effort-flare::before {
-  background: linear-gradient(90deg, transparent, rgba(116,177,244,.34), #fff, rgba(66,139,225,.58), transparent);
-  box-shadow: 0 0 7px rgba(58,133,222,.5), 0 0 13px rgba(104,176,255,.38);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--re-track-accent) 34%, transparent),
+    #fff, color-mix(in srgb, var(--re-track-accent) 58%, transparent), transparent);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--re-track-accent) 50%, transparent);
 }
 body:not([data-ds-dark-theme]) .re-effort-flare::after {
   background: linear-gradient(180deg, transparent, rgba(255,255,255,.94), transparent);
-  box-shadow: 0 0 7px rgba(64,137,224,.44);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--re-track-accent) 44%, transparent);
 }
 body:not([data-ds-dark-theme]) .re-effort-knob {
   border-color: rgba(126,160,197,.32);
@@ -525,21 +618,18 @@ body:not([data-ds-dark-theme]) .re-effort.is-dragging .re-effort-knob {
     0 3px 8px rgba(39,77,119,.18);
 }
 @keyframes re-effort-dark-breathe {
-  0%, 100% { box-shadow: inset 0 1px 0 rgba(196,204,255,.16), 0 3px 10px rgba(18,25,72,.4); }
-  50% { box-shadow: inset 0 1px 0 rgba(220,214,255,.24), 0 0 21px rgba(111,66,255,.5); }
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 3px 10px rgba(18,25,72,.4); }
+  50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 0 21px color-mix(in srgb, var(--re-track-accent) 50%, transparent); }
 }
 @keyframes re-effort-light-breathe {
-  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(67,124,193,.16), 0 3px 10px rgba(48,101,165,.13); }
-  50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.96), inset 0 0 0 1px rgba(31,102,190,.22), 0 0 19px rgba(31,105,201,.24); }
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px color-mix(in srgb, var(--re-track-accent) 16%, transparent),
+    0 3px 10px color-mix(in srgb, var(--re-track-accent) 13%, transparent); }
+  50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.96), inset 0 0 0 1px color-mix(in srgb, var(--re-track-accent) 22%, transparent),
+    0 0 19px color-mix(in srgb, var(--re-track-accent) 24%, transparent); }
 }
-@keyframes re-chibi-run {
-  0% { background-position: 14.285714% 0; }
-  14.285714% { background-position: 28.571429% 0; }
-  28.571429% { background-position: 42.857143% 0; }
-  42.857143% { background-position: 57.142857% 0; }
-  57.142857% { background-position: 71.428571% 0; }
-  71.428571% { background-position: 85.714286% 0; }
-  85.714286%, 100% { background-position: 100% 0; }
+@keyframes re-runner-cycle {
+  from { background-position: 0 0; }
+  to { background-position: 100% 0; }
 }
 .re-adapt {
   padding: 10px 14px 12px;

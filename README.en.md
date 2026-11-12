@@ -20,11 +20,13 @@ The plugin keeps DSH's model search, groups, and Agent Teams toggle, and remembe
 
 <img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
 
-## The Big Fat Fish slider
+## Slider appearance
 
-Under **Settings → General**, turn off **Big Fat Fish slider** to use the plain slider. Turn off **Reasoning effort selector** to restore the built-in DSH model menu.
+Under **Settings → Reasoning effort slider**, choose **Follow model**, **Plain slider**, or a fixed runner to use across all models. The track and trail use the displayed runner's colors, which both Big Fat Fish outfits share. The plain slider uses the current model's colors. You can also turn off the plugin slider here to restore the built-in DSH model menu.
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/settings.webp" alt="The reasoning effort and Big Fat Fish slider switches in DeepSeek Harness General Settings" width="100%">
+Drag the preview slider on the same page to try the runner and its effects. Your session keeps its current effort level.
+
+Thanks to @xihucuyudaichi for contributing the original set of model runners. The Gemini and Qwen sprites are adapted from that contribution. [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
 
 ## Version support policy
 

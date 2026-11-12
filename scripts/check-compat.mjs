@@ -25,11 +25,15 @@ const storage = new Map()
 globalThis.window = {
   localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
   addEventListener() {}, removeEventListener() {},
+  matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
 }
 const host = await compile('host', 'src/index.ts')
 const nativeAdapter = await compile('native-selector', 'src/client/native-selector.tsx')
 const effortSelection = await compile('effort-selection', 'src/client/effort-selection.ts')
-const client = await compile('client', 'src/client/index.tsx', '\nexport { AdvancedModelSelect, NativeEffortPanel, makeAdaptationService, wrapNativeSelector, enabledStore };')
+const client = await compile('client', 'src/client/index.tsx', `
+export { AdvancedModelSelect, NativeEffortPanel, CSS, drawRadiation, makeAdaptationService, wrapNativeSelector, enabledStore }
+export { detectModelFamily, parseRunnerPreference } from './runners.js'
+`)
 
 async function diagnose(declaration, levels, model = 'custom-model') {
   let route
@@ -427,6 +431,206 @@ test('embedded slider selects the current route and respects the native lock', a
   await act(async () => { tree.root.findByProps({ type: 'range' }).props.onKeyDown({ key: 'ArrowLeft', currentTarget: { value: '1' }, preventDefault() {} }) })
   assert.equal(selected.length, 1)
   await act(async () => { tree.unmount() })
+})
+
+test('each detected family has its own track colors and sprite frame count', async () => {
+  const gradients = new Map(['dark', 'light', 'fill', 'peak'].map(mode => [mode, new Set()]))
+  const longerCycles = new Set(['deepseek', 'openai', 'claude', 'grok', 'kimi', 'glm', 'minimax'])
+  for (const [family, model] of [
+    ['deepseek', 'deepseek-v4'], ['openai', 'gpt-5-codex'], ['claude', 'anthropic.claude-sonnet'],
+    ['gemini', 'google/gemini-3'], ['kimi', 'moonshot/kimi-k2.5'], ['glm', 'glm-5'],
+    ['qwen', 'Qwen3.5-Max'], ['minimax', 'MiniMax-M2'], ['grok', 'x-ai/grok-4-fast'],
+  ]) {
+    assert.equal(client.detectModelFamily(model, 'Other model', 'openrouter'), family)
+    const sprite = await readFile(resolve(root, 'assets', 'runners', `${family}.png`))
+    const frames = longerCycles.has(family) ? 16 : 8
+    assert.equal(sprite.readUInt32BE(16), 80 * frames, `${family} sprite width`)
+    assert.equal(sprite.readUInt32BE(20), 110, `${family} sprite height`)
+    const runnerStyle = client.CSS.split(`[data-re-runner="${family}"] {`)[1]?.split('}')[0]
+    assert.match(runnerStyle, new RegExp(`--re-runner-frames: ${frames};`))
+    const declarations = client.CSS.split(`.re-effort[data-re-theme="${family}"] {`)[1]?.split('}')[0]
+    for (const [mode, seen] of gradients) {
+      const color = declarations?.match(new RegExp(`--re-track-${mode}: ([^;]+);`))?.[1]
+      assert.ok(color && !seen.has(color), `${family} needs a distinct ${mode} track color`)
+      seen.add(color)
+    }
+  }
+  const winterSprite = await readFile(resolve(root, 'assets', 'runners', 'deepseek-winter.png'))
+  assert.equal(winterSprite.readUInt32BE(16), 1280)
+  assert.equal(winterSprite.readUInt32BE(20), 110)
+  assert.match(client.CSS.split('[data-re-runner="deepseek-winter"] {')[1]?.split('}')[0], /--re-runner-frames: 16;/u)
+  assert.equal(client.detectModelFamily('openai/claude-sonnet', 'GPT alias', 'openai'), 'claude')
+  assert.equal(client.detectModelFamily('custom-model', '通义千问旗舰版', 'openai'), 'qwen')
+  assert.equal(client.detectModelFamily('custom-model', undefined, 'moonshotai'), 'kimi')
+  assert.equal(client.detectModelFamily('custom-model', undefined, 'xai'), 'grok')
+  assert.equal(client.detectModelFamily('gptish-custom', undefined, 'openrouter'), 'deepseek')
+  assert.equal(client.parseRunnerPreference(null), 'auto')
+  assert.equal(client.parseRunnerPreference('true'), 'auto')
+  assert.equal(client.parseRunnerPreference('false'), 'off')
+  assert.equal(client.parseRunnerPreference('claude'), 'claude')
+  assert.equal(client.parseRunnerPreference('deepseek-winter'), 'deepseek-winter')
+})
+
+test('dragging paints a longer trail in the active theme behind the thumb', () => {
+  const previousDocument = globalThis.document
+  const frame = { progress: 0.75, time: 100, waveTime: 200, particleDistance: 30, dragAmount: 1, family: 'claude', chibi: true }
+  const paint = (isDark, dragAmount, family = frame.family) => {
+    const strokes = []
+    globalThis.document = { body: { hasAttribute: () => isDark } }
+    const gradient = () => ({ stops: [], addColorStop(at, color) { this.stops.push([at, color]) } })
+    const context = {
+      clearRect() {}, save() {}, beginPath() {}, rect() {}, clip() {}, restore() {},
+      createLinearGradient: gradient, createRadialGradient: gradient,
+      fillRect(x, y, width, height) {
+        if (width > 28 && height <= 3) strokes.push({ end: x + width, width, colors: this.fillStyle.stops })
+      },
+    }
+    client.drawRadiation(context, 240, 30, { ...frame, dragAmount, family })
+    return strokes
+  }
+  try {
+    assert.deepEqual(paint(true, 0), [])
+    const dark = paint(true, 1)
+    const light = paint(false, 1)
+    assert.equal(dark[0].width, 90)
+    assert.equal(dark[0].end, 172)
+    assert.ok(dark.every(stroke => stroke.end <= 172))
+    assert.match(dark[0].colors[0][1], /255 143 73/u)
+    assert.match(light[0].colors[0][1], /192 72 21/u)
+    assert.match(paint(true, 1, 'grok')[0].colors[0][1], /255 197 74/u)
+    assert.match(paint(false, 1, 'grok')[0].colors[0][1], /198 130 21/u)
+    assert.ok(paint(true, 0.5)[0].width < dark[0].width)
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
+test('the settings preview shares the live theme and keeps its effort local', async () => {
+  const settingsSlot = 'settings.section'
+  let registration
+  const services = { modelDirectories: {}, sessions: {}, locale: { bind: () => t } }
+  client.apply({
+    get: key => services[key],
+    effect: () => {},
+    locale: services.locale,
+    slots: {
+      inject: (key, callback) => { if (key === settingsSlot) callback() },
+      register: (options, component) => { registration = { options, component } },
+    },
+  })
+  assert.equal(registration.options.name, settingsSlot)
+  assert.equal(registration.options.label(), 'settings.effort.title')
+
+  const efforts = [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }]
+  const first = { provider: 'openrouter', model: 'anthropic/claude-sonnet', reasoningEffort: 'low' }
+  const next = { ...first, model: 'openai/gpt-5-codex' }
+  const grok = { ...first, model: 'x-ai/grok-4-fast' }
+  const snapshot = {
+    current: first, status: 'ready', error: null, pending: null, failures: [],
+    groups: [{ id: first.provider, models: [first, next, grok].map(({ model }) => ({ id: model, name: model, reasoning: { efforts } })) }],
+  }
+  const directory = store(snapshot)
+  let selections = 0
+  const controller = {
+    store: directory,
+    load: async () => directory.getSnapshot(),
+    select: async () => { selections++; throw new Error('Unexpected model selection') },
+  }
+  function useSessions(selector) {
+    const { current } = React.useSyncExternalStore(directory.subscribe, directory.getSnapshot)
+    return selector({
+      byId: { session: { id: 'session', retainedBy: { mainView: 1 } } },
+      projectionsBySession: { session: { values: { modelSelection: { next: current } } } },
+    })
+  }
+  const fishPlaybackRates = []
+  const createNodeMock = element => element.props.className === 're-effort-knob' ? {
+    getAnimations: () => [{
+      animationName: 're-runner-cycle',
+      updatePlaybackRate: rate => fishPlaybackRates.push(rate),
+    }],
+  } : null
+  let tree
+  await act(async () => {
+    tree = TestRenderer.create(React.createElement(React.Fragment, null,
+      React.createElement(registration.component, { t, useSessions }),
+      React.createElement(client.NativeEffortPanel, {
+        available: true, controller, directory, load: () => {}, adapt: null, t,
+      }),
+    ), { createNodeMock })
+  })
+  const choose = value => act(async () => tree.root.findByProps({ type: 'radio', value }).props.onChange())
+  const liveInput = () => tree.root.findByProps({ type: 'range', 'aria-label': 'effort.label' })
+  const previewInput = () => tree.root.findByProps({ type: 'range', 'aria-label': 'settings.preview.title' })
+  const slider = () => liveInput().parent.parent.props
+  const preview = () => previewInput().parent.parent.props
+  try {
+    assert.equal(tree.root.findAllByProps({ type: 'radio' }).length, 12)
+    assert.equal(slider()['data-re-runner'], 'claude')
+    assert.equal(slider()['data-re-theme'], 'claude')
+    assert.equal(preview()['data-re-theme'], 'claude')
+    await choose('deepseek')
+    assert.equal(preview()['data-re-runner'], 'deepseek')
+    await choose('deepseek-winter')
+    assert.equal(slider()['data-re-runner'], 'deepseek-winter')
+    assert.equal(slider()['data-re-theme'], 'deepseek')
+    assert.equal(preview()['data-re-runner'], 'deepseek-winter')
+    assert.equal(preview()['data-re-theme'], 'deepseek')
+    assert.equal(storage.get('dsh-reasoning-effort.chibi-thumb'), 'deepseek-winter')
+    const beforeDrag = [...storage]
+    const previewTrack = {
+      getBoundingClientRect: () => ({ left: 0, width: 100 }),
+      focus() {},
+      setPointerCapture() {},
+    }
+    const pointer = { currentTarget: previewTrack, pointerId: 1, button: 0, preventDefault() {} }
+    await act(async () => { previewInput().props.onPointerDown({ ...pointer, clientX: 45 }) })
+    assert.equal(fishPlaybackRates.at(-1), 720 / 420)
+    await act(async () => { previewInput().props.onPointerMove({ ...pointer, clientX: 85 }) })
+    assert.equal(previewInput().props.value, 1.7)
+    assert.match(preview().className, /is-dragging/u)
+    await act(async () => { previewInput().props.onPointerUp({ ...pointer, clientX: 85 }) })
+    assert.equal(fishPlaybackRates.at(-1), 1)
+    assert.equal(previewInput().props.value, 2)
+    assert.equal(previewInput().props['aria-valuetext'], 'level.high')
+    assert.doesNotMatch(preview().className, /is-dragging/u)
+    await act(async () => { previewInput().props.onKeyDown({ key: 'Home', preventDefault() {} }) })
+    assert.equal(previewInput().props.value, 0)
+    assert.equal(liveInput().props.value, 0)
+    assert.equal(directory.getSnapshot().current.reasoningEffort, 'low')
+    assert.equal(selections, 0)
+    assert.deepEqual([...storage], beforeDrag)
+    await choose('kimi')
+    assert.equal(slider()['data-re-runner'], 'kimi')
+    assert.equal(slider()['data-re-theme'], 'kimi')
+    assert.equal(preview()['data-re-runner'], 'kimi')
+    assert.equal(preview()['data-re-theme'], 'kimi')
+    assert.equal(storage.get('dsh-reasoning-effort.chibi-thumb'), 'kimi')
+    await act(async () => directory.set({ ...snapshot, current: next }))
+    assert.equal(slider()['data-re-runner'], 'kimi')
+    assert.equal(slider()['data-re-theme'], 'kimi')
+    await choose('auto')
+    assert.equal(slider()['data-re-runner'], 'openai')
+    assert.equal(slider()['data-re-theme'], 'openai')
+    assert.equal(preview()['data-re-theme'], 'openai')
+    await choose('kimi')
+    await choose('off')
+    assert.equal(slider()['data-re-runner'], undefined)
+    assert.equal(slider()['data-re-theme'], 'openai')
+    assert.equal(preview()['data-re-runner'], undefined)
+    assert.equal(preview()['data-re-theme'], 'openai')
+    assert.equal(storage.get('dsh-reasoning-effort.chibi-thumb'), 'false')
+    await choose('auto')
+    await act(async () => directory.set({ ...snapshot, current: grok }))
+    assert.equal(slider()['data-re-runner'], 'grok')
+    assert.equal(slider()['data-re-theme'], 'grok')
+    assert.equal(preview()['data-re-runner'], 'grok')
+  } finally {
+    await choose('auto')
+    await act(async () => { tree.unmount() })
+    storage.delete('dsh-reasoning-effort.chibi-thumb')
+  }
 })
 
 

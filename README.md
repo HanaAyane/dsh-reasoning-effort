@@ -20,11 +20,13 @@
 
 <img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="插件滑块在 DSH 深色与浅色主题中的实际截图" width="100%">
 
-## 大肥鱼滑块
+## 滑块形象
 
-在 **设置 → 通用** 里可以关闭 **大肥鱼滑块**，换回普通滑块。关闭 **推理强度滑块** 会恢复 DSH 原生模型菜单。
+在 **设置 → 推理强度滑块** 中选择 **跟随模型**、**普通滑块**，或固定一个 Q 版形象供所有模型使用。轨道和拖尾使用所显示角色的配色，大肥鱼和大肥鱼·冬装共享同一套配色。普通滑块使用当前模型的配色。同一页也可以关闭插件滑块，恢复 DSH 原生模型菜单。
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/settings.webp" alt="DeepSeek Harness 通用设置中的推理强度滑块和大肥鱼滑块开关" width="100%">
+在同一页拖动预览滑块，可以查看形象和特效，会话档位保持原值。
+
+感谢 @xihucuyudaichi 提供初版多模型精灵图。目前的 Gemini 和通义千问精灵图由其素材适配而来。 [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
 
 ## 版本支持政策
 

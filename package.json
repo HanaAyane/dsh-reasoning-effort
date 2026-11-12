@@ -54,7 +54,7 @@
     "lib",
     "src",
     "locale",
-    "assets/chibi-runner-strip.png",
+    "assets/runners",
     "assets/icon.png",
     "design",
     "cordis.patch.yml",
