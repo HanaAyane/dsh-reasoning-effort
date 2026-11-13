@@ -32,7 +32,7 @@ const nativeAdapter = await compile('native-selector', 'src/client/native-select
 const effortSelection = await compile('effort-selection', 'src/client/effort-selection.ts')
 const client = await compile('client', 'src/client/index.tsx', `
 export { AdvancedModelSelect, NativeEffortPanel, CSS, drawRadiation, makeAdaptationService, wrapNativeSelector, enabledStore }
-export { detectModelFamily, parseRunnerPreference } from './runners.js'
+export { detectModelFamily, parseRunnerPreference, parseRunnerSize } from './runners.js'
 `)
 
 async function diagnose(declaration, levels, model = 'custom-model') {
@@ -435,7 +435,7 @@ test('embedded slider selects the current route and respects the native lock', a
 
 test('each detected family has its own track colors and sprite frame count', async () => {
   const gradients = new Map(['dark', 'light', 'fill', 'peak'].map(mode => [mode, new Set()]))
-  const longerCycles = new Set(['deepseek', 'openai', 'claude', 'grok', 'kimi', 'glm', 'minimax'])
+  const frames = 16
   for (const [family, model] of [
     ['deepseek', 'deepseek-v4'], ['openai', 'gpt-5-codex'], ['claude', 'anthropic.claude-sonnet'],
     ['gemini', 'google/gemini-3'], ['kimi', 'moonshot/kimi-k2.5'], ['glm', 'glm-5'],
@@ -443,7 +443,6 @@ test('each detected family has its own track colors and sprite frame count', asy
   ]) {
     assert.equal(client.detectModelFamily(model, 'Other model', 'openrouter'), family)
     const sprite = await readFile(resolve(root, 'assets', 'runners', `${family}.png`))
-    const frames = longerCycles.has(family) ? 16 : 8
     assert.equal(sprite.readUInt32BE(16), 80 * frames, `${family} sprite width`)
     assert.equal(sprite.readUInt32BE(20), 110, `${family} sprite height`)
     const runnerStyle = client.CSS.split(`[data-re-runner="${family}"] {`)[1]?.split('}')[0]
@@ -469,6 +468,11 @@ test('each detected family has its own track colors and sprite frame count', asy
   assert.equal(client.parseRunnerPreference('false'), 'off')
   assert.equal(client.parseRunnerPreference('claude'), 'claude')
   assert.equal(client.parseRunnerPreference('deepseek-winter'), 'deepseek-winter')
+  assert.equal(client.parseRunnerSize(null), 50)
+  assert.equal(client.parseRunnerSize('invalid'), 50)
+  assert.equal(client.parseRunnerSize('25'), 50)
+  assert.equal(client.parseRunnerSize('130'), 125)
+  assert.equal(client.parseRunnerSize('73'), 75)
 })
 
 test('dragging paints a longer trail in the active theme behind the thumb', () => {
@@ -563,6 +567,7 @@ test('the settings preview shares the live theme and keeps its effort local', as
   const choose = value => act(async () => tree.root.findByProps({ type: 'radio', value }).props.onChange())
   const liveInput = () => tree.root.findByProps({ type: 'range', 'aria-label': 'effort.label' })
   const previewInput = () => tree.root.findByProps({ type: 'range', 'aria-label': 'settings.preview.title' })
+  const sizeInput = () => tree.root.findByProps({ type: 'range', max: 125 })
   const slider = () => liveInput().parent.parent.props
   const preview = () => previewInput().parent.parent.props
   try {
@@ -570,6 +575,10 @@ test('the settings preview shares the live theme and keeps its effort local', as
     assert.equal(slider()['data-re-runner'], 'claude')
     assert.equal(slider()['data-re-theme'], 'claude')
     assert.equal(preview()['data-re-theme'], 'claude')
+    assert.equal(sizeInput().props.value, 50)
+    assert.equal(sizeInput().props.min, 50)
+    assert.equal(sizeInput().props.step, 5)
+    assert.equal(preview().style['--re-runner-scale'], 1)
     await choose('deepseek')
     assert.equal(preview()['data-re-runner'], 'deepseek')
     await choose('deepseek-winter')
@@ -601,6 +610,12 @@ test('the settings preview shares the live theme and keeps its effort local', as
     assert.equal(directory.getSnapshot().current.reasoningEffort, 'low')
     assert.equal(selections, 0)
     assert.deepEqual([...storage], beforeDrag)
+    await act(async () => { sizeInput().props.onChange({ currentTarget: { value: '125' } }) })
+    assert.equal(sizeInput().props.value, 125)
+    assert.equal(preview().style['--re-runner-scale'], 2.5)
+    assert.equal(slider().style['--re-runner-scale'], 2.5)
+    assert.equal(storage.get('dsh-reasoning-effort.runner-size'), '125')
+    assert.equal(directory.getSnapshot().current.reasoningEffort, 'low')
     await choose('kimi')
     assert.equal(slider()['data-re-runner'], 'kimi')
     assert.equal(slider()['data-re-theme'], 'kimi')
@@ -620,16 +635,21 @@ test('the settings preview shares the live theme and keeps its effort local', as
     assert.equal(slider()['data-re-theme'], 'openai')
     assert.equal(preview()['data-re-runner'], undefined)
     assert.equal(preview()['data-re-theme'], 'openai')
+    assert.equal(sizeInput().props.disabled, true)
+    assert.equal(preview().style, undefined)
     assert.equal(storage.get('dsh-reasoning-effort.chibi-thumb'), 'false')
     await choose('auto')
     await act(async () => directory.set({ ...snapshot, current: grok }))
     assert.equal(slider()['data-re-runner'], 'grok')
     assert.equal(slider()['data-re-theme'], 'grok')
     assert.equal(preview()['data-re-runner'], 'grok')
+    assert.equal(preview().style['--re-runner-scale'], 2.5)
   } finally {
     await choose('auto')
+    await act(async () => { sizeInput().props.onChange({ currentTarget: { value: '50' } }) })
     await act(async () => { tree.unmount() })
     storage.delete('dsh-reasoning-effort.chibi-thumb')
+    storage.delete('dsh-reasoning-effort.runner-size')
   }
 })
 

@@ -2,6 +2,7 @@ import type { RunnerFamily } from './runners.js'
 
 interface TrackTheme {
   dark: string
+  darkFill?: string
   light: string
   fill: string
   peak: string
@@ -31,11 +32,12 @@ const trackThemes = {
     accent: ['#ff934f', '#c56334'],
   },
   gemini: {
-    dark: 'linear-gradient(100deg, #120902 0%, #061c14 18%, #08224d 38%, #2a105c 64%, #5a146e 84%, #84184c 100%)',
-    light: '#f4f2fb',
-    fill: 'linear-gradient(90deg, #fff 0%, #fff1d6 15%, #c8f5d6 35%, #bce2fe 55%, #d8c6fc 78%, #fdbcd5 100%)',
-    peak: 'linear-gradient(90deg, #fff 0%, #fbbd23 15%, #10b981 35%, #3b82f6 55%, #7c3aed 78%, #f43f5e 100%)',
-    accent: ['#b37bff', '#8757ca'],
+    dark: '#11172e',
+    darkFill: 'linear-gradient(90deg, #30457e, #7479d8)',
+    light: '#eef0fa',
+    fill: 'linear-gradient(90deg, #dde4fa, #727fc5)',
+    peak: 'linear-gradient(90deg, #dde4fa, #6371bd)',
+    accent: ['#b8d4ff', '#6479ca'],
   },
   grok: {
     dark: 'linear-gradient(100deg, #17060d 0%, #2e0916 22%, #501022 45%, #73162e 70%, #92213b 100%)',
@@ -74,7 +76,7 @@ const trackThemes = {
   },
 } satisfies Record<RunnerFamily, TrackTheme>
 
-export const trackThemeCSS = Object.entries(trackThemes).map(([family, theme]) => `
+export const trackThemeCSS = Object.entries<TrackTheme>(trackThemes).map(([family, theme]) => `
 .re-effort[data-re-theme="${family}"] {
   --re-track-dark: ${theme.dark};
   --re-track-light: ${theme.light};
@@ -85,4 +87,8 @@ export const trackThemeCSS = Object.entries(trackThemes).map(([family, theme]) =
 body:not([data-ds-dark-theme]) .re-effort[data-re-theme="${family}"] {
   --re-track-accent: ${theme.accent[1]};
 }
+${theme.darkFill === undefined ? '' : `body[data-ds-dark-theme] .re-effort[data-re-theme="${family}"] .re-effort-track::before {
+  content: "";
+  background: ${theme.darkFill};
+}`}
 `).join('')

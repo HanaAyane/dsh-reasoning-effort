@@ -37,8 +37,11 @@ import {
 import { CSS } from './styles.js'
 import { positionModelMenu } from './menu-position.js'
 import { wrapNativeSelector } from './native-selector.js'
-import { RUNNER_DRAG_LOOP_MS, RUNNER_LOOP_MS, RUNNER_STORAGE_KEY, detectModelFamily, parseRunnerPreference, runnerIds, runnerStore, sliderAppearance,
-  type RunnerFamily, type RunnerId, type RunnerPreference } from './runners.js'
+import {
+  RUNNER_DRAG_LOOP_MS, RUNNER_LOOP_MS, RUNNER_SIZE, RUNNER_SIZE_STORAGE_KEY, RUNNER_STORAGE_KEY,
+  detectModelFamily, parseRunnerPreference, parseRunnerSize, runnerIds, runnerStore, sliderAppearance,
+  type RunnerFamily, type RunnerId, type RunnerPreference,
+} from './runners.js'
 import { drawDragTrail, drawRunnerStreak, effectColor } from './runner-trail.js'
 import {
   clampIndex,
@@ -324,8 +327,11 @@ function drawRadiation(
 ): void {
   const origin = progress * width
   const isDark = document.body.hasAttribute('data-ds-dark-theme')
+  const isGemini = family === 'gemini'
   const tint = family === 'deepseek' ? undefined : effectColor(family, isDark)
-  const waveTint = family === 'grok' ? (isDark ? '181 51 75' : '133 33 57') : tint
+  const waveTint = isGemini ? (isDark ? '126 143 224' : '89 108 183')
+    : family === 'grok' ? (isDark ? '181 51 75' : '133 33 57') : tint
+  const waveOpacity = isGemini ? 0.22 : 1
   const cell = 4
 
   context.clearRect(0, 0, width, height)
@@ -337,7 +343,6 @@ function drawRadiation(
   context.clip()
 
   for (let x = 0; x < origin; x += cell) {
-    const columnTint = family === 'gemini' ? effectColor(family, isDark, Math.floor(x / width * 4)) : waveTint
     const delta = x + cell * 0.5 - origin
     const distance = Math.abs(delta)
     const phaseA = distance / 10 - waveTime * 0.0074
@@ -369,7 +374,7 @@ function drawRadiation(
       const alpha = isDark
         ? Math.min(0.88, columnEnergy * 0.72)
         : Math.min(0.62, columnEnergy * 0.54)
-      context.fillStyle = `rgb(${columnTint ?? `${red} ${green} ${blue}`} / ${alpha})`
+      context.fillStyle = `rgb(${waveTint ?? `${red} ${green} ${blue}`} / ${alpha * waveOpacity})`
       context.fillRect(x, 0, cell - 1, height)
     }
 
@@ -392,7 +397,7 @@ function drawRadiation(
       const blue = isDark
         ? Math.round(186 + 64 * hot)
         : Math.round(194 + 56 * hot)
-      context.fillStyle = `rgb(${columnTint ?? `${red} ${green} ${blue}`} / ${isDark ? alpha : alpha * 0.72})`
+      context.fillStyle = `rgb(${waveTint ?? `${red} ${green} ${blue}`} / ${alpha * waveOpacity * (isDark ? 1 : 0.72)})`
       context.fillRect(x, y, cell - 1, cell - 1)
     }
   }
@@ -405,7 +410,7 @@ function drawRadiation(
     const length = 4 + (i % 4) * 4 + dragAmount * 6
     drawRunnerStreak(context, family, i, isDark, {
       start: particleX, end: particleX + length, y: particleY, height: i % 3 === 0 ? 2 : 1,
-      opacity: 0.42 + (i % 5) * 0.1,
+      opacity: (0.42 + (i % 5) * 0.1) * (isGemini ? 0.25 + 0.35 * dragAmount : 1),
     })
   }
 
@@ -459,6 +464,7 @@ function EffortSliderView({
 }: EffortSliderViewProps) {
   const count = levels.length
   const chibi = runner !== undefined
+  const runnerSize = useSyncExternalStore(runnerStore.subscribe, runnerStore.getSize)
   const isTop = selectedIndex === count - 1
   const showThumb = selectedIndex >= 0
   const progress = showThumb ? value / (count - 1) : 0
@@ -570,6 +576,7 @@ function EffortSliderView({
       className={`re-effort${chibi ? ' is-chibi' : ''}${dragging ? ' is-dragging' : ''}${error === null ? '' : ' is-error'}`}
       data-re-theme={family}
       data-re-runner={runner}
+      style={chibi ? { '--re-runner-scale': runnerSize / RUNNER_SIZE.baseline } as CSSProperties : undefined}
       title={title}
     >
       <div
@@ -1329,6 +1336,23 @@ function ReasoningEffortSetting({ t }: PropsLocale<typeof NS>) {
   )
 }
 
+function RunnerSizeSetting({ t, disabled }: { t: ReasoningEffortTranslate; disabled: boolean }) {
+  const size = useSyncExternalStore(runnerStore.subscribe, runnerStore.getSize)
+  const control = useId()
+  const value = t('settings.runner.sizeValue', { size: String(size) })
+  return (
+    <div className="re-runner-size">
+      <div className="re-runner-size-label">
+        <label className="re-setting-title" htmlFor={control}>{t('settings.runner.size')}</label>
+        <output htmlFor={control}>{value}</output>
+      </div>
+      <input id={control} type="range" min={RUNNER_SIZE.min} max={RUNNER_SIZE.max} step={RUNNER_SIZE.step}
+        value={size} aria-valuetext={value} disabled={disabled}
+        onChange={event => runnerStore.setSize(Number(event.currentTarget.value))} />
+    </div>
+  )
+}
+
 function EffortSliderPreview({ t, preference, modelFamily }: {
   t: ReasoningEffortTranslate
   preference: RunnerPreference
@@ -1358,6 +1382,7 @@ function EffortSliderPreview({ t, preference, modelFamily }: {
     <div className="re-settings-preview">
       <div className="re-setting-title">{t('settings.preview.title')}</div>
       <p className="re-setting-description" id={hint}>{t('settings.preview.hint')}</p>
+      <RunnerSizeSetting t={t} disabled={preference === 'off'} />
       <EffortSliderView levels={levels} selectedIndex={selectedIndex} value={value} effortName={levels[selectedIndex].name}
         family={family} runner={runner} dragging={dragging}
         input={{
@@ -1473,8 +1498,12 @@ export function apply(ctx: ClientContext) {
     const syncStorage = (event: StorageEvent) => {
       if (event.key === ENABLED_STORAGE_KEY) {
         enabledStore.set(event.newValue !== 'false', false)
-      } else if (event.key === RUNNER_STORAGE_KEY || event.key === null) {
+      }
+      if (event.key === RUNNER_STORAGE_KEY || event.key === null) {
         runnerStore.set(parseRunnerPreference(event.newValue), false)
+      }
+      if (event.key === RUNNER_SIZE_STORAGE_KEY || event.key === null) {
+        runnerStore.setSize(parseRunnerSize(event.newValue), false)
       }
     }
     window.addEventListener('storage', syncStorage)

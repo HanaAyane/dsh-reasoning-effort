@@ -6,7 +6,7 @@ const colors: Record<RunnerFamily, readonly TrailColor[]> = {
   deepseek: [['112 135 255', '36 108 202'], ['154 194 255', '27 94 184']],
   openai: [['183 108 255', '122 48 207'], ['230 165 255', '150 62 204']],
   claude: [['255 143 73', '192 72 21'], ['255 193 116', '212 98 25']],
-  gemini: [['255 200 76', '181 101 9'], ['73 224 168', '8 119 87'], ['84 153 255', '37 91 204'], ['255 113 150', '193 53 95']],
+  gemini: [['184 212 255', '100 121 202']],
   grok: [['255 197 74', '198 130 21'], ['255 224 146', '157 97 10']],
   kimi: [['121 149 255', '62 81 185'], ['255 224 143', '169 104 18']],
   glm: [['85 221 255', '12 106 150'], ['132 168 230', '46 72 124']],
@@ -37,11 +37,12 @@ export function drawRunnerStreak(
   { start, end, y, height, opacity }: Streak,
 ): void {
   const color = effectColor(family, isDark, index)
+  const tip = family === 'gemini' ? (isDark ? '241 245 255' : '184 203 255') : isDark ? '255 246 255' : color
   const gradient = context.createLinearGradient(start, 0, end, 0)
   gradient.addColorStop(0, `rgb(${color} / 0)`)
   gradient.addColorStop(0.65, `rgb(${color} / ${opacity * 0.65})`)
   gradient.addColorStop(0.94, `rgb(${color} / ${opacity})`)
-  gradient.addColorStop(1, isDark ? `rgb(255 246 255 / ${opacity})` : `rgb(${color} / ${opacity})`)
+  gradient.addColorStop(1, `rgb(${tip} / ${opacity})`)
   context.fillStyle = gradient
   context.fillRect(start, y, end - start, height)
 }

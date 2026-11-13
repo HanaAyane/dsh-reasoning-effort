@@ -76,10 +76,20 @@ export declare function sliderAppearance(preference: RunnerPreference, modelFami
     runner: "deepseek" | "openai" | "claude" | "gemini" | "grok" | "kimi" | "glm" | "qwen" | "minimax" | "deepseek-winter";
 };
 export declare const RUNNER_STORAGE_KEY = "dsh-reasoning-effort.chibi-thumb";
+export declare const RUNNER_SIZE_STORAGE_KEY = "dsh-reasoning-effort.runner-size";
+export declare const RUNNER_SIZE: {
+    readonly min: 50;
+    readonly baseline: 50;
+    readonly max: 125;
+    readonly step: 5;
+};
 export declare function parseRunnerPreference(stored: string | null): RunnerPreference;
+export declare function parseRunnerSize(stored: string | null): number;
 export declare const runnerStore: {
     getSnapshot: () => RunnerPreference;
+    getSize: () => number;
     subscribe(listener: () => void): () => boolean;
     set(next: RunnerPreference, persist?: boolean): void;
+    setSize(value: number, persist?: boolean): void;
 };
 export {};

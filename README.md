@@ -24,9 +24,9 @@
 
 在 **设置 → 推理强度滑块** 中选择 **跟随模型**、**普通滑块**，或固定一个 Q 版形象供所有模型使用。轨道和拖尾使用所显示角色的配色，大肥鱼和大肥鱼·冬装共享同一套配色。普通滑块使用当前模型的配色。同一页也可以关闭插件滑块，恢复 DSH 原生模型菜单。
 
-在同一页拖动预览滑块，可以查看形象和特效，会话档位保持原值。
+在同一页可以调整人物大小并拖动预览滑块。50% 对应默认大小，会话档位保持原值。
 
-感谢 @xihucuyudaichi 提供初版多模型精灵图。目前的 Gemini 和通义千问精灵图由其素材适配而来。 [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
+感谢 @xihucuyudaichi 为多模型滑块贡献初版精灵图。 [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
 
 ## 版本支持政策
 

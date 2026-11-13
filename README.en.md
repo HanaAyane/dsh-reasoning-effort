@@ -24,9 +24,9 @@ The plugin keeps DSH's model search, groups, and Agent Teams toggle, and remembe
 
 Under **Settings → Reasoning effort slider**, choose **Follow model**, **Plain slider**, or a fixed runner to use across all models. The track and trail use the displayed runner's colors, which both Big Fat Fish outfits share. The plain slider uses the current model's colors. You can also turn off the plugin slider here to restore the built-in DSH model menu.
 
-Drag the preview slider on the same page to try the runner and its effects. Your session keeps its current effort level.
+Adjust the runner size and drag the preview slider on the same page. The default size is 50%. Your session keeps its current effort level.
 
-Thanks to @xihucuyudaichi for contributing the original set of model runners. The Gemini and Qwen sprites are adapted from that contribution. [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
+Thanks to @xihucuyudaichi for contributing the original set of model runners. [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
 
 ## Version support policy
 

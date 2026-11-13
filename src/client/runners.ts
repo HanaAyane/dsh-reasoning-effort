@@ -34,11 +34,11 @@ export const runnerSprites = {
   'deepseek-winter': { image: deepseekWinter, frames: 16, family: 'deepseek' },
   openai: { image: openai, frames: 16, family: 'openai' },
   claude: { image: claude, frames: 16, family: 'claude' },
-  gemini: { image: gemini, frames: 8, family: 'gemini' },
+  gemini: { image: gemini, frames: 16, family: 'gemini' },
   grok: { image: grok, frames: 16, family: 'grok' },
   kimi: { image: kimi, frames: 16, family: 'kimi' },
   glm: { image: glm, frames: 16, family: 'glm' },
-  qwen: { image: qwen, frames: 8, family: 'qwen' },
+  qwen: { image: qwen, frames: 16, family: 'qwen' },
   minimax: { image: minimax, frames: 16, family: 'minimax' },
 } satisfies Record<RunnerFamily, RunnerSprite> & Record<string, RunnerSprite>
 export type RunnerId = keyof typeof runnerSprites
@@ -86,6 +86,8 @@ export function sliderAppearance(preference: RunnerPreference, modelFamily: Runn
 }
 
 export const RUNNER_STORAGE_KEY = 'dsh-reasoning-effort.chibi-thumb'
+export const RUNNER_SIZE_STORAGE_KEY = 'dsh-reasoning-effort.runner-size'
+export const RUNNER_SIZE = { min: 50, baseline: 50, max: 125, step: 5 } as const
 
 export function parseRunnerPreference(stored: string | null): RunnerPreference {
   if (stored === 'false' || stored === 'off') return 'off'
@@ -93,19 +95,38 @@ export function parseRunnerPreference(stored: string | null): RunnerPreference {
   return 'auto'
 }
 
-function readPreference(): RunnerPreference {
+function normalizeRunnerSize(value: number): number {
+  if (!Number.isFinite(value)) return RUNNER_SIZE.baseline
+  return Math.max(RUNNER_SIZE.min, Math.min(RUNNER_SIZE.max, Math.round(value / RUNNER_SIZE.step) * RUNNER_SIZE.step))
+}
+
+export function parseRunnerSize(stored: string | null): number {
+  return normalizeRunnerSize(stored === null || stored.trim() === '' ? NaN : Number(stored))
+}
+
+function readSetting(key: string): string | null {
   try {
-    return parseRunnerPreference(window.localStorage.getItem(RUNNER_STORAGE_KEY))
+    return window.localStorage.getItem(key)
   } catch {
-    return 'auto'
+    return null
   }
 }
 
-let preference = readPreference()
+function saveSetting(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {
+    // The in-memory choice still applies when storage is unavailable.
+  }
+}
+
+let preference = parseRunnerPreference(readSetting(RUNNER_STORAGE_KEY))
+let size = parseRunnerSize(readSetting(RUNNER_SIZE_STORAGE_KEY))
 const listeners = new Set<() => void>()
 
 export const runnerStore = {
   getSnapshot: () => preference,
+  getSize: () => size,
   subscribe(listener: () => void) {
     listeners.add(listener)
     return () => listeners.delete(listener)
@@ -113,14 +134,15 @@ export const runnerStore = {
   set(next: RunnerPreference, persist = true) {
     if (preference === next) return
     preference = next
-    if (persist) {
-      try {
-        // Keep the stored Off value compatible with the original chibi switch.
-        window.localStorage.setItem(RUNNER_STORAGE_KEY, next === 'off' ? 'false' : next)
-      } catch {
-        // The in-memory choice still applies when storage is unavailable.
-      }
-    }
+    // Keep the stored Off value compatible with the original chibi switch.
+    if (persist) saveSetting(RUNNER_STORAGE_KEY, next === 'off' ? 'false' : next)
+    listeners.forEach(listener => listener())
+  },
+  setSize(value: number, persist = true) {
+    const next = normalizeRunnerSize(value)
+    if (size === next) return
+    size = next
+    if (persist) saveSetting(RUNNER_SIZE_STORAGE_KEY, String(next))
     listeners.forEach(listener => listener())
   },
 }

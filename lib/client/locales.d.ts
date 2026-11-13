@@ -82,6 +82,8 @@ export declare const zh: {
     'settings.preview.title': string;
     'settings.preview.hint': string;
     'settings.runner.title': string;
+    'settings.runner.size': string;
+    'settings.runner.sizeValue': string;
     'settings.runner.description': string;
     'settings.runner.auto': string;
     'settings.runner.off': string;
@@ -181,6 +183,8 @@ export declare const en: {
     'settings.preview.title': string;
     'settings.preview.hint': string;
     'settings.runner.title': string;
+    'settings.runner.size': string;
+    'settings.runner.sizeValue': string;
     'settings.runner.description': string;
     'settings.runner.auto': string;
     'settings.runner.off': string;
