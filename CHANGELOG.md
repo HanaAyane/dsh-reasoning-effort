@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.0.0
+
+### Added
+
+- Ten animated runners across nine model families, including Big Fat Fish in winter attire and Grok Lady. Each family has track and particle colors for light and dark themes.
+- A dedicated settings page with automatic model matching, a fixed character, or a plain thumb. Runner size ranges from 50% to 125%. The draggable preview uses sample levels and keeps the session's effort unchanged.
+
+### Changed
+
+- All runners now use 16-frame sprite strips. The running animation retains its position as playback speeds up during dragging and slows on release.
+- Redesigned the Chinese and English README pages around the character roster and settings.
+
+Thanks to @xihucuyudaichi for contributing the original model runners. [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
+
 ## [0.9.3] - 2026-11-12
 
 ### Fixed

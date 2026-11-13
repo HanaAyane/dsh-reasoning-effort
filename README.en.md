@@ -1,56 +1,58 @@
-<div align="center">
+<p align="center">
+  <img src="./assets/readme/hero-v1.webp" width="420" alt="Big Fat Fish running in a blue maid outfit">
+</p>
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/hero.webp" alt="Actual DSH screenshot with the native model control and plugin effort slider" width="100%">
+# dsh-reasoning-effort 1.0.0
 
-# dsh-reasoning-effort
+Drag to adjust reasoning effort inside **DeepSeek Harness**’s native model menu. Version 1.0.0 adds **10 runners across 9 model families** and a dedicated settings page with a draggable preview.
 
-**DSH’s native model selector, with a reasoning-effort slider inside its Effort entry.**
+[中文](README.md) · [Install](#install-and-update) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Releases](https://github.com/HanaAyane/dsh-reasoning-effort/releases) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
 
-[中文首页](README.md) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Latest release](https://github.com/HanaAyane/dsh-reasoning-effort/releases/latest) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
+[![npm total downloads](https://shieldcn.dev/npm/dt/@ayanehana/dsh-reasoning-effort.svg?label=npm%20total%20downloads)](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) [![npm downloads (last 30 days)](https://shieldcn.dev/npm/dm/@ayanehana/dsh-reasoning-effort.svg?label=npm%20downloads%20(last%2030%20days))](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
 
-[![v0.9.3](https://img.shields.io/badge/release-0.9.3-6f83ff?style=flat-square)](https://github.com/HanaAyane/dsh-reasoning-effort/releases/tag/v0.9.3)
-[![DSH RC](https://img.shields.io/badge/DSH-RC-8b5cf6?style=flat-square)](#version-support-policy)
-[![MIT License](https://img.shields.io/badge/license-MIT-536990?style=flat-square)](LICENSE)
-[![Total release asset downloads](https://img.shields.io/github/downloads/HanaAyane/dsh-reasoning-effort/total.svg?style=flat-square&label=total%20downloads)](https://github.com/HanaAyane/dsh-reasoning-effort/releases)
-[![npm monthly downloads](https://img.shields.io/npm/dm/@ayanehana/dsh-reasoning-effort.svg?style=flat-square&label=npm%20downloads%2Fmonth)](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
+## Runners and tracks
 
-</div>
+<p align="center">
+  <img src="./assets/readme/model-family-grid.webp" width="600" alt="A three-by-three grid of chibi runners from nine model families">
+</p>
 
-The plugin keeps DSH's model search, groups, and Agent Teams toggle, and remembers the last effort level for each model.
+<img src="./assets/readme/runners-v1.webp" width="100%" alt="Ten runners with their tracks and trails in light and dark themes">
 
-<img src="https://raw.githubusercontent.com/HanaAyane/dsh-reasoning-effort/v0.9.1/assets/readme/themes.webp" alt="Actual dark and light DSH screenshots of the plugin slider" width="100%">
-
-## Slider appearance
-
-Under **Settings → Reasoning effort slider**, choose **Follow model**, **Plain slider**, or a fixed runner to use across all models. The track and trail use the displayed runner's colors, which both Big Fat Fish outfits share. The plain slider uses the current model's colors. You can also turn off the plugin slider here to restore the built-in DSH model menu.
-
-Adjust the runner size and drag the preview slider on the same page. The default size is 50%. Your session keeps its current effort level.
-
-Thanks to @xihucuyudaichi for contributing the original set of model runners. [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
-
-## Version support policy
-
-Plugin **`v0.9.3` supports DSH `0.2.2-rc.2`**. Compatibility maintenance targets DSH RC versions.
+Choose Big Fat Fish, its winter outfit, or a runner for OpenAI, Claude, Gemini, Grok, Kimi, GLM, Qwen, or MiniMax. Each runner has a **16-frame** animation that speeds up as you drag. The track and trail take on the selected runner’s colors.
 
 ## Install and update
 
-### Web
-
-Run this command in a terminal, then restart the DSH Web Host and refresh the page.
-
-```powershell
-dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@0.9.3
-```
-
 ### Desktop
 
-1. In DSH Desktop, open **Plugins → Add plugin**.
-2. Enter `@ayanehana/dsh-reasoning-effort@0.9.3` in **Package name or address** and install it.
-3. Reload when prompted.
+Open **Plugins → Add plugin → Package name or address**, enter the package below, and reload when prompted.
 
-## How to use it
+```text
+@ayanehana/dsh-reasoning-effort@1.0.0
+```
 
-- Click the current model below the message box, then choose **Effort**. Drag or click the slider to choose a level. Press `Esc` to return to the model menu.
-- If a custom model has no levels, open **Settings → Models → Edit provider → Customized settings → Model options → Reasoning levels** and use the values from the model's API documentation.
+### Web
+
+```powershell
+dsh plugin --profile web add @ayanehana/dsh-reasoning-effort@1.0.0
+```
+
+Restart the DSH Web Host and refresh the page after installation.
+
+## Adjust reasoning effort
+
+Click the current model below the composer and open **Effort**. Drag or click the slider to choose a level the model supports. Press `Esc` to return to the model menu. DSH still provides search, groups, and the Agent Teams toggle. When you switch back to a model, the plugin restores the last confirmed level if it is still supported.
+
+## Customize the slider
+
+Open **Settings → Reasoning effort slider** to follow the active model, choose a fixed runner, or use a plain slider. Runner size ranges from **50% to 125%**, with 50% as the default. Drag the preview to try the effects while your session keeps its current effort.
+
+<img src="./assets/readme/settings-v1-en.webp" width="100%" alt="Reasoning effort settings with a size control, draggable preview, and ten character choices">
+
+## Compatibility and custom models
+
+- Compatibility maintenance targets DSH RC builds. The native menu integration targets **DSH 0.2.2-rc.2**.
+- If a custom model has no effort levels, open **Settings → Models → Edit provider → Customized settings → Model options → Reasoning levels** and use the values from the endpoint’s API documentation.
+
+Thanks to @xihucuyudaichi for contributing the original set of model runners. [PR #9](https://github.com/HanaAyane/dsh-reasoning-effort/pull/9)
 
 [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)
