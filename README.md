@@ -2,13 +2,18 @@
   <img src="./assets/readme/hero-v1.webp" width="420" alt="身穿蓝色女仆装、向右奔跑的大肥鱼">
 </p>
 
-# dsh-reasoning-effort 1.0.0
+<h1 align="center">dsh-reasoning-effort 1.0.0</h1>
 
-在 **DeepSeek Harness** 的原生模型菜单里拖动调节推理强度。1.0.0 带来 **9 个模型家族、10 个跑步形象**，以及可以直接试拖的独立设置页。
+<p align="center">在 <strong>DeepSeek Harness</strong> 的原生模型菜单里拖动调节推理强度。1.0.0 带来 <strong>9 个模型家族、10 个跑步形象</strong>，以及可以直接试拖的独立设置页。</p>
 
-[English](README.en.md) · [安装](#安装与更新) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [发行版](https://github.com/HanaAyane/dsh-reasoning-effort/releases) · [反馈](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
+<p align="center">
+  <a href="README.en.md">English</a> · <a href="#安装与更新">安装</a> · <a href="https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort">npm</a> · <a href="https://github.com/HanaAyane/dsh-reasoning-effort/releases">发行版</a> · <a href="https://github.com/HanaAyane/dsh-reasoning-effort/issues">反馈</a>
+</p>
 
-[![npm 累计下载](https://shieldcn.dev/npm/dt/@ayanehana/dsh-reasoning-effort.svg?label=npm%20%E7%B4%AF%E8%AE%A1%E4%B8%8B%E8%BD%BD)](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) [![npm 近 30 天下载](https://shieldcn.dev/npm/dm/@ayanehana/dsh-reasoning-effort.svg?label=npm%20%E8%BF%91%2030%20%E5%A4%A9%E4%B8%8B%E8%BD%BD)](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
+<p align="center">
+  <a href="https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort"><img src="https://shieldcn.dev/npm/dt/@ayanehana/dsh-reasoning-effort.svg?label=npm%20total%20downloads" width="153" alt="npm 累计下载量"></a>
+  <a href="https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort"><img src="https://shieldcn.dev/npm/dm/@ayanehana/dsh-reasoning-effort.svg?label=npm%20downloads" width="163" alt="npm 近 30 天下载量"></a>
+</p>
 
 ## 角色与轨道
 

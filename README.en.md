@@ -2,13 +2,18 @@
   <img src="./assets/readme/hero-v1.webp" width="420" alt="Big Fat Fish running in a blue maid outfit">
 </p>
 
-# dsh-reasoning-effort 1.0.0
+<h1 align="center">dsh-reasoning-effort 1.0.0</h1>
 
-Drag to adjust reasoning effort inside **DeepSeek Harness**’s native model menu. Version 1.0.0 adds **10 runners across 9 model families** and a dedicated settings page with a draggable preview.
+<p align="center">Drag to adjust reasoning effort inside <strong>DeepSeek Harness</strong>’s native model menu. Version 1.0.0 adds <strong>10 runners across 9 model families</strong> and a dedicated settings page with a draggable preview.</p>
 
-[中文](README.md) · [Install](#install-and-update) · [npm](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) · [Releases](https://github.com/HanaAyane/dsh-reasoning-effort/releases) · [Report an issue](https://github.com/HanaAyane/dsh-reasoning-effort/issues)
+<p align="center">
+  <a href="README.md">中文</a> · <a href="#install-and-update">Install</a> · <a href="https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort">npm</a> · <a href="https://github.com/HanaAyane/dsh-reasoning-effort/releases">Releases</a> · <a href="https://github.com/HanaAyane/dsh-reasoning-effort/issues">Report an issue</a>
+</p>
 
-[![npm total downloads](https://shieldcn.dev/npm/dt/@ayanehana/dsh-reasoning-effort.svg?label=npm%20total%20downloads)](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort) [![npm downloads (last 30 days)](https://shieldcn.dev/npm/dm/@ayanehana/dsh-reasoning-effort.svg?label=npm%20downloads%20(last%2030%20days))](https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort)
+<p align="center">
+  <a href="https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort"><img src="https://shieldcn.dev/npm/dt/@ayanehana/dsh-reasoning-effort.svg?label=npm%20total%20downloads" width="153" alt="Total npm downloads"></a>
+  <a href="https://www.npmjs.com/package/@ayanehana/dsh-reasoning-effort"><img src="https://shieldcn.dev/npm/dm/@ayanehana/dsh-reasoning-effort.svg?label=npm%20downloads" width="163" alt="npm downloads over the last 30 days"></a>
+</p>
 
 ## Runners and tracks
 
